@@ -52,7 +52,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+'url' => 'https://kwdc.laravel.cloud',
 
     'asset_url' => env('ASSET_URL'),
 
@@ -152,6 +152,9 @@ return [
     |
     */
 
+'csrf' => [
+    'trusted_origins' => ['https://kwdc.laravel.cloud'],
+],
     'providers' => [
 
         /*
