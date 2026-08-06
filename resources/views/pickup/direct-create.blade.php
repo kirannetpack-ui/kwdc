@@ -1,0 +1,793 @@
+@extends('layouts.app')
+
+@section('title', 'Create New Pickup Request')
+@section('header', 'Create New Pickup Request')
+
+@section('content')
+<style>
+    .stop-card {
+        transition: all 0.3s ease;
+    }
+    .stop-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .map-container {
+        height: 400px;
+        border-radius: 12px;
+        overflow: hidden;
+        z-index: 1;
+    }
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+    }
+    .loading-content {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        text-align: center;
+    }
+</style>
+
+<!-- Include Leaflet Map CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Create New Pickup Request</h1>
+            <p class="text-gray-500 mt-1">Schedule a pickup with dynamic AI-powered pricing and driver selection.</p>
+        </div>
+        <a href="{{ route('pickup.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
+            <i class="fas fa-arrow-left mr-2"></i>Back to Pickups
+        </a>
+    </div>
+
+    <form id="pickupForm" method="POST" action="{{ route('pickup.store') }}">
+        @csrf
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Main Form - 2 columns -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Pickup Information -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-map-marker-alt text-green-500 mr-2"></i>
+                        Pickup Information
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Pickup Address <span class="text-red-500">*</span></label>
+                            <input type="text" name="pickup_address" id="pickup_address" required
+                                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                   placeholder="Enter pickup address">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
+                                <input type="text" name="pickup_contact_person" id="pickup_contact_person"
+                                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                       placeholder="Contact person name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                                <input type="tel" name="pickup_contact_phone" id="pickup_contact_phone"
+                                       class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                                       placeholder="Contact phone number">
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="hidden" name="pickup_latitude" id="pickup_latitude">
+                            <input type="hidden" name="pickup_longitude" id="pickup_longitude">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Warehouses -->
+                @if(isset($assignedWarehouses) && $assignedWarehouses->count() > 0)
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-warehouse text-blue-500 mr-2"></i>
+                        Your Assigned Warehouses (Delivery Destinations)
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        @foreach($assignedWarehouses as $warehouse)
+                        <div class="border rounded-lg p-3 hover:bg-orange-50 cursor-pointer transition warehouse-card"
+                             data-address="{{ $warehouse->address ?? $warehouse->location }}"
+                             data-name="{{ $warehouse->name }}"
+                             onclick="selectWarehouseForPickup(this)">
+                            <p class="font-semibold">{{ $warehouse->name }}</p>
+                            <p class="text-sm text-gray-500">{{ $warehouse->address ?? $warehouse->location }}</p>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+
+                <!-- Delivery Stops -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-map-pin text-red-500 mr-2"></i>
+                            Delivery Destinations / Stops
+                        </h3>
+                        <button type="button" onclick="addDeliveryStop()" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-1 rounded-lg text-sm transition">
+                            <i class="fas fa-plus mr-1"></i>Add Stop
+                        </button>
+                    </div>
+                    
+                    <div id="stops-container" class="space-y-4">
+                        <!-- Stop 1 will be added dynamically -->
+                    </div>
+                    
+                    <div id="stop-template" class="hidden">
+                        <div class="stop-card bg-gray-50 rounded-lg p-4 border border-gray-200 relative">
+                            <button type="button" onclick="removeDeliveryStop(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
+                                    <input type="text" name="delivery_stops[__INDEX__][address]" class="stop-address w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Enter delivery address" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
+                                    <input type="text" name="delivery_stops[__INDEX__][recipient_name]" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Full name" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Recipient Phone</label>
+                                    <input type="tel" name="delivery_stops[__INDEX__][recipient_phone]" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Phone number" required>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
+                                    <textarea name="delivery_stops[__INDEX__][notes]" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Special instructions for this stop"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Map Display -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-map text-purple-500 mr-2"></i>
+                        Route Visualization
+                    </h3>
+                    <div id="map" class="map-container"></div>
+                    <p class="text-xs text-gray-500 mt-2">The map auto-updates when you calculate the price or find drivers.</p>
+                </div>
+
+                <!-- Bill Details -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-file-invoice text-gray-500 mr-2"></i>
+                        Billing Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Bill Type</label>
+                            <select name="bill_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                                <option value="regular">Regular</option>
+                                <option value="vat">VAT Registered</option>
+                                <option value="pan">PAN Number</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">PAN Number (if applicable)</label>
+                            <input type="text" name="pan_number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Enter PAN number">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar - 1 column -->
+            <div class="space-y-6">
+                <!-- Drivers Section -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold flex items-center">
+                            <i class="fas fa-truck text-orange-500 mr-2"></i>
+                            Select Driver
+                        </h3>
+                        <!-- AI Trigger Button added here -->
+                        <button type="button" id="findDriversBtn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition">
+                            <i class="fas fa-robot mr-1"></i> AI Recommend
+                        </button>
+                    </div>
+                    
+                    <!-- Loading indicator for AI -->
+                    <div id="driver-loading" class="hidden text-center py-3">
+                        <div class="spinner-border text-blue-500" role="status"></div>
+                        <p class="text-sm text-gray-500 mt-1">AI is analyzing drivers...</p>
+                    </div>
+                    
+                    <div id="drivers-list" class="space-y-3 max-h-96 overflow-y-auto">
+                        @if(isset($availableDrivers) && $availableDrivers->count() > 0)
+                            @foreach($availableDrivers as $driver)
+                            <div class="driver-card border rounded-lg p-3 hover:shadow-md transition cursor-pointer"
+                                 data-driver-id="{{ $driver['id'] }}"
+                                 data-driver-price="{{ $driver['price'] ?? 0 }}"
+                                 onclick="selectDriverForPickup(this, {{ $driver['id'] }}, '{{ $driver['name'] }}', {{ $driver['price'] ?? 0 }})">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-semibold">{{ $driver['name'] }}</p>
+                                        <p class="text-xs text-gray-500">
+                                            <i class="fas fa-phone-alt mr-1"></i>{{ $driver['phone'] }}
+                                        </p>
+                                        <p class="text-xs text-gray-500">
+                                            <i class="fas fa-truck mr-1"></i>{{ $driver['vehicle_type'] }}
+                                        </p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-orange-600 font-bold">
+                                            रू {{ number_format($driver['price'] ?? 0, 2) }}
+                                        </p>
+                                        <div class="flex items-center mt-1">
+                                            @for($i = 1; $i <= 5; $i++)
+                                                <i class="fas fa-star text-xs {{ $i <= ($driver['rating'] ?? 4) ? 'text-yellow-400' : 'text-gray-300' }}"></i>
+                                            @endfor
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-t">
+                                    <span class="text-xs px-2 py-1 bg-green-100 text-green-600 rounded-full">
+                                        <i class="fas fa-check-circle mr-1"></i>Available Today
+                                    </span>
+                                </div>
+                            </div>
+                            @endforeach
+                        @else
+                            <div class="text-center py-8 text-gray-500">
+                                <i class="fas fa-truck text-4xl mb-3"></i>
+                                <p>No drivers available at the moment.</p>
+                                <p class="text-sm">Please check back later or contact support.</p>
+                            </div>
+                        @endif
+                    </div>
+                    
+                    <input type="hidden" id="selected_driver_id" name="driver_id" value="">
+                </div>
+
+                <!-- Price Summary -->
+                <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold">Price Summary</h3>
+                        <!-- AI Trigger Button added here -->
+                        <button type="button" id="calculateBtn" class="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition">
+                            <i class="fas fa-calculator mr-1"></i> AI Calculate
+                        </button>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Total Distance:</span>
+                            <span id="total_distance_display">0 km</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Base Price:</span>
+                            <span id="base_price_display">रू 0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Admin Margin:</span>
+                            <span id="margin_display">रू 0</span>
+                        </div>
+                        <div class="border-t border-white/30 my-2"></div>
+                        <div class="flex justify-between font-bold text-lg">
+                            <span>Total Amount:</span>
+                            <span id="total_price_display">रू 0</span>
+                        </div>
+                    </div>
+                    <!-- AI Explanation tooltip placeholder -->
+                    <div id="ai-insight-tooltip" class="text-xs text-white/80 mt-2 hidden"></div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <button type="submit" id="submitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-paper-plane mr-2"></i>Create Pickup Request
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        By creating this pickup, you agree to our terms and conditions
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+        <i class="fas fa-spinner fa-spin text-orange-500 text-4xl mb-3"></i>
+        <p class="text-gray-700">Creating pickup request...</p>
+    </div>
+</div>
+
+<script>
+let stopCount = 1;
+let totalDistance = 0;
+let mapInstance = null;
+let mapMarkers = [];
+
+// Initialize first stop on page load
+document.addEventListener('DOMContentLoaded', function() {
+    addDeliveryStop();
+    setupAutoComplete();
+    initMap();
+});
+
+function initMap() {
+    // Default map centered on Kathmandu
+    mapInstance = L.map('map').setView([27.7172, 85.3240], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(mapInstance);
+}
+
+// ------------------ PRODUCTION GEOCODING (Nominatim) ------------------
+async function geocodeAddress(address) {
+    try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
+        if (!response.ok) throw new Error('Nominatim API error');
+        const data = await response.json();
+        if (data && data.length > 0) {
+            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+        }
+    } catch (e) {
+        console.warn('Nominatim geocoding failed (fallback to mock):', e);
+    }
+    return null; // Fallback to mock if API fails
+}
+
+async function renderMapMarkers() {
+    if (!mapInstance) return;
+
+    // Clear existing markers
+    mapMarkers.forEach(m => mapInstance.removeLayer(m.marker));
+    mapMarkers = [];
+
+    const addresses = [];
+    
+    // 1. Collect Pickup Address
+    const pickup = document.getElementById('pickup_address').value;
+    if (pickup.trim() !== '') addresses.push({ address: pickup, title: 'Pickup Location', color: 'green' });
+
+    // 2. Collect Delivery Stops
+    document.querySelectorAll('.stop-address').forEach((input, index) => {
+        if (input.value.trim() !== '') {
+            addresses.push({ 
+                address: input.value, 
+                title: `Delivery #${index + 1}`, 
+                color: 'red' 
+            });
+        }
+    });
+
+    if (addresses.length === 0) return;
+
+    // Loop through and geocode sequentially with a delay to respect Nominatim rate limits
+    for (const item of addresses) {
+        let coords = await geocodeAddress(item.address);
+        
+        // Fallback mock coordinates if Nominatim failed
+        if (!coords) {
+            coords = { 
+                lat: 27.7172 + (Math.random() - 0.5) * 0.1, 
+                lng: 85.3240 + (Math.random() - 0.5) * 0.1 
+            };
+        }
+
+        const marker = L.marker([coords.lat, coords.lng], { 
+            icon: L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color:${item.color}; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5);"></div>`,
+                iconSize: [14, 14],
+                iconAnchor: [7, 7]
+            })
+        }).addTo(mapInstance)
+        .bindPopup(`<b>${item.title}</b><br>${item.address}`);
+        
+        mapMarkers.push({ title: item.title, marker });
+
+        // Small delay to avoid hitting Nominatim's 1 request per second limit
+        await new Promise(r => setTimeout(r, 500));
+    }
+
+    // Fit bounds to show all markers
+    if (mapMarkers.length > 0) {
+        const group = L.featureGroup(mapMarkers.map(m => m.marker));
+        mapInstance.fitBounds(group.getBounds().pad(0.2));
+    }
+}
+
+function setupAutoComplete() {
+    // Setup Google Places Autocomplete if available
+    const pickupInput = document.getElementById('pickup_address');
+    if (pickupInput && typeof google !== 'undefined' && google.maps) {
+        const autocomplete = new google.maps.places.Autocomplete(pickupInput);
+        autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                document.getElementById('pickup_latitude').value = place.geometry.location.lat();
+                document.getElementById('pickup_longitude').value = place.geometry.location.lng();
+                calculatePickupPrice();
+            }
+        });
+    }
+}
+
+function addDeliveryStop() {
+    const container = document.getElementById('stops-container');
+    const template = document.getElementById('stop-template');
+    const newStop = template.cloneNode(true);
+    newStop.removeAttribute('id');
+    newStop.classList.remove('hidden');
+    
+    // Replace __INDEX__ with current stop count
+    const html = newStop.innerHTML.replace(/__INDEX__/g, stopCount);
+    newStop.innerHTML = html;
+    
+    container.appendChild(newStop);
+    
+    // Add address input listener for distance calculation and map update
+    const addressInput = newStop.querySelector('.stop-address');
+    if (addressInput) {
+        addressInput.addEventListener('change', function() {
+            calculatePickupPrice();  // Updates price
+            renderMapMarkers();      // Updates map
+        });
+        if (typeof google !== 'undefined' && google.maps) {
+            const autocomplete = new google.maps.places.Autocomplete(addressInput);
+            autocomplete.addListener('place_changed', function() {
+                calculatePickupPrice();
+                renderMapMarkers();
+            });
+        }
+    }
+    
+    stopCount++;
+}
+
+function removeDeliveryStop(button) {
+    const stopCard = button.closest('.stop-card');
+    if (document.querySelectorAll('.stop-card').length > 1) {
+        stopCard.remove();
+        calculatePickupPrice();
+        renderMapMarkers();
+    } else {
+        alert('You need at least one delivery stop');
+    }
+}
+
+function selectDriverForPickup(element, driverId, driverName, price) {
+    document.querySelectorAll('.driver-card').forEach(card => {
+        card.classList.remove('border-orange-500', 'bg-orange-50');
+        card.classList.add('border-gray-200');
+    });
+    
+    element.classList.remove('border-gray-200');
+    element.classList.add('border-orange-500', 'bg-orange-50');
+    
+    document.getElementById('selected_driver_id').value = driverId;
+    selectedDriversPrice = price;
+    
+    updatePriceSummary();
+    showToast('Driver selected: ' + driverName, 'success');
+}
+
+function selectWarehouseForPickup(element) {
+    const address = element.dataset.address;
+    const name = element.dataset.name;
+    
+    // Use warehouse as the first delivery destination
+    const firstStopInput = document.querySelector('.stop-address');
+    if (firstStopInput) {
+        firstStopInput.value = address;
+    }
+    
+    document.querySelectorAll('.warehouse-card').forEach(card => {
+        card.classList.remove('border-orange-500', 'bg-orange-50');
+        card.classList.add('border-gray-200');
+    });
+    element.classList.remove('border-gray-200');
+    element.classList.add('border-orange-500', 'bg-orange-50');
+    
+    calculatePickupPrice();
+    renderMapMarkers();
+    showToast('Warehouse selected: ' + name, 'success');
+}
+
+// ------------------ AI ENHANCED PRICE CALCULATION ------------------
+async function calculatePickupPrice() {
+    const pickup = document.getElementById('pickup_address').value;
+    const stops = [];
+    document.querySelectorAll('.stop-address').forEach(input => {
+        if (input.value) stops.push(input.value);
+    });
+    if (!pickup || stops.length === 0) return;
+
+    const priceDisplay = document.getElementById('total_price_display');
+    priceDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Calculating...';
+
+    try {
+        const vehicleType = document.getElementById('vehicle_type') ? document.getElementById('vehicle_type').value : 'Standard';
+        // Mock distance
+        const mockDistance = (stops.length + 1) * 5 + Math.floor(Math.random() * 10);
+        
+        const response = await fetch('{{ route("pickup.calculate-price") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({
+                pickup_stops: [{ address: pickup }],
+                total_distance: mockDistance,
+                vehicle_type: vehicleType
+            })
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            totalDistance = data.total_distance;
+            document.getElementById('total_distance_display').innerText = data.total_distance + ' km';
+            document.getElementById('base_price_display').innerText = 'रू ' + data.base_price;
+            document.getElementById('margin_display').innerText = 'Admin Margin (' + data.margin_applied + ' - AI Analyzed)';
+            document.getElementById('total_price_display').innerText = 'रू ' + data.final_price;
+
+            // Show AI explanation
+            const tooltip = document.getElementById('ai-insight-tooltip');
+            tooltip.classList.remove('hidden');
+            tooltip.innerText = '🤖 ' + data.explanation;
+
+            // Update hidden fields
+            let totalPriceInput = document.querySelector('input[name="total_price"]');
+            if (!totalPriceInput) {
+                totalPriceInput = document.createElement('input');
+                totalPriceInput.type = 'hidden';
+                totalPriceInput.name = 'total_price';
+                document.getElementById('pickupForm').appendChild(totalPriceInput);
+            }
+            totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
+            
+            // Update Map with all markers after price calculation
+            renderMapMarkers();
+        } else {
+            alert(data.errors || 'Price calculation failed');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        priceDisplay.innerText = 'रू 0';
+    } finally {
+        // Always update the map after a price calculation trigger
+        renderMapMarkers();
+    }
+}
+
+function updatePriceSummary(data = null) {
+    if (data) {
+        document.getElementById('total_distance_display').innerHTML = data.total_distance + ' km';
+        document.getElementById('base_price_display').innerHTML = 'रू ' + data.base_price;
+        document.getElementById('margin_display').innerHTML = 'रू ' + data.margin_amount;
+        document.getElementById('total_price_display').innerHTML = 'रू ' + data.final_price;
+        
+        let totalPriceInput = document.querySelector('input[name="total_price"]');
+        if (!totalPriceInput) {
+            totalPriceInput = document.createElement('input');
+            totalPriceInput.type = 'hidden';
+            totalPriceInput.name = 'total_price';
+            document.getElementById('pickupForm').appendChild(totalPriceInput);
+        }
+        totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
+    } else if (selectedDriversPrice) {
+        const totalPrice = selectedDriversPrice;
+        document.getElementById('total_price_display').innerHTML = 'रू ' + totalPrice.toFixed(2);
+    }
+}
+
+// ------------------ AI DRIVER & VEHICLE RECOMMENDATION ------------------
+document.getElementById('findDriversBtn').addEventListener('click', function() {
+    const pickup = document.getElementById('pickup_address').value;
+    const stops = [];
+    document.querySelectorAll('.stop-address').forEach(input => {
+        if (input.value) stops.push(input.value);
+    });
+    if (!pickup || stops.length === 0) {
+        alert('Please enter pickup and delivery addresses first.');
+        return;
+    }
+
+    const loadingDiv = document.getElementById('driver-loading');
+    loadingDiv.classList.remove('hidden');
+
+    const mockDistance = (stops.length + 1) * 5 + Math.floor(Math.random() * 10);
+    const vehicleType = document.getElementById('vehicle_type') ? document.getElementById('vehicle_type').value : 'Standard';
+
+    fetch('/pickup/recommend-drivers', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: JSON.stringify({
+            pickup_stops: [{ address: pickup }],
+            total_distance: mockDistance,
+            vehicle_type: vehicleType
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        loadingDiv.classList.add('hidden');
+        if (data.success) {
+            // 1. Update vehicle selection
+            const vehicleSelect = document.getElementById('vehicle_type');
+            if (vehicleSelect) {
+                for (let i = 0; i < vehicleSelect.options.length; i++) {
+                    if (vehicleSelect.options[i].value === data.recommended_vehicle) {
+                        vehicleSelect.value = data.recommended_vehicle;
+                        vehicleSelect.style.borderColor = '#f59e0b';
+                        break;
+                    }
+                }
+            }
+
+            // 2. Inject AI badges into existing driver cards
+            const driverCards = document.querySelectorAll('.driver-card');
+            driverCards.forEach(card => {
+                const oldBadge = card.querySelector('.ai-badge');
+                if (oldBadge) oldBadge.remove();
+
+                const driverId = card.dataset.driverId;
+                const aiDriver = data.drivers.find(d => d.id == driverId);
+                if (aiDriver) {
+                    const rank = data.drivers.indexOf(aiDriver);
+                    let badgeHtml = '';
+                    if (rank === 0) {
+                        badgeHtml = `<span class="ai-badge inline-block ml-2 px-2 py-0.5 bg-yellow-400 text-xs font-bold rounded-full">🤖 Top Pick</span>`;
+                    } else {
+                        badgeHtml = `<span class="ai-badge inline-block ml-2 px-2 py-0.5 bg-blue-400 text-white text-xs font-bold rounded-full">🤖 AI Recommended</span>`;
+                    }
+                    const nameEl = card.querySelector('.font-semibold');
+                    if (nameEl) nameEl.insertAdjacentHTML('beforeend', badgeHtml);
+                }
+            });
+
+            showToast('AI found ' + data.drivers.length + ' best drivers for you!', 'info');
+        }
+    })
+    .catch(error => {
+        loadingDiv.classList.add('hidden');
+        console.error('Driver AI error:', error);
+        alert('Failed to get driver recommendations.');
+    });
+});
+
+// Form submission
+document.getElementById('pickupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Validate required fields
+    const pickupAddress = document.getElementById('pickup_address').value;
+    const driverId = document.getElementById('selected_driver_id').value;
+    const stops = document.querySelectorAll('.stop-card');
+    
+    if (!pickupAddress) {
+        showToast('Please enter pickup address', 'error');
+        return;
+    }
+    
+    if (!driverId) {
+        showToast('Please select a driver', 'error');
+        return;
+    }
+    
+    if (stops.length === 0) {
+        showToast('Please add at least one delivery stop', 'error');
+        return;
+    }
+    
+    // Validate each stop
+    let valid = true;
+    stops.forEach((stop, index) => {
+        const address = stop.querySelector('.stop-address').value;
+        const name = stop.querySelector('input[name*="recipient_name"]').value;
+        const phone = stop.querySelector('input[name*="recipient_phone"]').value;
+        
+        if (!address) {
+            showToast('Please enter address for stop ' + (index + 1), 'error');
+            valid = false;
+        }
+        if (!name) {
+            showToast('Please enter recipient name for stop ' + (index + 1), 'error');
+            valid = false;
+        }
+        if (!phone) {
+            showToast('Please enter recipient phone for stop ' + (index + 1), 'error');
+            valid = false;
+        }
+    });
+    
+    if (!valid) return;
+    
+    // Show loading overlay
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    
+    const formData = new FormData(this);
+    
+    try {
+        const response = await fetch(this.action, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast(result.message, 'success');
+            setTimeout(() => {
+                window.location.href = result.redirect_url || '{{ route("pickup.index") }}';
+            }, 1500);
+        } else {
+            document.getElementById('loadingOverlay').style.display = 'none';
+            showToast(result.message || 'Failed to create pickup', 'error');
+        }
+    } catch (error) {
+        document.getElementById('loadingOverlay').style.display = 'none';
+        showToast('Network error. Please try again.', 'error');
+        console.error('Error:', error);
+    }
+});
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up ' + 
+        (type === 'success' ? 'bg-green-500 text-white' : 
+         type === 'error' ? 'bg-red-500 text-white' : 
+         'bg-blue-500 text-white');
+    toast.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle') + ' mr-2"></i>' + message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-slide-up {
+        animation: slideUp 0.3s ease-out;
+    }
+`;
+document.head.appendChild(style);
+</script>
+
+@endsection

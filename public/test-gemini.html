@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gemini Test</title>
+</head>
+<body>
+    <h2>Google Gemini API Test</h2>
+    <button onclick="testAI()">Test Connection</button>
+    <div id="result" style="margin-top:20px; font-weight:bold;"></div>
+
+    <script>
+        async function testAI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerText = "Testing...";
+            
+            // PASTE YOUR API KEY HERE TEMPORARILY TO TEST
+            const apiKey = "AQ.Ab8RN6KTZOxNVlCXd57t2PDrzYi9lEx24pC7cxUzQHDQSphqBA"; 
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-001:generateContent?key=${apiKey}`;
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: "Say 'Connection Successful!'" }] }]
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.candidates && data.candidates[0].content.parts[0].text) {
+                    resultDiv.innerText = "✅ SUCCESS: " + data.candidates[0].content.parts[0].text;
+                } else {
+                    resultDiv.innerText = "⚠️ API returned unknown data: " + JSON.stringify(data);
+                }
+            } catch (error) {
+                resultDiv.innerText = "❌ ERROR: " + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

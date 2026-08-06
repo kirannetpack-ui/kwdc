@@ -6,8 +6,8 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>KTM-WDC - @yield('title', 'Warehouse & Distribution Connect')</title>
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -15,10 +15,17 @@
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Leaflet CSS for Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
         * { font-family: 'Inter', sans-serif; }
         
-        /* Sidebar - Always visible, never slides */
+        /* ===== SIDEBAR ===== */
         .sidebar {
             position: fixed;
             top: 0;
@@ -30,31 +37,17 @@
             z-index: 50;
             overflow-y: auto;
             overflow-x: hidden;
+            transition: transform 0.3s ease;
         }
         
-        /* Main content - Always has margin */
-        .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-            background: #f3f4f6;
-        }
+        .sidebar::-webkit-scrollbar { width: 5px; }
+        .sidebar::-webkit-scrollbar-track { background: #374151; }
+        .sidebar::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
         
-        /* Sidebar scrollbar */
-        .sidebar::-webkit-scrollbar {
-            width: 5px;
-        }
-        .sidebar::-webkit-scrollbar-track {
-            background: #374151;
-        }
-        .sidebar::-webkit-scrollbar-thumb {
-            background: #f59e0b;
-            border-radius: 10px;
-        }
-        
-        /* Sidebar links */
+        /* ===== SIDEBAR LINKS ===== */
         .sidebar-link {
             transition: all 0.3s ease;
-            display: flex;
+            display: flex !important;
             align-items: center;
             gap: 12px;
             padding: 10px 16px;
@@ -62,6 +55,13 @@
             margin: 4px 8px;
             color: #9ca3af;
             text-decoration: none;
+            cursor: pointer;
+            font-size: 14px;
+            width: auto;
+            max-width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
         }
         
         .sidebar-link:hover {
@@ -75,127 +75,69 @@
             color: white;
         }
         
-        .sidebar-link i {
-            width: 20px;
-            text-align: center;
-        }
+        .sidebar-link i { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
+        .sidebar-link .badge { background: #ef4444; color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
+        .section-header { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px 4px 16px; display: block !important; }
         
-        /* Section headers */
-        .section-header {
-            font-size: 10px;
-            font-weight: 600;
-            color: #6b7280;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 12px 16px 4px 16px;
-        }
+        /* ===== MAIN CONTENT ===== */
+        .main-content { margin-left: 280px; min-height: 100vh; background: #f3f4f6; }
+        .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 16px 24px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
+        .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
+        .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 60; background: #f59e0b; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; border: none; font-size: 18px; }
         
-        /* Status badges */
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .status-pending { background: #fef3c7; color: #d97706; }
-        .status-approved { background: #d1fae5; color: #059669; }
-        .status-rejected { background: #fee2e2; color: #dc2626; }
-        .status-assigned { background: #dbeafe; color: #2563eb; }
-        .status-delivered { background: #d1fae5; color: #059669; }
-        .status-on_the_way { background: #fed7aa; color: #ea580c; }
-        
-        /* Top bar */
-        .top-bar {
-            background: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 16px 24px;
-            position: sticky;
-            top: 0;
-            z-index: 40;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .page-content {
-            padding: 24px;
-        }
-        
-        /* Mobile */
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 260px;
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            .sidebar.mobile-open {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .menu-toggle {
-                display: block;
-                position: fixed;
-                top: 16px;
-                left: 16px;
-                z-index: 60;
-                background: #f59e0b;
-                color: white;
-                padding: 8px 12px;
-                border-radius: 8px;
-                cursor: pointer;
-                border: none;
-            }
-            .top-bar {
-                padding-left: 70px;
-            }
+            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar.mobile-open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .menu-toggle { display: block; }
+            .top-bar { padding: 12px 16px 12px 70px; flex-wrap: wrap; }
+            .top-bar h2 { font-size: 18px; }
+            .page-content { padding: 16px; }
         }
         
-        .menu-toggle {
-            display: none;
-        }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 45; }
+        .sidebar-overlay.active { display: block; }
         
-        @media (min-width: 769px) {
-            .menu-toggle {
-                display: none !important;
-            }
-        }
+        .alert { padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; border: none; }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-danger { background: #fee2e2; color: #991b1b; }
+        .alert-warning { background: #fef3c7; color: #92400e; }
+        .alert-info { background: #dbeafe; color: #1e40af; }
     </style>
     @stack('styles')
 </head>
 <body>
 
 <!-- Mobile Menu Toggle -->
-<button class="menu-toggle" onclick="toggleMobileMenu()">
-    <i class="fas fa-bars"></i>
-</button>
+<button class="menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
 
-<!-- Sidebar -->
+<!-- ============================================================ -->
+<!-- SIDEBAR -->
+<!-- ============================================================ -->
 <div class="sidebar" id="sidebar">
-    <!-- Logo -->
     <div class="p-6 border-b border-gray-800">
         <div class="flex items-center space-x-3">
             <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
-                <i class="fas fa-warehouse text-white"></i>
+                <i class="fas fa-warehouse text-white text-xl"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold">KTM-WDC</h1>
+                <h1 class="text-xl font-bold text-white">KTM-WDC</h1>
                 <p class="text-xs text-gray-400">Warehouse & Distribution</p>
             </div>
         </div>
     </div>
     
-    <!-- User Info -->
     @auth
-    <div class="p-6 border-b border-gray-800">
+    <div class="p-4 border-b border-gray-800">
         <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
-                <i class="fas fa-user text-white text-xl"></i>
+            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <i class="fas fa-user text-white"></i>
             </div>
-            <div>
-                <p class="font-semibold">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-gray-400">{{ Auth::user()->email }}</p>
+            <div class="min-w-0">
+                <p class="font-semibold text-sm truncate">{{ Auth::user()->name }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email }}</p>
                 <span class="text-xs text-orange-400">{{ ucfirst(Auth::user()->role ?? 'User') }}</span>
             </div>
         </div>
@@ -205,166 +147,211 @@
     <!-- Navigation -->
     <nav class="py-4">
         @auth
-        <!-- Dashboard -->
-        <a href="{{ route('dashboard') }}" class="sidebar-link">
-            <i class="fas fa-tachometer-alt"></i>
-            <span>Dashboard</span>
+        <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+            <i class="fas fa-th-large"></i> Dashboard
         </a>
-        
-        <!-- Admin Panel -->
-        @if(Auth::user()->is_admin || Auth::user()->role == 'admin')
-        <div class="section-header">Admin Panel</div>
-        <a href="{{ route('admin.pending') }}" class="sidebar-link">
-            <i class="fas fa-clock"></i>
-            <span>Pending Approvals</span>
+
+        <!-- ADMIN -->
+        @if(Auth::user()->role === 'admin')
+        <div class="section-header">Management</div>
+        <a href="{{ route('admin.pending') }}" class="sidebar-link {{ request()->routeIs('admin.pending') ? 'active' : '' }}">
+            <i class="fas fa-clock"></i> Pending Approvals
+            @php $pendingCount = \App\Models\Warehouse::where('status', 'pending')->count(); @endphp
+            @if($pendingCount > 0) <span class="badge">{{ $pendingCount }}</span> @endif
         </a>
-        <a href="{{ route('admin.all-warehouses') }}" class="sidebar-link">
-            <i class="fas fa-warehouse"></i>
-            <span>All Warehouses</span>
+        <a href="{{ route('admin.all-warehouses') }}" class="sidebar-link {{ request()->routeIs('admin.all-warehouses') ? 'active' : '' }}">
+            <i class="fas fa-warehouse"></i> All Warehouses
+            @php $warehouseCount = \App\Models\Warehouse::count(); @endphp
+            @if($warehouseCount > 0) <span class="badge">{{ $warehouseCount }}</span> @endif
         </a>
-        <a href="{{ route('admin.requests') }}" class="sidebar-link">
-            <i class="fas fa-clipboard-list"></i>
-            <span>Client Requests</span>
+        <a href="{{ route('admin.requests') }}" class="sidebar-link {{ request()->routeIs('admin.requests') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-list"></i> Warehouse Requests
         </a>
-        <a href="{{ route('admin.vehicles') }}" class="sidebar-link">
-            <i class="fas fa-truck"></i>
-            <span>All Vehicles</span>
+        <a href="{{ route('admin.analytics.predictive') }}" class="sidebar-link {{ request()->routeIs('admin.analytics.predictive') ? 'active' : '' }}">
+            <i class="fas fa-chart-line"></i> Predictive Analytics
         </a>
-        <a href="{{ route('admin.dispatch') }}" class="sidebar-link">
-            <i class="fas fa-truck-moving"></i>
-            <span>Dispatch Orders</span>
+<a href="{{ route('admin.analytics') }}" class="sidebar-link {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
+    <i class="fas fa-chart-pie"></i> Analytics Dashboard
+</a>
+        <a href="{{ route('admin.vehicles') }}" class="sidebar-link {{ request()->routeIs('admin.vehicles') ? 'active' : '' }}">
+            <i class="fas fa-truck"></i> All Vehicles
         </a>
-        <a href="{{ route('admin.clients') }}" class="sidebar-link">
-            <i class="fas fa-users"></i>
-            <span>All Clients</span>
+<a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
+    <i class="fas fa-map-marked-alt"></i> Live Tracking
+</a>
+        <a href="{{ route('admin.dispatch') }}" class="sidebar-link {{ request()->routeIs('admin.dispatch') ? 'active' : '' }}">
+            <i class="fas fa-truck-moving"></i> Dispatch Orders
         </a>
-        <a href="{{ route('admin.reports') }}" class="sidebar-link">
-            <i class="fas fa-chart-bar"></i>
-            <span>Reports</span>
+        <a href="{{ route('admin.pickup') }}" class="sidebar-link {{ request()->routeIs('admin.pickup') ? 'active' : '' }}">
+            <i class="fas fa-box-open"></i> Pickup Requests
+        </a>
+        <a href="{{ route('admin.clients') }}" class="sidebar-link {{ request()->routeIs('admin.clients') ? 'active' : '' }}">
+            <i class="fas fa-users"></i> All Clients
+        </a>
+        <a href="{{ route('admin.drivers') }}" class="sidebar-link {{ request()->routeIs('admin.drivers') ? 'active' : '' }}">
+            <i class="fas fa-id-card"></i> Drivers
+        </a>
+        <a href="{{ route('admin.equipment-list') }}" class="sidebar-link {{ request()->routeIs('admin.equipment-list') ? 'active' : '' }}">
+            <i class="fas fa-tools"></i> Equipment List
+        </a>
+        <a href="{{ route('admin.property-owners') }}" class="sidebar-link {{ request()->routeIs('admin.property-owners') ? 'active' : '' }}">
+            <i class="fas fa-building"></i> Property Owners
+        </a>
+        <a href="{{ route('admin.invoices') }}" class="sidebar-link {{ request()->routeIs('admin.invoices') ? 'active' : '' }}">
+            <i class="fas fa-file-invoice"></i> Invoices
+        </a>
+        <a href="{{ route('admin.margins.index') }}" class="sidebar-link {{ request()->routeIs('admin.margins.*') ? 'active' : '' }}">
+            <i class="fas fa-percent"></i> Margins & Tiers
+        </a>
+        <a href="{{ route('admin.reports') }}" class="sidebar-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}">
+            <i class="fas fa-chart-bar"></i> Reports
+        </a>
+        <a href="{{ route('admin.partner-earnings') }}" class="sidebar-link {{ request()->routeIs('admin.partner-earnings') ? 'active' : '' }}">
+            <i class="fas fa-hand-holding-usd"></i> Partner Earnings
         </a>
         @endif
-        
-        <!-- Client Zone -->
-        @if(Auth::user()->is_client || Auth::user()->role == 'client')
+
+        <!-- CLIENT -->
+        @if(Auth::user()->role === 'client')
         <div class="section-header">Client Zone</div>
-        <a href="{{ route('my-requests.index') }}" class="sidebar-link">
-            <i class="fas fa-clipboard-list"></i>
-            <span>My Requests</span>
+        <a href="{{ route('my-requests.index') }}" class="sidebar-link {{ request()->routeIs('my-requests.*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-list"></i> My Requests
         </a>
-        <a href="{{ route('my-requests.create') }}" class="sidebar-link">
-            <i class="fas fa-plus-circle"></i>
-            <span>New Request</span>
+        <a href="{{ route('my-requests.create') }}" class="sidebar-link {{ request()->routeIs('my-requests.create') ? 'active' : '' }}">
+            <i class="fas fa-plus-circle"></i> New Request
         </a>
-        <a href="{{ route('dispatch.index') }}" class="sidebar-link">
-            <i class="fas fa-truck"></i>
-            <span>Dispatch Orders</span>
+        <a href="{{ route('dispatch.index') }}" class="sidebar-link {{ request()->routeIs('dispatch.*') ? 'active' : '' }}">
+            <i class="fas fa-truck"></i> Dispatch Orders
         </a>
-        <a href="{{ route('pickup.index') }}" class="sidebar-link">
-            <i class="fas fa-box-open"></i>
-            <span>Pickup Requests</span>
+        <a href="{{ route('pickup.index') }}" class="sidebar-link {{ request()->routeIs('pickup.*') ? 'active' : '' }}">
+            <i class="fas fa-box-open"></i> Pickup Requests
         </a>
-        <a href="{{ route('stock.index') }}" class="sidebar-link">
-            <i class="fas fa-boxes"></i>
-            <span>My Stock</span>
+<a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
+    <i class="fas fa-map-marked-alt"></i> Track My Shipments
+</a>
+        <a href="{{ route('stock.index') }}" class="sidebar-link {{ request()->routeIs('stock.*') ? 'active' : '' }}">
+            <i class="fas fa-boxes"></i> My Stock
         </a>
-        <a href="{{ route('profile.contacts') }}" class="sidebar-link">
-            <i class="fas fa-address-book"></i>
-            <span>Manage Contacts</span>
+        <a href="{{ route('client.proposals.index') }}" class="sidebar-link {{ request()->routeIs('client.proposals.*') ? 'active' : '' }}">
+            <i class="fas fa-file-contract"></i> My Proposals
+        </a>
+        <a href="{{ route('client.equipment.requests') }}" class="sidebar-link {{ request()->routeIs('client.equipment.*') ? 'active' : '' }}">
+            <i class="fas fa-tools"></i> Equipment Requests
+        </a>
+        <a href="{{ route('invoices.client-index') }}" class="sidebar-link {{ request()->routeIs('invoices.client-index') ? 'active' : '' }}">
+            <i class="fas fa-file-invoice"></i> My Invoices
+        </a>
+        <a href="{{ route('profile.contacts') }}" class="sidebar-link {{ request()->routeIs('profile.contacts') ? 'active' : '' }}">
+            <i class="fas fa-address-book"></i> Manage Contacts
         </a>
         @endif
-        
-        <!-- Driver Zone -->
-        @if(Auth::user()->is_driver || Auth::user()->role == 'driver')
+
+        <!-- DRIVER -->
+        @if(Auth::user()->role === 'driver')
         <div class="section-header">Driver Zone</div>
-        <a href="{{ route('driver.jobs') }}" class="sidebar-link">
-            <i class="fas fa-tasks"></i>
-            <span>My Jobs</span>
+        <a href="{{ route('driver.dashboard') }}" class="sidebar-link {{ request()->routeIs('driver.dashboard') ? 'active' : '' }}">
+            <i class="fas fa-chart-pie"></i> Driver Dashboard
         </a>
-        <a href="{{ route('driver.available-jobs') }}" class="sidebar-link">
-            <i class="fas fa-search"></i>
-            <span>Available Jobs</span>
+        <a href="{{ route('driver.jobs') }}" class="sidebar-link {{ request()->routeIs('driver.jobs') ? 'active' : '' }}">
+            <i class="fas fa-tasks"></i> My Jobs
         </a>
-        <a href="{{ route('driver.vehicles.index') }}" class="sidebar-link">
-            <i class="fas fa-truck"></i>
-            <span>My Vehicle</span>
+        <a href="{{ route('driver.available-jobs') }}" class="sidebar-link {{ request()->routeIs('driver.available-jobs') ? 'active' : '' }}">
+            <i class="fas fa-search"></i> Available Jobs
         </a>
-        <a href="{{ route('driver.earnings') }}" class="sidebar-link">
-            <i class="fas fa-chart-line"></i>
-            <span>My Earnings</span>
+        <a href="{{ route('driver.pickups') }}" class="sidebar-link {{ request()->routeIs('driver.pickups') ? 'active' : '' }}">
+            <i class="fas fa-warehouse"></i> Pickup Jobs
         </a>
-        <a href="{{ route('driver.rates') }}" class="sidebar-link">
-            <i class="fas fa-tag"></i>
-            <span>My Rates</span>
+<a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
+    <i class="fas fa-map-marked-alt"></i> My Live Jobs
+</a>
+        <a href="{{ route('driver.vehicles.index') }}" class="sidebar-link {{ request()->routeIs('driver.vehicles.*') ? 'active' : '' }}">
+            <i class="fas fa-truck"></i> My Vehicles
+        </a>
+        <a href="{{ route('driver.rates') }}" class="sidebar-link {{ request()->routeIs('driver.rates.*') ? 'active' : '' }}">
+            <i class="fas fa-tag"></i> My Rates
+        </a>
+        <a href="{{ route('driver.earnings') }}" class="sidebar-link {{ request()->routeIs('driver.earnings') ? 'active' : '' }}">
+            <i class="fas fa-chart-line"></i> My Earnings
         </a>
         @endif
-        
-        <!-- Equipment Owner Zone -->
-        @if(Auth::user()->is_equipment_owner || Auth::user()->role == 'equipment_owner')
+
+        <!-- EQUIPMENT OWNER -->
+        @if(Auth::user()->role === 'equipment_owner')
         <div class="section-header">Equipment Zone</div>
-        <a href="{{ route('equipment.dashboard') }}" class="sidebar-link">
-            <i class="fas fa-chart-pie"></i>
-            <span>Dashboard</span>
+        <a href="{{ route('equipment.dashboard') }}" class="sidebar-link {{ request()->routeIs('equipment.dashboard') ? 'active' : '' }}">
+            <i class="fas fa-chart-pie"></i> Equipment Dashboard
         </a>
-        <a href="{{ route('equipment.register') }}" class="sidebar-link">
-            <i class="fas fa-plus-circle"></i>
-            <span>Register Equipment</span>
+        <a href="{{ route('equipment.register') }}" class="sidebar-link {{ request()->routeIs('equipment.register') ? 'active' : '' }}">
+            <i class="fas fa-plus-circle"></i> Register Equipment
         </a>
-        <a href="{{ route('equipment.jobs') }}" class="sidebar-link">
-            <i class="fas fa-briefcase"></i>
-            <span>Equipment Jobs</span>
+        <a href="{{ route('equipment.list') }}" class="sidebar-link {{ request()->routeIs('equipment.list') ? 'active' : '' }}">
+            <i class="fas fa-tools"></i> My Equipment
         </a>
-        <a href="{{ route('equipment.list') }}" class="sidebar-link">
-            <i class="fas fa-tools"></i>
-            <span>My Equipment</span>
+        <a href="{{ route('equipment.jobs.index') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.*') ? 'active' : '' }}">
+            <i class="fas fa-briefcase"></i> All Jobs
+        </a>
+        <a href="{{ route('equipment.jobs.requests') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.requests') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-list"></i> Job Requests
+        </a>
+        <a href="{{ route('equipment.jobs.active') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.active') ? 'active' : '' }}">
+            <i class="fas fa-play-circle"></i> Active Jobs
+        </a>
+        <a href="{{ route('equipment.jobs.history') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.history') ? 'active' : '' }}">
+            <i class="fas fa-history"></i> Job History
+        </a>
+        <a href="{{ route('equipment.jobs.earnings') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.earnings') ? 'active' : '' }}">
+            <i class="fas fa-wallet"></i> Earnings
         </a>
         @endif
-        
-        <!-- Property Owner Zone -->
-        @if(Auth::user()->is_property_owner || Auth::user()->role == 'property_owner')
+
+        <!-- PROPERTY OWNER -->
+        @if(Auth::user()->role === 'property_owner')
         <div class="section-header">Property Zone</div>
-        <a href="{{ route('warehouses.create') }}" class="sidebar-link">
-            <i class="fas fa-plus-circle"></i>
-            <span>Register Warehouse</span>
+        <a href="{{ route('warehouses.index') }}" class="sidebar-link {{ request()->routeIs('warehouses.index') ? 'active' : '' }}">
+            <i class="fas fa-warehouse"></i> My Properties
         </a>
-        <a href="{{ route('warehouses.index') }}" class="sidebar-link">
-            <i class="fas fa-warehouse"></i>
-            <span>My Warehouses</span>
+        <a href="{{ route('warehouses.create') }}" class="sidebar-link {{ request()->routeIs('warehouses.create') ? 'active' : '' }}">
+            <i class="fas fa-plus-circle"></i> Register Property
+        </a>
+        <a href="{{ route('property.pending') }}" class="sidebar-link {{ request()->routeIs('property.pending') ? 'active' : '' }}">
+            <i class="fas fa-clock"></i> Pending
+        </a>
+        <a href="{{ route('property.approved') }}" class="sidebar-link {{ request()->routeIs('property.approved') ? 'active' : '' }}">
+            <i class="fas fa-check-circle"></i> Approved
+        </a>
+        <a href="{{ route('property.rejected') }}" class="sidebar-link {{ request()->routeIs('property.rejected') ? 'active' : '' }}">
+            <i class="fas fa-times-circle"></i> Rejected
+        </a>
+        <a href="{{ route('property.requests.index') }}" class="sidebar-link {{ request()->routeIs('property.requests.*') ? 'active' : '' }}">
+            <i class="fas fa-clipboard-list"></i> Requests
+        </a>
+        <a href="{{ route('property.analytics') }}" class="sidebar-link {{ request()->routeIs('property.analytics') ? 'active' : '' }}">
+            <i class="fas fa-chart-bar"></i> Analytics
         </a>
         @endif
-        
-        <!-- Account -->
+
+        <!-- ACCOUNT -->
         <div class="section-header">Account</div>
-        <a href="{{ route('profile.edit') }}" class="sidebar-link">
-            <i class="fas fa-user-circle"></i>
-            <span>My Profile</span>
+        <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <i class="fas fa-user-circle"></i> My Profile
         </a>
-        
-        <!-- Logout -->
-        <form method="POST" action="{{ route('logout') }}" class="mt-4">
+        <a href="{{ route('notifications.index') }}" class="sidebar-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
+            <i class="fas fa-bell"></i> Notifications
+            @php $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count(); @endphp
+            @if($unreadCount > 0) <span class="badge">{{ $unreadCount }}</span> @endif
+        </a>
+        <form method="POST" action="{{ route('logout') }}" class="mt-2">
             @csrf
-            <button type="submit" class="sidebar-link w-full">
-                <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
-            </button>
+            <button type="submit" class="sidebar-link w-full"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
-        
-        @else
-        <!-- Guest Links -->
-        <a href="{{ route('login') }}" class="sidebar-link">
-            <i class="fas fa-sign-in-alt"></i>
-            <span>Login</span>
-        </a>
-        <a href="{{ route('register') }}" class="sidebar-link">
-            <i class="fas fa-user-plus"></i>
-            <span>Register</span>
-        </a>
         @endauth
     </nav>
 </div>
 
-<!-- Main Content -->
+<!-- ============================================================ -->
+<!-- MAIN CONTENT -->
+<!-- ============================================================ -->
 <div class="main-content">
-    <!-- Top Bar -->
     <div class="top-bar">
         <div>
             <h2 class="text-2xl font-semibold text-gray-800">@yield('header', 'Dashboard')</h2>
@@ -380,23 +367,226 @@
             @endauth
         </div>
         <div class="flex items-center space-x-4">
-            <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-orange-500 transition"></i>
-            <span class="text-sm text-gray-600">{{ now()->format('F j, Y') }}</span>
+            <a href="{{ route('notifications.index') }}" class="relative">
+                <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-orange-500 transition"></i>
+                @auth
+                    @php $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count(); @endphp
+                    @if($unreadCount > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {{ $unreadCount }}
+                        </span>
+                    @endif
+                @endauth
+            </a>
+            <span class="text-sm text-gray-600 hidden sm:inline">{{ now()->format('F j, Y') }}</span>
         </div>
     </div>
     
-    <!-- Page Content -->
-    <div class="page-content">
-        @yield('content')
-    </div>
+    @if(session('success')) <div class="alert alert-success mx-4 mt-4">{{ session('success') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
+    @if(session('error')) <div class="alert alert-danger mx-4 mt-4">{{ session('error') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
+    @if(session('warning')) <div class="alert alert-warning mx-4 mt-4">{{ session('warning') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
+    @if(session('info')) <div class="alert alert-info mx-4 mt-4">{{ session('info') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
+    
+    <div class="page-content">@yield('content')</div>
 </div>
 
+<!-- ============================================================ -->
+<!-- SCRIPTS -->
+<!-- ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     function toggleMobileMenu() {
         document.getElementById('sidebar').classList.toggle('mobile-open');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
     }
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) { setTimeout(function() { alert.style.transition = 'opacity 0.5s ease'; alert.style.opacity = '0'; setTimeout(function() { alert.style.display = 'none'; }, 500); }, 5000); });
+        const links = document.querySelectorAll('.sidebar-link');
+        links.forEach(function(link) { link.addEventListener('click', function() { if (window.innerWidth <= 768) { toggleMobileMenu(); } }); });
+    });
 </script>
-
 @stack('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- ============================================================ -->
+<!-- AI TOOLS (CHAT & VOICE) -->
+<!-- ============================================================ -->
+<div id="ai-tools-container" style="position: fixed; bottom: 40px; right: 25px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; pointer-events: none;">
+    <div style="pointer-events: auto;">
+        <!-- CHAT -->
+        <div style="position: relative; margin-bottom: 15px;">
+            <button id="ai-chat-btn" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: none; color: white; transition: all 0.3s ease;">
+                <i id="chat-icon-open" class="fas fa-comment-dots fa-lg"></i>
+                <i id="chat-icon-close" class="fas fa-times fa-lg d-none"></i>
+            </button>
+            <div id="ai-chat-window" class="d-none shadow-lg" style="width: 380px; max-width: 90vw; height: 550px; max-height: 80vh; border-radius: 16px; background: white; position: absolute; bottom: 75px; right: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
+                <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 16px 20px; color: white; display: flex; align-items: center; justify-content: space-between;">
+                    <div class="d-flex align-items-center">
+                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; font-size: 18px;">AI</div>
+                        <div><h6 class="mb-0 fw-bold" style="font-size: 14px;">KTM-WDC Assistant</h6><span style="font-size: 11px; color: #94a3b8;"><span style="display: inline-block; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; margin-right: 6px;"></span> Online</span></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <select id="lang-selector" class="form-select form-select-sm bg-dark text-white border-0" style="width: 95px; font-size: 12px; padding: 2px 8px;">
+                            <option value="English" selected>🇬🇧 English</option>
+                            <option value="Nepali">🇳🇵 Nepali</option>
+                            <option value="Hindi">🇮🇳 Hindi</option>
+                        </select>
+                        <button id="ai-chat-close-btn" class="btn btn-sm btn-link text-white p-0 opacity-75 hover:opacity-100" style="text-decoration: none;"><i class="fas fa-chevron-down"></i></button>
+                    </div>
+                </div>
+                <div id="ai-chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column;">
+                    <div class="mb-3 d-flex align-items-start">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0; font-size: 12px; color: #64748b;">AI</div>
+                        <div style="background: white; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 80%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #334155; font-size: 14px; line-height: 1.5;">Hello! 👋 I'm your KTM-WDC AI assistant.</div>
+                    </div>
+                    <div id="typing-indicator" class="d-none mb-3 d-flex align-items-start">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0; font-size: 12px; color: #64748b;">AI</div>
+                        <div style="background: white; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 60%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 4px;">
+                            <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: dot-typing 1.4s infinite;"></div>
+                            <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: dot-typing 1.4s 0.2s infinite;"></div>
+                            <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: dot-typing 1.4s 0.4s infinite;"></div>
+                        </div>
+                    </div>
+                </div>
+                <div style="padding: 16px; border-top: 1px solid #e2e8f0; background: white;">
+                    <div class="input-group">
+                        <input type="text" id="ai-chat-input" class="form-control" placeholder="Type your question..." style="border: 1px solid #e2e8f0; border-right: none; border-radius: 8px 0 0 8px; padding: 10px 14px; font-size: 14px; outline: none;">
+                        <button id="ai-chat-send" class="btn btn-primary" style="background: #f59e0b; border: 1px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 0 16px;"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- VOICE -->
+        <button id="voice-btn" class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #f59e0b; border: none; transition: all 0.3s ease;"><i class="fas fa-microphone text-white" style="font-size: 22px;"></i></button>
+    </div>
+</div>
+
+<style>@keyframes dot-typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }</style>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const langSelector = document.getElementById('lang-selector');
+    const chatMessages = document.getElementById('ai-chat-messages');
+    const typingInd = document.getElementById('typing-indicator');
+
+    // CHAT
+    const chatBtn = document.getElementById('ai-chat-btn');
+    const chatWindow = document.getElementById('ai-chat-window');
+    const openIcon = document.getElementById('chat-icon-open');
+    const closeIcon = document.getElementById('chat-icon-close');
+    const closeBtn = document.getElementById('ai-chat-close-btn');
+    const chatInput = document.getElementById('ai-chat-input');
+    const chatSend = document.getElementById('ai-chat-send');
+
+    function toggleChat() {
+        const isHidden = chatWindow.classList.contains('d-none');
+        chatWindow.classList.toggle('d-none');
+        openIcon.classList.toggle('d-none');
+        closeIcon.classList.toggle('d-none');
+        if (!isHidden) { chatMessages.scrollTop = chatMessages.scrollHeight; chatInput.focus(); }
+    }
+
+    chatBtn.addEventListener('click', toggleChat);
+    closeBtn.addEventListener('click', toggleChat);
+    chatSend.addEventListener('click', sendChatMessage);
+    chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatMessage(); });
+
+    async function sendChatMessage() {
+        const text = chatInput.value.trim();
+        const language = langSelector.value;
+        if (!text) return;
+
+        chatMessages.appendChild(createBubble(text, 'user'));
+        chatInput.value = '';
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        typingInd.classList.remove('d-none');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+            const response = await fetch('/ai/chat-support', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                body: JSON.stringify({ message: text, language: language })
+            });
+            const data = await response.json();
+            typingInd.classList.add('d-none');
+            if (data.action === 'redirect') {
+                chatMessages.appendChild(createBubble("🔄 " + (data.message || "Opening page..."), 'bot'));
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                window.location.href = data.url;
+                return;
+            }
+            chatMessages.appendChild(createBubble(data.message || "I'm experiencing technical issues.", 'bot'));
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        } catch (e) {
+            typingInd.classList.add('d-none');
+            chatMessages.appendChild(createBubble("Network error.", 'bot'));
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+
+    function createBubble(text, sender) {
+        const div = document.createElement('div');
+        div.className = 'mb-3 d-flex align-items-start';
+        function formatMessage(txt) {
+            if (!txt) return '';
+            let cleanText = txt.replace(/\*\*/g, '').replace(/__/g, '');
+            let lines = cleanText.split('\n').filter(p => p.trim() !== '');
+            let listItems = [], regularText = [];
+            for (let line of lines) {
+                if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) listItems.push(line.trim().substring(2));
+                else regularText.push(line);
+            }
+            let html = '';
+            if (regularText.length > 0) html += regularText.join('<br>');
+            if (listItems.length > 0) {
+                html += '<ul style="padding-left: 20px; margin-top: 5px; margin-bottom: 0;">';
+                for (let item of listItems) html += `<li style="margin-bottom: 4px;">${item}</li>`;
+                html += '</ul>';
+            }
+            return html;
+        }
+        if (sender === 'user') {
+            div.classList.add('flex-row-reverse');
+            div.innerHTML = `<div style="background: #f59e0b; padding: 10px 14px; border-radius: 12px 12px 0 12px; max-width: 80%; color: white; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">${text}</div>`;
+        } else {
+            div.innerHTML = `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0; font-size: 12px; color: #64748b;">AI</div>
+                <div style="background: white; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 80%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #334155; font-size: 14px; line-height: 1.5;">${formatMessage(text)}</div>`;
+        }
+        return div;
+    }
+
+    // VOICE
+    const voiceBtn = document.getElementById('voice-btn');
+    if (!voiceBtn) return;
+    const langCodeMap = { 'English': 'en-US', 'Nepali': 'ne-NP', 'Hindi': 'hi-IN' };
+    function resetBtn(btn) { btn.innerHTML = '<i class="fas fa-microphone text-white" style="font-size: 22px;"></i>'; btn.disabled = false; }
+    voiceBtn.addEventListener('click', function() {
+        const btn = this, language = langSelector.value, langCode = langCodeMap[language] || 'en-US';
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-white" style="font-size: 22px;"></i>'; btn.disabled = true;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) { alert("Voice input is not supported."); resetBtn(btn); return; }
+        const recognition = new SpeechRecognition(); recognition.lang = langCode; recognition.interimResults = false;
+        recognition.onresult = async function(event) {
+            const transcript = event.results[0][0].transcript;
+            try {
+                const response = await fetch('/ai/voice-command', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
+                    body: JSON.stringify({ command: transcript, language: language })
+                });
+                if (!response.ok) { resetBtn(btn); return; }
+                const data = await response.json();
+                if (data.action === 'redirect') window.location.href = data.url;
+                else if (data.action === 'info') alert("🤖 KTM-WDC AI:\n\n" + data.message);
+                else alert("Could not understand command. Please try again.");
+            } catch (error) { console.error(error); alert("Failed to connect to AI engine."); } finally { resetBtn(btn); }
+        };
+        recognition.onerror = function(event) { resetBtn(btn); if (event.error === 'not-allowed') alert("Microphone permission denied."); else if (event.error === 'no-speech') console.log("No speech detected."); else alert("Voice error: " + event.error); };
+        recognition.start();
+    });
+});
+</script>
 </body>
 </html>

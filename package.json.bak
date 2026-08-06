@@ -1,0 +1,8 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "echo 'Skipping dev'",
+        "build": "echo 'Skipping build'"
+    }
+}
