@@ -84,15 +84,14 @@ return [
     |--------------------------------------------------------------------------
     | 🔥 FIXED: Default to null – allows current domain
     */
-    'domain' => env('SESSION_DOMAIN', null),
+   'domain' => '.kwdc.laravel.cloud',
 
     /*
     |--------------------------------------------------------------------------
     | HTTPS Only Cookies
     |--------------------------------------------------------------------------
     */
-    'secure' => env('SESSION_SECURE_COOKIE', false),
-
+'secure' => true,
     /*
     |--------------------------------------------------------------------------
     | HTTP Access Only
