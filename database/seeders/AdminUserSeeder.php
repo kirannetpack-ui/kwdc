@@ -10,19 +10,25 @@ class AdminUserSeeder extends Seeder
 {
     public function run(): void
     {
-        // Check if the admin already exists to avoid duplicates
+        // Create admin user only if it doesn't exist
         if (!User::where('email', 'admin@ktmwdc.com')->exists()) {
             User::create([
                 'name' => 'Admin',
                 'email' => 'admin@ktmwdc.com',
                 'password' => Hash::make('password123'),
-                'role' => 'admin',        // adjust if your role column is different
+                'role' => 'admin',
+                'user_code' => 'ADM-2026-0001',
+                'is_client' => false,
+                'is_driver' => false,
+                'is_equipment_owner' => false,
+                'is_property_owner' => false,
+                'status' => 'active',
                 'email_verified_at' => now(),
             ]);
 
-            $this->command->info('Admin user created successfully!');
+            $this->command->info('✅ Admin user created successfully!');
         } else {
-            $this->command->info('Admin user already exists.');
+            $this->command->info('ℹ️ Admin user already exists.');
         }
     }
 }

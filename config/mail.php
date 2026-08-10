@@ -52,7 +52,7 @@ return [
     
     'from' => [
     'address' => 'kiran.kwdc@gmail.com',
-    'name' => 'KTM-WDC Logistics',
+    'name' => 'KTM-WDC : kKTM - Warehouse & Distribution Center',
 ],
     
     'markdown' => [
