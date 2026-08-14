@@ -27,39 +27,48 @@
 
 <!-- Quick Action Buttons -->
 @php
+    $colorMap = [
+        'blue' => ['bg' => '#eff6ff', 'text' => '#1e40af', 'icon' => '#3b82f6'],
+        'green' => ['bg' => '#f0fdf4', 'text' => '#166534', 'icon' => '#22c55e'],
+        'orange' => ['bg' => '#fffbeb', 'text' => '#92400e', 'icon' => '#f59e0b'],
+        'purple' => ['bg' => '#faf5ff', 'text' => '#6b21a8', 'icon' => '#a855f7'],
+        'cyan' => ['bg' => '#ecf9fd', 'text' => '#164e63', 'icon' => '#06b6d4'],
+        'gray' => ['bg' => '#f3f4f6', 'text' => '#374151', 'icon' => '#6b7280'],
+    ];
+
     $quickActions = [
         'client' => [
-            ['label' => 'New Request', 'icon' => 'fa-plus-circle', 'route' => 'my-requests.create', 'color' => 'blue', 'border' => 'border-blue-500'],
-            ['label' => 'Create Dispatch', 'icon' => 'fa-truck', 'route' => 'dispatch.direct-create', 'color' => 'green', 'border' => 'border-green-500'],
-            ['label' => 'Request Pickup', 'icon' => 'fa-box-open', 'route' => 'pickup.create', 'color' => 'orange', 'border' => 'border-orange-500'],
-            ['label' => 'View Reports', 'icon' => 'fa-chart-bar', 'route' => 'client.reports', 'color' => 'purple', 'border' => 'border-purple-500'],
+            ['label' => 'New Request', 'icon' => 'fa-plus-circle', 'route' => 'my-requests.create', 'color' => 'blue'],
+            ['label' => 'Create Dispatch', 'icon' => 'fa-truck', 'route' => 'dispatch.direct-create', 'color' => 'green'],
+            ['label' => 'Request Pickup', 'icon' => 'fa-box-open', 'route' => 'pickup.create', 'color' => 'orange'],
+            ['label' => 'View Reports', 'icon' => 'fa-chart-bar', 'route' => 'client.reports', 'color' => 'purple'],
         ],
         'admin' => [
-            ['label' => 'Pending Approvals', 'icon' => 'fa-clock', 'route' => 'admin.pending', 'color' => 'orange', 'border' => 'border-orange-500'],
-            ['label' => 'Add Warehouse', 'icon' => 'fa-warehouse', 'route' => 'admin.warehouses.create', 'color' => 'blue', 'border' => 'border-blue-500'],
-            ['label' => 'Manage Users', 'icon' => 'fa-users-cog', 'route' => 'admin.clients', 'color' => 'cyan', 'border' => 'border-cyan-500'],
-            ['label' => 'View Reports', 'icon' => 'fa-chart-pie', 'route' => 'admin.reports', 'color' => 'gray', 'border' => 'border-gray-500'],
+            ['label' => 'Pending Approvals', 'icon' => 'fa-clock', 'route' => 'admin.pending', 'color' => 'orange'],
+            ['label' => 'Add Warehouse', 'icon' => 'fa-warehouse', 'route' => 'admin.warehouses.create', 'color' => 'blue'],
+            ['label' => 'Manage Users', 'icon' => 'fa-users-cog', 'route' => 'admin.clients', 'color' => 'cyan'],
+            ['label' => 'View Reports', 'icon' => 'fa-chart-pie', 'route' => 'admin.reports', 'color' => 'gray'],
         ],
         'driver' => [
-            ['label' => 'Available Jobs', 'icon' => 'fa-search', 'route' => 'driver.available-jobs', 'color' => 'green', 'border' => 'border-green-500'],
-            ['label' => 'My Jobs', 'icon' => 'fa-tasks', 'route' => 'driver.jobs', 'color' => 'blue', 'border' => 'border-blue-500'],
-            ['label' => 'My Earnings', 'icon' => 'fa-wallet', 'route' => 'driver.earnings', 'color' => 'cyan', 'border' => 'border-cyan-500'],
-            ['label' => 'My Vehicles', 'icon' => 'fa-truck', 'route' => 'driver.vehicles.index', 'color' => 'gray', 'border' => 'border-gray-500'],
+            ['label' => 'Available Jobs', 'icon' => 'fa-search', 'route' => 'driver.available-jobs', 'color' => 'green'],
+            ['label' => 'My Jobs', 'icon' => 'fa-tasks', 'route' => 'driver.jobs', 'color' => 'blue'],
+            ['label' => 'My Earnings', 'icon' => 'fa-wallet', 'route' => 'driver.earnings', 'color' => 'cyan'],
+            ['label' => 'My Vehicles', 'icon' => 'fa-truck', 'route' => 'driver.vehicles.index', 'color' => 'gray'],
         ],
         'property_owner' => [
-            ['label' => 'Register Property', 'icon' => 'fa-plus-circle', 'route' => 'warehouses.create', 'color' => 'blue', 'border' => 'border-blue-500'],
-            ['label' => 'My Properties', 'icon' => 'fa-building', 'route' => 'warehouses.index', 'color' => 'green', 'border' => 'border-green-500'],
-            ['label' => 'Requests', 'icon' => 'fa-clipboard-list', 'route' => 'property.requests.index', 'color' => 'orange', 'border' => 'border-orange-500'],
+            ['label' => 'Register Property', 'icon' => 'fa-plus-circle', 'route' => 'warehouses.create', 'color' => 'blue'],
+            ['label' => 'My Properties', 'icon' => 'fa-building', 'route' => 'warehouses.index', 'color' => 'green'],
+            ['label' => 'Requests', 'icon' => 'fa-clipboard-list', 'route' => 'property.requests.index', 'color' => 'orange'],
         ],
         'equipment_owner' => [
-            ['label' => 'Register Equipment', 'icon' => 'fa-plus-circle', 'route' => 'equipment.register', 'color' => 'blue', 'border' => 'border-blue-500'],
-            ['label' => 'My Equipment', 'icon' => 'fa-tools', 'route' => 'equipment.list', 'color' => 'green', 'border' => 'border-green-500'],
-            ['label' => 'Job Requests', 'icon' => 'fa-clipboard-list', 'route' => 'equipment.jobs.requests', 'color' => 'orange', 'border' => 'border-orange-500'],
+            ['label' => 'Register Equipment', 'icon' => 'fa-plus-circle', 'route' => 'equipment.register', 'color' => 'blue'],
+            ['label' => 'My Equipment', 'icon' => 'fa-tools', 'route' => 'equipment.list', 'color' => 'green'],
+            ['label' => 'Job Requests', 'icon' => 'fa-clipboard-list', 'route' => 'equipment.jobs.requests', 'color' => 'orange'],
         ],
         'security_agency' => [
-            ['label' => 'Add Personnel', 'icon' => 'fa-user-plus', 'route' => 'security.personnel.create', 'color' => 'blue', 'border' => 'border-blue-500'],
-            ['label' => 'My Goods', 'icon' => 'fa-boxes', 'route' => 'security.goods.index', 'color' => 'green', 'border' => 'border-green-500'],
-            ['label' => 'Assignments', 'icon' => 'fa-calendar-check', 'route' => 'security.assignments.index', 'color' => 'orange', 'border' => 'border-orange-500'],
+            ['label' => 'Add Personnel', 'icon' => 'fa-user-plus', 'route' => 'security.personnel.create', 'color' => 'blue'],
+            ['label' => 'My Goods', 'icon' => 'fa-boxes', 'route' => 'security.goods.index', 'color' => 'green'],
+            ['label' => 'Assignments', 'icon' => 'fa-calendar-check', 'route' => 'security.assignments.index', 'color' => 'orange'],
         ],
     ];
     $actions = $quickActions[$role] ?? [];
@@ -67,13 +76,16 @@
 
 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
     @foreach($actions as $action)
-    <a href="{{ route($action['route']) }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 {{ $action['border'] }}">
+    @php
+        $colors = $colorMap[$action['color']] ?? $colorMap['blue'];
+    @endphp
+    <a href="{{ route($action['route']) }}" class="rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4" style="background-color: {{ $colors['bg'] }}; border-left-color: {{ $colors['icon'] }};">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-{{ $action['color'] }}-600 font-semibold text-sm">{{ $action['label'] }}</p>
+                <p class="font-semibold text-sm" style="color: {{ $colors['text'] }};">{{ $action['label'] }}</p>
                 <p class="text-gray-500 text-xs">Go to {{ strtolower($action['label']) }}</p>
             </div>
-            <i class="fas {{ $action['icon'] }} text-{{ $action['color'] }}-500 text-2xl"></i>
+            <i class="fas {{ $action['icon'] }} text-2xl" style="color: {{ $colors['icon'] }};"></i>
         </div>
     </a>
     @endforeach
@@ -86,25 +98,39 @@
             'client' => ['active_requests', 'dispatches', 'pending_dispatches', 'completed_dispatches', 'pickups', 'stock_items', 'pending_invoices', 'total_spent'],
             'admin' => ['clients', 'drivers', 'total_dispatches', 'vehicles'],
             'driver' => ['available_jobs', 'active_jobs', 'completed_jobs', 'total_earnings'],
+            'property_owner' => ['my_properties', 'approved_properties', 'pending_properties', 'total_requests'],
+            'equipment_owner' => ['my_equipment', 'available_equipment', 'job_requests', 'active_jobs'],
+            'security_agency' => ['personnel_count', 'goods_count', 'assignments', 'active_assignments'],
         ];
         
         $metricConfig = [
-            'active_requests' => ['label' => 'ACTIVE REQUESTS', 'icon' => 'fa-clipboard-list', 'color' => 'bg-blue-100', 'iconColor' => 'text-blue-500'],
-            'dispatches' => ['label' => 'DISPATCHES', 'icon' => 'fa-truck', 'color' => 'bg-blue-100', 'iconColor' => 'text-blue-500'],
-            'pending_dispatches' => ['label' => 'PENDING DISPATCHES', 'icon' => 'fa-hourglass-half', 'color' => 'bg-orange-100', 'iconColor' => 'text-orange-500'],
-            'completed_dispatches' => ['label' => 'COMPLETED DISPATCHES', 'icon' => 'fa-check-circle', 'color' => 'bg-green-100', 'iconColor' => 'text-green-500'],
-            'pickups' => ['label' => 'PICKUPS', 'icon' => 'fa-box-open', 'color' => 'bg-teal-100', 'iconColor' => 'text-teal-500'],
-            'stock_items' => ['label' => 'STOCK ITEMS', 'icon' => 'fa-cube', 'color' => 'bg-purple-100', 'iconColor' => 'text-purple-500'],
-            'pending_invoices' => ['label' => 'PENDING INVOICES', 'icon' => 'fa-file-invoice', 'color' => 'bg-red-100', 'iconColor' => 'text-red-500'],
-            'total_spent' => ['label' => 'TOTAL SPENT', 'icon' => 'fa-wallet', 'color' => 'bg-pink-100', 'iconColor' => 'text-pink-500'],
-            'clients' => ['label' => 'CLIENTS', 'icon' => 'fa-users', 'color' => 'bg-blue-100', 'iconColor' => 'text-blue-500'],
-            'drivers' => ['label' => 'DRIVERS', 'icon' => 'fa-car', 'color' => 'bg-green-100', 'iconColor' => 'text-green-500'],
-            'total_dispatches' => ['label' => 'TOTAL DISPATCHES', 'icon' => 'fa-truck', 'color' => 'bg-orange-100', 'iconColor' => 'text-orange-500'],
-            'vehicles' => ['label' => 'VEHICLES', 'icon' => 'fa-car', 'color' => 'bg-purple-100', 'iconColor' => 'text-purple-500'],
-            'available_jobs' => ['label' => 'AVAILABLE JOBS', 'icon' => 'fa-search', 'color' => 'bg-blue-100', 'iconColor' => 'text-blue-500'],
-            'active_jobs' => ['label' => 'ACTIVE JOBS', 'icon' => 'fa-play-circle', 'color' => 'bg-cyan-100', 'iconColor' => 'text-cyan-500'],
-            'completed_jobs' => ['label' => 'COMPLETED JOBS', 'icon' => 'fa-check-circle', 'color' => 'bg-green-100', 'iconColor' => 'text-green-500'],
-            'total_earnings' => ['label' => 'TOTAL EARNINGS', 'icon' => 'fa-wallet', 'color' => 'bg-pink-100', 'iconColor' => 'text-pink-500'],
+            'active_requests' => ['label' => 'ACTIVE REQUESTS', 'icon' => 'fa-clipboard-list', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'dispatches' => ['label' => 'DISPATCHES', 'icon' => 'fa-truck', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'pending_dispatches' => ['label' => 'PENDING DISPATCHES', 'icon' => 'fa-hourglass-half', 'bg' => '#fffbeb', 'icon_color' => '#f59e0b'],
+            'completed_dispatches' => ['label' => 'COMPLETED DISPATCHES', 'icon' => 'fa-check-circle', 'bg' => '#f0fdf4', 'icon_color' => '#22c55e'],
+            'pickups' => ['label' => 'PICKUPS', 'icon' => 'fa-box-open', 'bg' => '#ecfdfd', 'icon_color' => '#06b6d4'],
+            'stock_items' => ['label' => 'STOCK ITEMS', 'icon' => 'fa-cube', 'bg' => '#faf5ff', 'icon_color' => '#a855f7'],
+            'pending_invoices' => ['label' => 'PENDING INVOICES', 'icon' => 'fa-file-invoice', 'bg' => '#fef2f2', 'icon_color' => '#ef4444'],
+            'total_spent' => ['label' => 'TOTAL SPENT', 'icon' => 'fa-wallet', 'bg' => '#fdf2f8', 'icon_color' => '#ec4899'],
+            'clients' => ['label' => 'CLIENTS', 'icon' => 'fa-users', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'drivers' => ['label' => 'DRIVERS', 'icon' => 'fa-car', 'bg' => '#f0fdf4', 'icon_color' => '#22c55e'],
+            'total_dispatches' => ['label' => 'TOTAL DISPATCHES', 'icon' => 'fa-truck', 'bg' => '#fffbeb', 'icon_color' => '#f59e0b'],
+            'vehicles' => ['label' => 'VEHICLES', 'icon' => 'fa-car', 'bg' => '#faf5ff', 'icon_color' => '#a855f7'],
+            'available_jobs' => ['label' => 'AVAILABLE JOBS', 'icon' => 'fa-search', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'active_jobs' => ['label' => 'ACTIVE JOBS', 'icon' => 'fa-play-circle', 'bg' => '#ecfdfd', 'icon_color' => '#06b6d4'],
+            'completed_jobs' => ['label' => 'COMPLETED JOBS', 'icon' => 'fa-check-circle', 'bg' => '#f0fdf4', 'icon_color' => '#22c55e'],
+            'total_earnings' => ['label' => 'TOTAL EARNINGS', 'icon' => 'fa-wallet', 'bg' => '#fdf2f8', 'icon_color' => '#ec4899'],
+            'my_properties' => ['label' => 'MY PROPERTIES', 'icon' => 'fa-building', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'approved_properties' => ['label' => 'APPROVED PROPERTIES', 'icon' => 'fa-check-circle', 'bg' => '#f0fdf4', 'icon_color' => '#22c55e'],
+            'pending_properties' => ['label' => 'PENDING PROPERTIES', 'icon' => 'fa-clock', 'bg' => '#fffbeb', 'icon_color' => '#f59e0b'],
+            'total_requests' => ['label' => 'TOTAL REQUESTS', 'icon' => 'fa-clipboard-list', 'bg' => '#ecfdfd', 'icon_color' => '#06b6d4'],
+            'my_equipment' => ['label' => 'MY EQUIPMENT', 'icon' => 'fa-tools', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'available_equipment' => ['label' => 'AVAILABLE EQUIPMENT', 'icon' => 'fa-check-circle', 'bg' => '#f0fdf4', 'icon_color' => '#22c55e'],
+            'job_requests' => ['label' => 'JOB REQUESTS', 'icon' => 'fa-clipboard-list', 'bg' => '#fffbeb', 'icon_color' => '#f59e0b'],
+            'personnel_count' => ['label' => 'PERSONNEL', 'icon' => 'fa-users', 'bg' => '#eff6ff', 'icon_color' => '#3b82f6'],
+            'goods_count' => ['label' => 'GOODS', 'icon' => 'fa-boxes', 'bg' => '#ecfdfd', 'icon_color' => '#06b6d4'],
+            'assignments' => ['label' => 'ASSIGNMENTS', 'icon' => 'fa-calendar-check', 'bg' => '#fffbeb', 'icon_color' => '#f59e0b'],
+            'active_assignments' => ['label' => 'ACTIVE ASSIGNMENTS', 'icon' => 'fa-shield-alt', 'bg' => '#f0fdf4', 'icon_color' => '#22c55e'],
         ];
 
         $order = $metricOrder[$role] ?? array_keys($stats);
@@ -114,7 +140,7 @@
     @foreach($metricsToDisplay as $key)
         @if(isset($stats[$key]) && (is_numeric($stats[$key]) || is_bool($stats[$key])))
             @php
-                $config = $metricConfig[$key] ?? ['label' => ucwords(str_replace('_', ' ', $key)), 'icon' => 'fa-circle', 'color' => 'bg-gray-100', 'iconColor' => 'text-gray-500'];
+                $config = $metricConfig[$key] ?? ['label' => ucwords(str_replace('_', ' ', $key)), 'icon' => 'fa-circle', 'bg' => '#f3f4f6', 'icon_color' => '#6b7280'];
             @endphp
             <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition">
                 <div class="flex items-start justify-between mb-4">
@@ -122,8 +148,8 @@
                         <p class="text-gray-500 text-xs uppercase tracking-wide font-semibold">{{ $config['label'] }}</p>
                         <p class="text-4xl font-bold text-gray-800 mt-2">{{ is_bool($stats[$key]) ? ($stats[$key] ? 'Yes' : 'No') : number_format($stats[$key]) }}</p>
                     </div>
-                    <div class="{{ $config['color'] }} p-3 rounded-lg">
-                        <i class="fas {{ $config['icon'] }} text-2xl {{ $config['iconColor'] }}"></i>
+                    <div class="p-3 rounded-lg" style="background-color: {{ $config['bg'] }};">
+                        <i class="fas {{ $config['icon'] }} text-2xl" style="color: {{ $config['icon_color'] }};"></i>
                     </div>
                 </div>
             </div>
@@ -140,7 +166,7 @@
     @foreach($metricsToDisplay as $key)
         @if(isset($stats[$key]) && (is_numeric($stats[$key]) || is_bool($stats[$key])))
             @php
-                $config = $metricConfig[$key] ?? ['label' => ucwords(str_replace('_', ' ', $key)), 'icon' => 'fa-circle', 'color' => 'bg-gray-100', 'iconColor' => 'text-gray-500'];
+                $config = $metricConfig[$key] ?? ['label' => ucwords(str_replace('_', ' ', $key)), 'icon' => 'fa-circle', 'bg' => '#f3f4f6', 'icon_color' => '#6b7280'];
             @endphp
             <div class="bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition">
                 <div class="flex items-start justify-between mb-4">
@@ -148,8 +174,8 @@
                         <p class="text-gray-500 text-xs uppercase tracking-wide font-semibold">{{ $config['label'] }}</p>
                         <p class="text-4xl font-bold text-gray-800 mt-2">{{ is_bool($stats[$key]) ? ($stats[$key] ? 'Yes' : 'No') : number_format($stats[$key]) }}</p>
                     </div>
-                    <div class="{{ $config['color'] }} p-3 rounded-lg">
-                        <i class="fas {{ $config['icon'] }} text-2xl {{ $config['iconColor'] }}"></i>
+                    <div class="p-3 rounded-lg" style="background-color: {{ $config['bg'] }};">
+                        <i class="fas {{ $config['icon'] }} text-2xl" style="color: {{ $config['icon_color'] }};"></i>
                     </div>
                 </div>
             </div>

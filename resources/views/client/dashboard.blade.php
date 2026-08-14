@@ -31,7 +31,7 @@
         </div>
     </a>
 
-    <a href="{{ route('dispatch.create') }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 border-green-500">
+    <a href="{{ route('dispatch.direct-create') }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 border-green-500">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-green-600 font-semibold text-sm">Create Dispatch</p>
@@ -41,7 +41,7 @@
         </div>
     </a>
 
-    <a href="{{ route('pickup-request.create') }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 border-orange-500">
+    <a href="{{ route('pickup.create') }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 border-orange-500">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-orange-600 font-semibold text-sm">Request Pickup</p>
@@ -51,7 +51,7 @@
         </div>
     </a>
 
-    <a href="{{ route('reports.index') }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 border-purple-500">
+    <a href="{{ route('client.reports') }}" class="bg-white rounded-lg p-4 shadow-sm hover:shadow-md transition border-l-4 border-purple-500">
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-purple-600 font-semibold text-sm">View Reports</p>
