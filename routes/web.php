@@ -35,6 +35,14 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AIController;
 use App\Http\Controllers\PdfController;
+use App\Http\Controllers\AiVoiceController;
+use App\Http\Controllers\Admin\SecurityAgencyController;
+use App\Http\Controllers\SecurityPersonnelController;
+use App\Http\Controllers\SecurityIncidentController;
+use App\Http\Controllers\LoaderAssignmentController;
+use App\Http\Controllers\SecurityAssignmentController;
+use App\Http\Controllers\SecurityGoodController;          // Agency’s own controller
+use App\Http\Controllers\SecurityDashboardController;
 
 // ================================================================
 // 1. TEST & DEBUG ROUTES (Remove in production)
@@ -67,7 +75,12 @@ Route::get('/clear-cache', function () {
 // ================================================================
 // 2. PUBLIC ROUTES
 // ================================================================
-Route::get('/', fn() => redirect()->route('dashboard'))->name('home');
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('landing');
 Route::get('/ping', fn() => 'pong');
 Route::get('/simple-create', fn() => view('warehouses.simple-create'))->name('simple.create');
 Route::get('/test-pickup', fn() => 'Pickup test is working!')->name('test.pickup');
@@ -88,27 +101,97 @@ Route::get('/test-invoice', function () {
     return "Failed to generate invoice";
 })->middleware('auth')->name('test.invoice');
 Route::get('/invoice/verify/{invoiceNumber}', [InvoiceController::class, 'verify'])->name('invoice.verify');
+Route::get('/test-maps', function () {
+    $service = new \App\Services\GoogleMapsService();
+    $result = $service->getTrafficDuration(27.7172, 85.3240, 27.7000, 85.3200);
+    dd($result);
+});
+Route::get('/test-email', function () {
+    try {
+        Mail::raw('This is a test email from KTM-WDC system.', function($message) {
+            $message->to('kiran.kwdc@gmail.com')
+                    ->subject('[TEST] KTM-WDC Email Test');
+        });
+        return "✅ Test email sent successfully to kiran.kwdc@gmail.com!";
+    } catch (\Exception $e) {
+        return "❌ Email failed: " . $e->getMessage();
+    }
+});
 
 // ================================================================
-// 3. AUTHENTICATION ROUTES
+// 3. AUTHENTICATION ROUTES (All-in-one – no duplicates!)
 // ================================================================
 Auth::routes();
+
+// Custom login/register overrides (if you need custom logic)
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
-Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+// Home & Dashboard – only ONE should have name 'dashboard'
+Route::get('/home', [HomeController::class, 'index'])->name('home');  // renamed to 'home'
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');  // main dashboard
+
+// Password Reset Routes (explicit, but Auth::routes() already provides them)
+Route::get('/password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
+Route::post('/password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
+Route::get('/password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 
 // ================================================================
 // 4. PROTECTED ROUTES (Authentication required)
 // ================================================================
 Route::middleware(['auth'])->group(function () {
 
-    // -------------------- DASHBOARD --------------------
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // ==================== VOICE ASSISTANT ====================
+    Route::post('/ai/voice-assistant', [AiVoiceController::class, 'voiceAssistant'])->name('ai.voice.assistant');
 
-    // -------------------- PROFILE --------------------
+    // ==================== SECURITY AGENCY DASHBOARD (Agency’s own) ====================
+    Route::get('/security/dashboard', [SecurityDashboardController::class, 'index'])->name('security.dashboard');
+
+    // Security agency profile and compliance details
+    Route::get('/security/profile', [\App\Http\Controllers\SecurityAgencyProfileController::class, 'edit'])->name('security.profile');
+    Route::post('/security/profile', [\App\Http\Controllers\SecurityAgencyProfileController::class, 'update'])->name('security.profile.update');
+
+    // Agency’s own Personnel
+    Route::resource('security/personnel', SecurityPersonnelController::class)
+        ->names([
+            'index'   => 'security.personnel.index',
+            'create'  => 'security.personnel.create',
+            'store'   => 'security.personnel.store',
+            'show'    => 'security.personnel.show',
+            'edit'    => 'security.personnel.edit',
+            'update'  => 'security.personnel.update',
+            'destroy' => 'security.personnel.destroy',
+        ]);
+
+    // Agency’s own Goods
+    Route::resource('security/goods', SecurityGoodController::class)
+        ->names([
+            'index'   => 'security.goods.index',
+            'create'  => 'security.goods.create',
+            'store'   => 'security.goods.store',
+            'show'    => 'security.goods.show',
+            'edit'    => 'security.goods.edit',
+            'update'  => 'security.goods.update',
+            'destroy' => 'security.goods.destroy',
+        ]);
+
+    // Agency’s own Assignments
+    Route::resource('security/assignments', SecurityAssignmentController::class)
+        ->names([
+            'index'   => 'security.assignments.index',
+            'create'  => 'security.assignments.create',
+            'store'   => 'security.assignments.store',
+            'show'    => 'security.assignments.show',
+            'edit'    => 'security.assignments.edit',
+            'update'  => 'security.assignments.update',
+            'destroy' => 'security.assignments.destroy',
+        ]);
+
+    // ==================== PROFILE ====================
     Route::prefix('profile')->name('profile.')->group(function () {
         Route::get('/', [ProfileController::class, 'edit'])->name('edit');
         Route::patch('/', [ProfileController::class, 'update'])->name('update');
@@ -118,7 +201,7 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/contacts/{id}', [ProfileController::class, 'destroyContact'])->name('contacts.destroy');
     });
 
-    // -------------------- NOTIFICATIONS --------------------
+    // ==================== NOTIFICATIONS ====================
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::post('/{id}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
@@ -127,9 +210,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('unread-count');
     });
 
-    // -------------------- TRACKING --------------------
+    // ==================== TRACKING ====================
     Route::prefix('tracking')->name('tracking.')->group(function () {
-        Route::get('/', [TrackingController::class, 'index'])->name('index');          // Unified tracking dashboard
+        Route::get('/', [TrackingController::class, 'index'])->name('index');
         Route::get('/incoming', [TrackingController::class, 'incoming'])->name('incoming');
         Route::get('/outgoing', [TrackingController::class, 'outgoing'])->name('outgoing');
         Route::get('/pickups', [TrackingController::class, 'pickups'])->name('pickups');
@@ -138,13 +221,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/status/{id}', [TrackingController::class, 'updateStatus'])->name('status');
     });
 
-    // -------------------- WAREHOUSE (Owner / Client) --------------------
+    // ==================== WAREHOUSE (Owner / Client) ====================
     Route::resource('warehouses', WarehouseController::class);
     Route::post('/save-preferred-location', [ClientRequestHandler::class, 'savePreferredLocation'])->name('save-preferred-location');
     Route::post('/warehouses/verify-kataho', [WarehouseController::class, 'verifyKataho'])->name('warehouses.verify-kataho');
     Route::post('/warehouses/get-kataho-from-coords', [WarehouseController::class, 'getKatahoFromCoords'])->name('warehouses.get-kataho-from-coords');
 
-    // -------------------- CLIENT WAREHOUSE REQUESTS --------------------
+    // ==================== CLIENT WAREHOUSE REQUESTS ====================
     Route::prefix('my-requests')->name('my-requests.')->group(function () {
         Route::get('/', [ClientRequestHandler::class, 'index'])->name('index');
         Route::get('/create', [ClientRequestHandler::class, 'create'])->name('create');
@@ -152,7 +235,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}', [ClientRequestHandler::class, 'show'])->name('show');
     });
 
-    // -------------------- STOCK --------------------
+    // ==================== STOCK ====================
     Route::prefix('stock')->name('stock.')->group(function () {
         Route::get('/', [StockController::class, 'index'])->name('index');
         Route::get('/create', [StockController::class, 'create'])->name('create');
@@ -163,7 +246,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/document/{type}', [StockController::class, 'downloadDocument'])->name('download-document');
     });
 
-    // -------------------- BOXES (QR) --------------------
+    // ==================== BOXES (QR) ====================
     Route::prefix('boxes')->name('boxes.')->group(function () {
         Route::get('/', [BoxController::class, 'index'])->name('index');
         Route::get('/create', [BoxController::class, 'create'])->name('create');
@@ -174,7 +257,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}/documents', [BoxController::class, 'getDocuments'])->name('documents');
     });
 
-    // -------------------- DISPATCH --------------------
+    // ==================== DISPATCH ====================
     Route::prefix('dispatch')->name('dispatch.')->group(function () {
         Route::get('/', [DispatchController::class, 'index'])->name('index');
         Route::get('/direct-create', [DispatchController::class, 'directCreate'])->name('direct-create');
@@ -190,7 +273,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/stop/{id}/status', [DispatchController::class, 'updateStopStatus'])->name('stop-status');
     });
 
-    // -------------------- PICKUP --------------------
+    // ==================== PICKUP ====================
     Route::prefix('pickup')->name('pickup.')->group(function () {
         Route::get('/', [PickupRequestController::class, 'index'])->name('index');
         Route::get('/create', [PickupRequestController::class, 'create'])->name('create');
@@ -200,7 +283,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{id}', [PickupRequestController::class, 'show'])->name('show');
     });
 
-    // -------------------- INVOICES --------------------
+    // ==================== INVOICES ====================
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('index');
         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
@@ -208,7 +291,7 @@ Route::middleware(['auth'])->group(function () {
     });
     Route::get('/client/invoices', [InvoiceController::class, 'clientIndex'])->name('invoices.client-index');
 
-    // -------------------- CLIENT ZONE --------------------
+    // ==================== CLIENT ZONE ====================
     Route::prefix('client')->name('client.')->group(function () {
         Route::get('/driver-rates', [ClientController::class, 'driverRates'])->name('driver.rates');
         Route::get('/reports', [ClientController::class, 'reports'])->name('reports');
@@ -240,7 +323,7 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // -------------------- DRIVER ZONE --------------------
+    // ==================== DRIVER ZONE ====================
     Route::prefix('driver')->name('driver.')->group(function () {
         Route::get('/dashboard', [DriverController::class, 'dashboard'])->name('dashboard');
         Route::get('/jobs', [DriverController::class, 'jobs'])->name('jobs');
@@ -275,7 +358,7 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // -------------------- EQUIPMENT OWNER ZONE --------------------
+    // ==================== EQUIPMENT OWNER ZONE ====================
     Route::prefix('equipment')->name('equipment.')->group(function () {
         Route::get('/dashboard', [EquipmentController::class, 'dashboard'])->name('dashboard');
         Route::get('/register', [EquipmentController::class, 'create'])->name('register');
@@ -303,7 +386,7 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // -------------------- EQUIPMENT REQUESTS (Client side) --------------------
+    // ==================== EQUIPMENT REQUESTS (Client side) ====================
     Route::prefix('equipment-requests')->name('equipment-requests.')->group(function () {
         Route::get('/', [EquipmentRequestController::class, 'index'])->name('index');
         Route::get('/create', [EquipmentRequestController::class, 'create'])->name('create');
@@ -317,7 +400,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/return', [EquipmentRequestController::class, 'return'])->name('return');
     });
 
-    // -------------------- PROPERTY OWNER ZONE --------------------
+    // ==================== PROPERTY OWNER ZONE ====================
     Route::prefix('property')->name('property.')->group(function () {
         Route::get('/pending', [PropertyOwnerController::class, 'pending'])->name('pending');
         Route::get('/approved', [PropertyOwnerController::class, 'approved'])->name('approved');
@@ -336,7 +419,7 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 
-    // -------------------- PAYMENT --------------------
+    // ==================== PAYMENT ====================
     Route::prefix('payment')->name('payment.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
         Route::post('/khalti/init', [PaymentController::class, 'khaltiInit'])->name('khalti.init');
@@ -349,7 +432,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/history', [PaymentController::class, 'history'])->name('history');
     });
 
-    // -------------------- AI ROUTES --------------------
+    // ==================== AI ROUTES ====================
     Route::post('/ai/voice-command', [AIController::class, 'handleVoice'])->name('ai.voice.command');
     Route::post('/ai/chat-support', [AIController::class, 'chatSupport'])->name('ai.chat');
     Route::post('/dispatch/calculate-price', [DispatchController::class, 'calculatePriceAjax'])->name('dispatch.calculate-price');
@@ -357,17 +440,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/pickup/recommend-drivers', [PickupRequestController::class, 'getDriverRecommendations'])->name('pickup.recommend-drivers');
     Route::post('/equipment-requests/recommend', [EquipmentRequestController::class, 'recommendEquipment'])->name('equipment-requests.recommend');
 
-    // -------------------- WAREHOUSE SEARCH --------------------
+    // ==================== WAREHOUSE SEARCH ====================
     Route::get('/warehouses/search', [WarehouseController::class, 'search'])->name('warehouses.search');
 
-    // -------------------- PDF GENERATION --------------------
+    // ==================== PDF GENERATION ====================
     Route::prefix('pdf')->name('pdf.')->group(function () {
         Route::get('/warehouse/{id}', [PdfController::class, 'downloadWarehouse'])->name('warehouse');
         Route::get('/dispatch/{id}', [PdfController::class, 'downloadDispatch'])->name('dispatch');
         Route::get('/invoice/{id}', [PdfController::class, 'downloadInvoice'])->name('invoice');
     });
 
-    // -------------------- ADMIN ROUTES (Admin middleware) --------------------
+    // ==================== ADMIN ROUTES (Admin middleware) ====================
     Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function () {
         // Warehouse Management
         Route::get('/pending', [AdminController::class, 'pending'])->name('pending');
@@ -388,7 +471,7 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/warehouses/{id}', [AdminController::class, 'updateWarehouse'])->name('warehouses.update');
         Route::delete('/warehouses/{id}', [AdminController::class, 'destroyWarehouse'])->name('warehouses.destroy');
 
-        // Sidebar aliases
+        // Sidebar aliases (avoid duplication with resource route)
         Route::get('/warehouses/pending', [AdminController::class, 'pending'])->name('warehouses.pending');
         Route::get('/warehouses/all', [AdminController::class, 'allWarehouses'])->name('warehouses.all');
         Route::get('/warehouses', [AdminController::class, 'allWarehouses'])->name('warehouses.index');
@@ -463,7 +546,35 @@ Route::middleware(['auth'])->group(function () {
 
         // Predictive Analytics
         Route::get('/analytics/predictive', [AdminController::class, 'predictiveAnalytics'])->name('analytics.predictive');
+
+        // ==================== SECURITY AGENCIES (Admin management) ====================
+        Route::prefix('security')->name('security.')->group(function () {
+            Route::get('/agencies', [SecurityAgencyController::class, 'index'])->name('agencies');
+            Route::get('/agencies/{agency}', [SecurityAgencyController::class, 'show'])->name('agency.show');
+            Route::post('/agencies/{agency}/approve', [SecurityAgencyController::class, 'approve'])->name('agency.approve');
+            Route::post('/agencies/{agency}/reject', [SecurityAgencyController::class, 'reject'])->name('agency.reject');
+            Route::get('/agencies/{agency}/export', [SecurityAgencyController::class, 'export'])->name('agency.export');
+
+            // Admin can also view personnel/goods/incidents of any agency (optional)
+            Route::get('/agencies/{agency}/personnel', [SecurityPersonnelController::class, 'index'])->name('agency.personnel');
+            Route::get('/agencies/{agency}/goods', [SecurityGoodController::class, 'index'])->name('agency.goods');
+            Route::get('/agencies/{agency}/incidents', [SecurityIncidentController::class, 'index'])->name('agency.incidents');
+        });
     });
+
+// Incidents
+Route::resource('security/incidents', SecurityIncidentController::class)
+    ->names([
+        'index'   => 'security.incidents.index',
+        'create'  => 'security.incidents.create',
+        'store'   => 'security.incidents.store',
+        'show'    => 'security.incidents.show',
+        'edit'    => 'security.incidents.edit',
+        'update'  => 'security.incidents.update',
+        'destroy' => 'security.incidents.destroy',
+    ]);
+
+    // ==================== END OF AUTH GROUP ====================
 });
 
 // ================================================================
@@ -475,28 +586,8 @@ Route::prefix('reports')->middleware(['auth', 'admin'])->name('reports.')->group
 });
 
 // ================================================================
-// 6. TEST EMAIL & FALLBACK
+// 6. FALLBACK
 // ================================================================
-Route::get('/test-email', function () {
-    try {
-        Mail::raw('This is a test email from KTM-WDC system.', function($message) {
-            $message->to('kiran.kwdc@gmail.com')
-                    ->subject('[TEST] KTM-WDC Email Test');
-        });
-        return "✅ Test email sent successfully to kiran.kwdc@gmail.com!";
-    } catch (\Exception $e) {
-        return "❌ Email failed: " . $e->getMessage();
-    }
-});
-
-
-Route::get('/test-maps', function () {
-    $service = new \App\Services\GoogleMapsService();
-    $result = $service->getTrafficDuration(27.7172, 85.3240, 27.7000, 85.3200);
-    dd($result);
-});
-
-
 Route::fallback(function () {
     return view('errors.404');
 });

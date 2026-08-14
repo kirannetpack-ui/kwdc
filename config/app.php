@@ -155,6 +155,9 @@ return [
 'csrf' => [
     'trusted_origins' => ['https://kwdc.laravel.cloud'],
 ],
+
+'admin_email' => env('ADMIN_EMAIL', 'admin@ktmwdc.com'),
+
     'providers' => [
 
         /*

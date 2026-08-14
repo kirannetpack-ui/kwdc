@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Schema;
+use App\Services\EnhancedAIService;
+use App\Services\SmartAIService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,6 +23,13 @@ class AppServiceProvider extends ServiceProvider
 
     public function register()
     {
-        //
+        // Register AI services with dependency injection
+        $this->app->singleton(EnhancedAIService::class, function ($app) {
+            return new EnhancedAIService();
+        });
+
+        $this->app->singleton(SmartAIService::class, function ($app) {
+            return new SmartAIService($app->make(EnhancedAIService::class));
+        });
     }
 }

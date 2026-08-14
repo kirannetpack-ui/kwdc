@@ -36,6 +36,11 @@
         border-radius: 15px;
         text-align: center;
     }
+    .error-text {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
 </style>
 
 <!-- Leaflet Map CSS & JS -->
@@ -53,8 +58,23 @@
         </a>
     </div>
 
+    {{-- Validation Errors --}}
+    @if($errors->any())
+    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+        <ul class="list-disc list-inside">
+            @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
+
     <form id="dispatchForm" method="POST" action="{{ route('dispatch.store') }}">
         @csrf
+        
+        {{-- Hidden fields for price and distance --}}
+        <input type="hidden" name="total_price" id="total_price" value="0">
+        <input type="hidden" name="total_distance" id="total_distance" value="0">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Form - 2 columns -->
@@ -71,7 +91,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pickup Address <span class="text-red-500">*</span></label>
                             <input type="text" name="pickup_address" id="pickup_address" required
                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                   placeholder="Enter pickup address">
+                                   placeholder="Enter pickup address" value="{{ old('pickup_address') }}">
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
@@ -79,13 +99,13 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
                                 <input type="text" name="pickup_contact_person" id="pickup_contact_person"
                                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                       placeholder="Contact person name">
+                                       placeholder="Contact person name" value="{{ old('pickup_contact_person') }}">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
                                 <input type="tel" name="pickup_contact_phone" id="pickup_contact_phone"
                                        class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                       placeholder="Contact phone number">
+                                       placeholder="Contact phone number" value="{{ old('pickup_contact_phone') }}">
                             </div>
                         </div>
                         
@@ -206,7 +226,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">PAN Number (if applicable)</label>
-                            <input type="text" name="pan_number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Enter PAN number">
+                            <input type="text" name="pan_number" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Enter PAN number" value="{{ old('pan_number') }}">
                         </div>
                     </div>
                 </div>
@@ -214,6 +234,21 @@
 
             <!-- Sidebar - 1 column -->
             <div class="space-y-6">
+                <!-- Vehicle Type (NEW) -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center">
+                        <i class="fas fa-truck text-blue-500 mr-2"></i>
+                        Vehicle Type
+                    </h3>
+                    <select name="vehicle_type" id="vehicle_type" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
+                        <option value="Standard">Standard</option>
+                        <option value="Heavy">Heavy</option>
+                        <option value="Refrigerated">Refrigerated</option>
+                        <option value="Two-Wheeler">Two-Wheeler</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">Select the vehicle type for AI recommendations and pricing.</p>
+                </div>
+
                 <!-- Drivers Section -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -565,18 +600,13 @@ async function calculateDistance() {
             document.getElementById('margin_display').innerText = 'Admin Margin (' + data.margin_applied + ' - AI Analyzed)';
             document.getElementById('total_price_display').innerText = 'रू ' + data.final_price;
 
+            // Update hidden fields
+            document.getElementById('total_price').value = parseFloat(data.final_price.replace(/,/g, ''));
+            document.getElementById('total_distance').value = data.total_distance;
+
             const tooltip = document.getElementById('ai-insight-tooltip');
             tooltip.classList.remove('hidden');
             tooltip.innerText = '🤖 ' + data.explanation;
-
-            let totalPriceInput = document.querySelector('input[name="total_price"]');
-            if (!totalPriceInput) {
-                totalPriceInput = document.createElement('input');
-                totalPriceInput.type = 'hidden';
-                totalPriceInput.name = 'total_price';
-                document.getElementById('dispatchForm').appendChild(totalPriceInput);
-            }
-            totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
         } else {
             alert(data.errors || 'Price calculation failed');
         }
@@ -595,27 +625,12 @@ function updatePriceSummary(data = null) {
         document.getElementById('base_price_display').innerHTML = 'रू ' + data.base_price;
         document.getElementById('margin_display').innerHTML = 'रू ' + data.margin_amount;
         document.getElementById('total_price_display').innerHTML = 'रू ' + data.final_price;
-        
-        let totalPriceInput = document.querySelector('input[name="total_price"]');
-        if (!totalPriceInput) {
-            totalPriceInput = document.createElement('input');
-            totalPriceInput.type = 'hidden';
-            totalPriceInput.name = 'total_price';
-            document.getElementById('dispatchForm').appendChild(totalPriceInput);
-        }
-        totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
-        
-        let totalDistanceInput = document.querySelector('input[name="total_distance"]');
-        if (!totalDistanceInput) {
-            totalDistanceInput = document.createElement('input');
-            totalDistanceInput.type = 'hidden';
-            totalDistanceInput.name = 'total_distance';
-            document.getElementById('dispatchForm').appendChild(totalDistanceInput);
-        }
-        totalDistanceInput.value = data.total_distance;
+        document.getElementById('total_price').value = parseFloat(data.final_price.replace(/,/g, ''));
+        document.getElementById('total_distance').value = data.total_distance;
     } else if (selectedDriversPrice) {
         const totalPrice = selectedDriversPrice;
         document.getElementById('total_price_display').innerHTML = 'रू ' + totalPrice.toFixed(2);
+        document.getElementById('total_price').value = totalPrice;
     }
 }
 

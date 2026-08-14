@@ -313,6 +313,35 @@
         @endif
 
         <!-- ============================================================ -->
+        <!-- SECURITY AGENCY SECTION -->
+        <!-- ============================================================ -->
+        @if(in_array($role, ['security_agency', 'admin']))
+        <div class="nav-section">
+            <div class="nav-header">SECURITY</div>
+
+            <a href="{{ route('security.dashboard') }}" class="nav-link {{ request()->routeIs('security.dashboard') ? 'active' : '' }}">
+                <i class="fas fa-shield-alt"></i>
+                <span>Security Dashboard</span>
+            </a>
+
+            <a href="{{ route('security.personnel.index') }}" class="nav-link {{ request()->routeIs('security.personnel.*') ? 'active' : '' }}">
+                <i class="fas fa-user-plus"></i>
+                <span>Add Personnel</span>
+            </a>
+
+            <a href="{{ route('security.goods.index') }}" class="nav-link {{ request()->routeIs('security.goods.*') ? 'active' : '' }}">
+                <i class="fas fa-boxes"></i>
+                <span>My Goods</span>
+            </a>
+
+            <a href="{{ route('security.assignments.index') }}" class="nav-link {{ request()->routeIs('security.assignments.*') ? 'active' : '' }}">
+                <i class="fas fa-calendar-check"></i>
+                <span>Assignments</span>
+            </a>
+        </div>
+        @endif
+
+        <!-- ============================================================ -->
         <!-- ADMIN SECTION -->
         <!-- ============================================================ -->
         @if($role === 'admin')
@@ -335,6 +364,11 @@
             <a href="{{ route('admin.requests') }}" class="nav-link {{ request()->routeIs('admin.requests') ? 'active' : '' }}">
                 <i class="fas fa-clipboard-list"></i>
                 <span>Client Requests</span>
+            </a>
+
+            <a href="{{ route('admin.security.agencies') }}" class="nav-link {{ request()->routeIs('admin.security.*') ? 'active' : '' }}">
+                <i class="fas fa-shield-alt"></i>
+                <span>Security Agencies</span>
             </a>
 
             <a href="{{ route('admin.clients') }}" class="nav-link {{ request()->routeIs('admin.clients') ? 'active' : '' }}">
@@ -449,11 +483,18 @@
         <!-- ============================================================ -->
         <div class="nav-section">
             <div class="nav-header">ACCOUNT</div>
-            
-            <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
-                <i class="fas fa-user-circle"></i>
-                <span>My Profile</span>
-            </a>
+
+            @if(auth()->user()->role === 'security_agency')
+                <a href="{{ route('security.profile') }}" class="nav-link {{ request()->routeIs('security.profile*') ? 'active' : '' }}">
+                    <i class="fas fa-id-card"></i>
+                    <span>Agency Profile</span>
+                </a>
+            @else
+                <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.edit') ? 'active' : '' }}">
+                    <i class="fas fa-user-circle"></i>
+                    <span>My Profile</span>
+                </a>
+            @endif
 
             <a href="{{ route('profile.contacts') }}" class="nav-link {{ request()->routeIs('profile.contacts') ? 'active' : '' }}">
                 <i class="fas fa-address-book"></i>

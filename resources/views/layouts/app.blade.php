@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user-id" content="{{ auth()->check() ? auth()->id() : '' }}">
     <title>KTM-WDC - @yield('title', 'Warehouse & Distribution Connect')</title>
     
     <!-- Bootstrap CSS -->
@@ -104,6 +105,51 @@
         .alert-danger { background: #fee2e2; color: #991b1b; }
         .alert-warning { background: #fef3c7; color: #92400e; }
         .alert-info { background: #dbeafe; color: #1e40af; }
+
+        /* ===== NOTIFICATION DROPDOWN ===== */
+        .notification-dropdown {
+            width: 380px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 0;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+        .notification-dropdown .dropdown-header {
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        .notification-dropdown .dropdown-item {
+            padding: 12px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            white-space: normal;
+            line-height: 1.4;
+        }
+        .notification-dropdown .dropdown-item:hover {
+            background: #f1f5f9;
+        }
+        .notification-dropdown .dropdown-item .notification-title {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .notification-dropdown .dropdown-item .notification-text {
+            font-size: 13px;
+            color: #64748b;
+            margin: 2px 0;
+        }
+        .notification-dropdown .dropdown-item .notification-time {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .notification-dropdown .dropdown-footer {
+            padding: 10px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
     </style>
     @stack('styles')
 </head>
@@ -167,18 +213,21 @@
         <a href="{{ route('admin.requests') }}" class="sidebar-link {{ request()->routeIs('admin.requests') ? 'active' : '' }}">
             <i class="fas fa-clipboard-list"></i> Warehouse Requests
         </a>
+        <a href="{{ route('admin.security.agencies') }}" class="sidebar-link {{ request()->routeIs('admin.security.*') ? 'active' : '' }}">
+            <i class="fas fa-shield-alt"></i> Security Agencies
+        </a>
         <a href="{{ route('admin.analytics.predictive') }}" class="sidebar-link {{ request()->routeIs('admin.analytics.predictive') ? 'active' : '' }}">
             <i class="fas fa-chart-line"></i> Predictive Analytics
         </a>
-<a href="{{ route('admin.analytics') }}" class="sidebar-link {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
-    <i class="fas fa-chart-pie"></i> Analytics Dashboard
-</a>
+        <a href="{{ route('admin.analytics') }}" class="sidebar-link {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
+            <i class="fas fa-chart-pie"></i> Analytics Dashboard
+        </a>
         <a href="{{ route('admin.vehicles') }}" class="sidebar-link {{ request()->routeIs('admin.vehicles') ? 'active' : '' }}">
             <i class="fas fa-truck"></i> All Vehicles
         </a>
-<a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
-    <i class="fas fa-map-marked-alt"></i> Live Tracking
-</a>
+        <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
+            <i class="fas fa-map-marked-alt"></i> Live Tracking
+        </a>
         <a href="{{ route('admin.dispatch') }}" class="sidebar-link {{ request()->routeIs('admin.dispatch') ? 'active' : '' }}">
             <i class="fas fa-truck-moving"></i> Dispatch Orders
         </a>
@@ -226,9 +275,9 @@
         <a href="{{ route('pickup.index') }}" class="sidebar-link {{ request()->routeIs('pickup.*') ? 'active' : '' }}">
             <i class="fas fa-box-open"></i> Pickup Requests
         </a>
-<a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
-    <i class="fas fa-map-marked-alt"></i> Track My Shipments
-</a>
+        <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
+            <i class="fas fa-map-marked-alt"></i> Track My Shipments
+        </a>
         <a href="{{ route('stock.index') }}" class="sidebar-link {{ request()->routeIs('stock.*') ? 'active' : '' }}">
             <i class="fas fa-boxes"></i> My Stock
         </a>
@@ -261,9 +310,9 @@
         <a href="{{ route('driver.pickups') }}" class="sidebar-link {{ request()->routeIs('driver.pickups') ? 'active' : '' }}">
             <i class="fas fa-warehouse"></i> Pickup Jobs
         </a>
-<a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
-    <i class="fas fa-map-marked-alt"></i> My Live Jobs
-</a>
+        <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
+            <i class="fas fa-map-marked-alt"></i> My Live Jobs
+        </a>
         <a href="{{ route('driver.vehicles.index') }}" class="sidebar-link {{ request()->routeIs('driver.vehicles.*') ? 'active' : '' }}">
             <i class="fas fa-truck"></i> My Vehicles
         </a>
@@ -330,14 +379,37 @@
         </a>
         @endif
 
+        <!-- SECURITY AGENCY -->
+        @if(Auth::user()->role === 'security_agency')
+        <div class="section-header">Security Zone</div>
+        <a href="{{ route('security.dashboard') }}" class="sidebar-link {{ request()->routeIs('security.dashboard') ? 'active' : '' }}">
+            <i class="fas fa-shield-alt"></i> Security Dashboard
+        </a>
+        <a href="{{ route('security.personnel.index') }}" class="sidebar-link {{ request()->routeIs('security.personnel.*') ? 'active' : '' }}">
+            <i class="fas fa-user-plus"></i> Add Personnel
+        </a>
+        <a href="{{ route('security.goods.index') }}" class="sidebar-link {{ request()->routeIs('security.goods.*') ? 'active' : '' }}">
+            <i class="fas fa-boxes"></i> My Goods
+        </a>
+        <a href="{{ route('security.assignments.index') }}" class="sidebar-link {{ request()->routeIs('security.assignments.*') ? 'active' : '' }}">
+            <i class="fas fa-calendar-check"></i> Assignments
+        </a>
+        @endif
+
         <!-- ACCOUNT -->
         <div class="section-header">Account</div>
-        <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-            <i class="fas fa-user-circle"></i> My Profile
-        </a>
+        @if(Auth::user()->role === 'security_agency')
+            <a href="{{ route('security.profile') }}" class="sidebar-link {{ request()->routeIs('security.profile*') ? 'active' : '' }}">
+                <i class="fas fa-id-card"></i> Agency Profile
+            </a>
+        @else
+            <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+                <i class="fas fa-user-circle"></i> My Profile
+            </a>
+        @endif
         <a href="{{ route('notifications.index') }}" class="sidebar-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
             <i class="fas fa-bell"></i> Notifications
-            @php $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count(); @endphp
+            @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
             @if($unreadCount > 0) <span class="badge">{{ $unreadCount }}</span> @endif
         </a>
         <form method="POST" action="{{ route('logout') }}" class="mt-2">
@@ -367,17 +439,44 @@
             @endauth
         </div>
         <div class="flex items-center space-x-4">
-            <a href="{{ route('notifications.index') }}" class="relative">
-                <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-orange-500 transition"></i>
-                @auth
-                    @php $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count(); @endphp
-                    @if($unreadCount > 0)
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                            {{ $unreadCount }}
-                        </span>
-                    @endif
-                @endauth
-            </a>
+            <!-- NOTIFICATION BELL WITH DROPDOWN -->
+            <div class="dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="notificationDropdownToggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="position: relative; display: inline-block; padding: 0;">
+                    <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-orange-500 transition"></i>
+                    @auth
+                        @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
+                        @if($unreadCount > 0)
+                            <span class="badge bg-danger rounded-pill" id="unreadCount" style="position: absolute; top: -5px; right: -5px; font-size: 10px; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                                {{ $unreadCount }}
+                            </span>
+                        @endif
+                    @endauth
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end notification-dropdown" aria-labelledby="notificationDropdownToggle">
+                    <li class="dropdown-header"><i class="fas fa-bell me-2"></i>Notifications</li>
+                    @auth
+                        @if(auth()->user()->notifications->count() > 0)
+                            @foreach(auth()->user()->notifications->take(10) as $notification)
+                                <li>
+                                    <a href="{{ $notification->data['url'] ?? '#' }}" class="dropdown-item notification-item" data-id="{{ $notification->id }}">
+                                        <div>
+                                            <div class="notification-title">{{ $notification->data['title'] ?? 'Notification' }}</div>
+                                            <div class="notification-text">{{ $notification->data['message'] ?? '' }}</div>
+                                            <div class="notification-time">{{ $notification->created_at->diffForHumans() }}</div>
+                                        </div>
+                                    </a>
+                                </li>
+                            @endforeach
+                            <li class="dropdown-footer">
+                                <a href="{{ route('notifications.index') }}" class="text-decoration-none small">View All</a>
+                            </li>
+                        @else
+                            <li class="dropdown-item text-center text-muted">No notifications</li>
+                        @endif
+                    @endauth
+                </ul>
+            </div>
+
             <span class="text-sm text-gray-600 hidden sm:inline">{{ now()->format('F j, Y') }}</span>
         </div>
     </div>
@@ -402,16 +501,135 @@
     }
     document.addEventListener('DOMContentLoaded', function() {
         const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) { setTimeout(function() { alert.style.transition = 'opacity 0.5s ease'; alert.style.opacity = '0'; setTimeout(function() { alert.style.display = 'none'; }, 500); }, 5000); });
+        alerts.forEach(function(alert) { 
+            setTimeout(function() { 
+                alert.style.transition = 'opacity 0.5s ease'; 
+                alert.style.opacity = '0'; 
+                setTimeout(function() { alert.style.display = 'none'; }, 500); 
+            }, 5000); 
+        });
         const links = document.querySelectorAll('.sidebar-link');
-        links.forEach(function(link) { link.addEventListener('click', function() { if (window.innerWidth <= 768) { toggleMobileMenu(); } }); });
+        links.forEach(function(link) { 
+            link.addEventListener('click', function() { 
+                if (window.innerWidth <= 768) { toggleMobileMenu(); } 
+            }); 
+        });
+
+        // ===== MARK NOTIFICATION AS READ =====
+        const notificationItems = document.querySelectorAll('.notification-item');
+        notificationItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                const id = this.dataset.id;
+                if (id) {
+                    fetch('/notifications/' + id + '/mark-read', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            // Remove badge count
+                            const badge = document.getElementById('unreadCount');
+                            if (badge) {
+                                let count = parseInt(badge.textContent) || 0;
+                                count--;
+                                if (count > 0) {
+                                    badge.textContent = count;
+                                } else {
+                                    badge.style.display = 'none';
+                                }
+                            }
+                        }
+                    })
+                    .catch(error => console.error('Error marking notification as read:', error));
+                }
+            });
+        });
     });
+
+    // ===== REAL-TIME NOTIFICATIONS (Laravel Echo) =====
+    @auth
+    const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
+    if (userId) {
+        // We'll load Echo dynamically (requires Vite or mix; but we can use CDN fallback)
+        // For simplicity, we'll use the CDN approach with Pusher.
+        // If you have Vite, you can import. We'll include the CDN script.
+        if (typeof Echo === 'undefined') {
+            // Load Pusher and Echo from CDN
+            const pusherScript = document.createElement('script');
+            pusherScript.src = 'https://js.pusher.com/8.2.0/pusher.min.js';
+            document.head.appendChild(pusherScript);
+            const echoScript = document.createElement('script');
+            echoScript.src = 'https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js';
+            document.head.appendChild(echoScript);
+            echoScript.onload = function() {
+                window.Pusher = Pusher;
+                window.Echo = new Echo({
+                    broadcaster: 'reverb',
+                    key: '{{ env('REVERB_APP_KEY') }}',
+                    wsHost: '{{ env('REVERB_HOST', 'localhost') }}',
+                    wsPort: {{ env('REVERB_PORT', 8080) }},
+                    forceTLS: false,
+                    enabledTransports: ['ws', 'wss'],
+                });
+                setupEcho();
+            };
+        } else {
+            setupEcho();
+        }
+        function setupEcho() {
+            window.Echo.private('notifications.' + userId)
+                .notification((notification) => {
+                    // Add to dropdown
+                    const dropdown = document.querySelector('.notification-dropdown');
+                    if (dropdown) {
+                        const newItem = document.createElement('li');
+                        newItem.innerHTML = `
+                            <a href="${notification.url || '#'}" class="dropdown-item notification-item">
+                                <div>
+                                    <div class="notification-title">${notification.title || 'New'}</div>
+                                    <div class="notification-text">${notification.message || ''}</div>
+                                    <div class="notification-time">Just now</div>
+                                </div>
+                            </a>
+                        `;
+                        // Insert after header
+                        const header = dropdown.querySelector('.dropdown-header');
+                        if (header) {
+                            dropdown.insertBefore(newItem, header.nextSibling);
+                        } else {
+                            dropdown.prepend(newItem);
+                        }
+                        // Update badge
+                        const badge = document.getElementById('unreadCount');
+                        if (badge) {
+                            let count = parseInt(badge.textContent) || 0;
+                            badge.textContent = count + 1;
+                            badge.style.display = 'flex';
+                        } else {
+                            const toggle = document.querySelector('#notificationDropdownToggle');
+                            if (toggle) {
+                                const newBadge = document.createElement('span');
+                                newBadge.className = 'badge bg-danger rounded-pill';
+                                newBadge.id = 'unreadCount';
+                                newBadge.style.cssText = 'position: absolute; top: -5px; right: -5px; font-size: 10px; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;';
+                                newBadge.textContent = '1';
+                                toggle.appendChild(newBadge);
+                            }
+                        }
+                    }
+                });
+        }
+    }
+    @endauth
 </script>
 @stack('scripts')
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- ============================================================ -->
-<!-- AI TOOLS (CHAT & VOICE) -->
+<!-- AI TOOLS (CHAT & VOICE) – Keep your existing code -->
 <!-- ============================================================ -->
 <div id="ai-tools-container" style="position: fixed; bottom: 40px; right: 25px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; pointer-events: none;">
     <div style="pointer-events: auto;">
@@ -511,10 +729,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const data = await response.json();
             typingInd.classList.add('d-none');
-            if (data.action === 'redirect') {
+            if ((data.action === 'redirect' || data.action === 'open_page') && data.url) {
                 chatMessages.appendChild(createBubble("🔄 " + (data.message || "Opening page..."), 'bot'));
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                window.location.href = data.url;
+                const params = new URLSearchParams(data.data || {});
+                const targetUrl = params.toString() ? `${data.url}?${params.toString()}` : data.url;
+                window.location.href = targetUrl;
                 return;
             }
             chatMessages.appendChild(createBubble(data.message || "I'm experiencing technical issues.", 'bot'));
@@ -587,6 +807,42 @@ document.addEventListener('DOMContentLoaded', function() {
         recognition.start();
     });
 });
+
+
 </script>
+
+<!-- ============================================================ -->
+<!-- VOICE ASSISTANT – Floating Button + Chat Window -->
+<!-- ============================================================ -->
+<div id="voice-assistant-container" style="position: fixed; bottom: 40px; right: 25px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-end;">
+    <div class="voice-chat-window" id="voiceChatWindow" style="background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden; width: 380px; max-width: 90vw; max-height: 80vh; display: none; flex-direction: column; position: absolute; bottom: 75px; right: 0;">
+        <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 14px 20px; color: white; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <i class="fas fa-microphone-alt me-2"></i> Voice Assistant
+        <select id="voiceLangSelect" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 6px; font-size: 11px; margin-left: 8px;">
+            <option value="en" style="background: #1e293b;">🇬🇧 English</option>
+            <option value="np" style="background: #1e293b;">🇳🇵 Nepali</option>
+        </select>
+    </div>
+    <button id="voiceCloseBtn" class="btn btn-sm btn-link text-white"><i class="fas fa-times"></i></button>
+</div>
+        <div class="voice-messages" id="voiceMessages" style="height: 350px; overflow-y: auto; padding: 16px; background: #f8fafc; display: flex; flex-direction: column;">
+            <div class="assistant-msg">
+                <div class="msg-bubble" style="background: #e5e7eb; color: #1e293b; padding: 10px 14px; border-radius: 12px; margin: 4px 0; max-width: 80%; align-self: flex-start;">
+                   <div class="voice-messages" id="voiceMessages"></div>
+                </div>
+            </div>
+        </div>
+        <div style="padding: 12px; border-top: 1px solid #e5e7eb; background: white; display: flex; gap: 8px; align-items: center;">
+            <button id="voiceToggleBtn" class="btn" style="background: #f59e0b; border: none; border-radius: 30px; padding: 8px 20px; color: white; font-weight: 600;"><i class="fas fa-microphone"></i> Start</button>
+            <span id="voiceStatus" style="font-size: 13px; color: #64748b;">Click to speak</span>
+        </div>
+    </div>
+    <button id="voiceLaunchBtn" class="btn rounded-circle shadow-lg" style="width: 60px; height: 60px; background: #f59e0b; border: none; color: white; font-size: 28px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+        <i class="fas fa-microphone-alt"></i>
+    </button>
+</div>
+
+<script src="{{ asset('js/voice-assistant.js') }}"></script>
 </body>
 </html>

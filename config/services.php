@@ -45,4 +45,18 @@ return [
     'api_key' => env('GOOGLE_MAPS_API_KEY'),
 ],
 
+'gemini' => [
+    'api_key' => env('GEMINI_API_KEY'),
+],
+
+'openai' => [
+    'api_key' => env('OPENAI_API_KEY'),
+    'model' => env('OPENAI_MODEL', 'gpt-3.5-turbo'),
+],
+
+'groq' => [
+    'api_key' => env('GROQ_API_KEY'),
+    'model' => env('GROQ_MODEL', 'mixtral-8x7b-32768'),
+],
+
 ];

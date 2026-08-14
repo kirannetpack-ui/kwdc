@@ -191,7 +191,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(WarehouseRequest::class, 'client_id');
     }
- /**
+
+    /**
+     * Get the security agency profile for this user.
+     */
+    public function securityAgency()
+    {
+        return $this->hasOne(SecurityAgency::class, 'user_id');
+    }
+
+    /**
      * Get the dispatch orders where this user is the driver.
      */
     public function dispatchOrders()

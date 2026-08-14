@@ -13,6 +13,11 @@ class ProfileController extends Controller
     public function edit()
     {
         $user = Auth::user();
+
+        if ($user && $user->role === 'security_agency') {
+            return redirect()->route('security.profile');
+        }
+
         $contacts = UserContact::where('user_id', $user->id)->get();
         return view('profile.edit', compact('user', 'contacts'));
     }

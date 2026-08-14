@@ -4,19 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\EquipmentRequest;
 use App\Models\Equipment;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Services\AIService;
+use App\Services\NotificationService;
 
 class EquipmentRequestController extends Controller
 {
     protected $aiService;
+    protected $notificationService;
 
-    public function __construct(AIService $aiService)
+    public function __construct(AIService $aiService, NotificationService $notificationService)
     {
         $this->middleware('auth');
         $this->aiService = $aiService;
+        $this->notificationService = $notificationService;
     }
 
     public function index()
@@ -77,6 +81,13 @@ class EquipmentRequestController extends Controller
         }
 
         $equipmentRequest = EquipmentRequest::create($requestData);
+
+        // Notify equipment owner
+        $owner = User::find($request->equipment_owner_id);
+        if ($owner) {
+            $this->notificationService->send($owner, new EquipmentRequestCreatedNotification($request));
+        }
+        $this->notificationService->sendToAdmins(new EquipmentRequestCreatedNotification($request));
 
         return redirect()->route('equipment-requests.show', $equipmentRequest->id)
             ->with('success', 'Equipment request created successfully!');
@@ -142,6 +153,22 @@ class EquipmentRequestController extends Controller
         return redirect()->route('equipment-requests.show', $equipmentRequest->id)
             ->with('success', 'Equipment request updated successfully!');
     }
+
+public function updateStatus(Request $request, $id)
+{
+    // ... update status
+
+    if ($oldStatus !== $newStatus) {
+        $notification = new EquipmentRequestStatusNotification($request);
+        $client = User::find($request->client_id);
+        $owner = User::find($request->equipment_owner_id);
+        if ($client) $this->notificationService->send($client, $notification);
+        if ($owner) $this->notificationService->send($owner, $notification);
+        $this->notificationService->sendToAdmins($notification);
+    }
+
+    return response()->json(['success' => true]);
+}
 
     public function destroy($id)
     {

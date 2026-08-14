@@ -537,6 +537,33 @@ public function search(Request $request, AIService $aiService)
         return $oldFile;
     }
 
+public function approve(Warehouse $warehouse)
+{
+    $warehouse->status = 'approved';
+    $warehouse->approved_at = now();
+    $warehouse->save();
+
+    $owner = User::find($warehouse->user_id);
+    if ($owner) {
+        $this->notificationService->send($owner, new WarehouseApprovedNotification($warehouse, 'approved'));
+    }
+
+    return redirect()->back()->with('success', 'Warehouse approved.');
+}
+
+public function reject(Request $request, Warehouse $warehouse)
+{
+    $warehouse->status = 'rejected';
+    $warehouse->save();
+
+    $owner = User::find($warehouse->user_id);
+    if ($owner) {
+        $this->notificationService->send($owner, new WarehouseApprovedNotification($warehouse, 'rejected'));
+    }
+
+    return redirect()->back()->with('success', 'Warehouse rejected.');
+}
+
     /**
      * Remove the specified warehouse
      */

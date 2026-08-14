@@ -4,17 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Invoice;
 use App\Services\InvoiceService;
+use App\Services\AIService;
+use App\Services\AdminEmailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class InvoiceController extends Controller
 {
     protected $invoiceService;
+    protected $adminEmailService;
 
-    public function __construct(InvoiceService $invoiceService)
+    public function __construct(InvoiceService $invoiceService, AdminEmailService $adminEmailService)
     {
         $this->invoiceService = $invoiceService;
+        $this->adminEmailService = $adminEmailService;
     }
 
     public function index()
@@ -102,31 +107,51 @@ class InvoiceController extends Controller
         return redirect()->back()->with('success', 'Invoice email resent successfully');
     }
 
-$invoice = Invoice::create([...]);
+    /**
+     * Store a newly created invoice.
+     * (The floating code from lines 105+ is now safely inside this method.)
+     */
+    public function store(Request $request)
+    {
+        // Validation
+        $validated = $request->validate([
+            'warehouse_request_id' => 'required|exists:warehouse_requests,id',
+            'amount'              => 'required|numeric',
+        ]);
 
-    // 🔥 Run the AI Fraud Check
-    $aiService = app(AIService::class);
-    $anomalyCheck = $aiService->checkInvoiceAnomaly(
-        $invoice->total_distance,
-        $invoice->base_price,
-        12, // static margin or dynamic margin from DB
-        $invoice->grand_total
-    );
+        $invoice = Invoice::create([
+            'warehouse_request_id' => $validated['warehouse_request_id'],
+            'amount'               => $validated['amount'],
+            'invoice_number'       => 'INV-' . strtoupper(uniqid()),
+            'status'               => 'pending',
+        ]);
 
-    if ($anomalyCheck['anomaly'] === true) {
-        // Log it for admin to see later
-        Log::warning("AI FRAUD DETECTED: " . $anomalyCheck['message'], ['invoice_id' => $invoice->id]);
-        // Optional: mark invoice as flagged
-        $invoice->update(['status' => 'flagged']);
-        
-        // Send admin notification
-        $this->adminEmailService->notifyAdmin(
-            '🚨 Anomaly Detected on Invoice #' . $invoice->id,
-            $anomalyCheck['message']
-        );
+// 🔔 Notify client
+    $client = User::find($invoice->client_id);
+    if ($client) {
+        $this->notificationService->send($client, new InvoiceGeneratedNotification($invoice));
     }
+    $this->notificationService->sendToAdmins(new InvoiceGeneratedNotification($invoice));
 
-    return redirect()->route('invoices.show', $invoice->id);
-}
+        // AI Fraud Check
+        $aiService = app(AIService::class);
+        $anomalyCheck = $aiService->checkInvoiceAnomaly(
+            $invoice->total_distance ?? 0,
+            $invoice->base_price ?? 0,
+            12,
+            $invoice->grand_total ?? 0
+        );
 
+        if ($anomalyCheck['anomaly'] === true) {
+            Log::warning("AI FRAUD DETECTED: " . $anomalyCheck['message'], ['invoice_id' => $invoice->id]);
+            $invoice->update(['status' => 'flagged']);
+            $this->adminEmailService->notifyAdmin(
+                '🚨 Anomaly Detected on Invoice #' . $invoice->id,
+                $anomalyCheck['message']
+            );
+        }
+
+        return redirect()->route('invoices.show', $invoice->id)
+            ->with('success', 'Invoice created successfully');
+    }
 }

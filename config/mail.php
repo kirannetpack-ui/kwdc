@@ -12,7 +12,7 @@ return [
         'username' => 'kiran.kwdc@gmail.com',
         'password' => 'nuzpnwuaavxynsdg',
         'timeout' => null,
-        'local_domain' => env('APP_NAME', 'laravel'),
+         'local_domain' => env('MAIL_EHLO_DOMAIN', 'localhost'),
         ],
         'ses' => [
             'transport' => 'ses',
