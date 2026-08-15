@@ -412,6 +412,9 @@
             @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
             @if($unreadCount > 0) <span class="badge">{{ $unreadCount }}</span> @endif
         </a>
+        <a href="{{ route('reminders.index') }}" class="sidebar-link {{ request()->routeIs('reminders.*') ? 'active' : '' }}">
+            <i class="fas fa-calendar-alt"></i> Reminder Calendar
+        </a>
         <form method="POST" action="{{ route('logout') }}" class="mt-2">
             @csrf
             <button type="submit" class="sidebar-link w-full"><i class="fas fa-sign-out-alt"></i> Logout</button>

@@ -509,6 +509,11 @@
                 @endif
             </a>
 
+            <a href="{{ route('reminders.index') }}" class="nav-link {{ request()->routeIs('reminders.*') ? 'active' : '' }}">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Reminder Calendar</span>
+            </a>
+
             <form method="POST" action="{{ route('logout') }}" class="logout-form">
                 @csrf
                 <button type="submit" class="nav-link">

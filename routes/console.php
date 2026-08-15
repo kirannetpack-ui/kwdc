@@ -25,6 +25,7 @@ Schedule::command('shipments:update-status')->everyTenMinutes();  // Update ship
 Schedule::command('invoices:send-reminders')->dailyAt('09:00');    // Send invoice reminders
 Schedule::command('drivers:verify-documents')->weekly();           // Verify driver docs weekly
 Schedule::command('users:generate-codes')->daily();                // Generate missing user codes
+Schedule::command('reminders:send-due-emails')->everyFiveMinutes(); // Send user reminder emails
 
 // Or if you only want to run once for existing users
 // Schedule::command('users:generate-codes')->once();
