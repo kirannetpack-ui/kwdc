@@ -30,6 +30,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\PropertyOwnerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
@@ -43,37 +44,10 @@ use App\Http\Controllers\LoaderAssignmentController;
 use App\Http\Controllers\SecurityAssignmentController;
 use App\Http\Controllers\SecurityGoodController;          // Agency’s own controller
 use App\Http\Controllers\SecurityDashboardController;
+use App\Http\Controllers\ReminderController;
 
 // ================================================================
-// 1. TEST & DEBUG ROUTES (Remove in production)
-// ================================================================
-Route::get('/simple-login', fn() => view('auth.simple-login'));
-Route::get('/test-login', function () {
-    $user = \App\Models\User::where('email', 'admin@ktmwdc.com')->first();
-    if (!$user) return "User not found! Please run the seeder.";
-    Auth::login($user);
-    return "Logged in as: " . Auth::user()->name . " (ID: " . Auth::id() . ")";
-});
-Route::get('/check-login-url', fn() => response()->json([
-    'route_exists' => Route::has('login'),
-    'route_url' => route('login')
-]));
-Route::get('/session-test', fn() => response()->json([
-    'session_id' => session()->getId(),
-    'test_value' => session('test'),
-    'csrf_token' => csrf_token(),
-    'session_driver' => config('session.driver')
-]));
-Route::get('/clear-cache', function () {
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
-    \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    \Illuminate\Support\Facades\Artisan::call('view:clear');
-    \Illuminate\Support\Facades\Artisan::call('route:clear');
-    return 'All caches cleared!';
-});
-
-// ================================================================
-// 2. PUBLIC ROUTES
+// 1. PUBLIC ROUTES
 // ================================================================
 Route::get('/', function () {
     if (Auth::check()) {
@@ -82,44 +56,10 @@ Route::get('/', function () {
     return redirect()->route('login');
 })->name('landing');
 Route::get('/ping', fn() => 'pong');
-Route::get('/simple-create', fn() => view('warehouses.simple-create'))->name('simple.create');
-Route::get('/test-pickup', fn() => 'Pickup test is working!')->name('test.pickup');
-Route::get('/test-mail', function () {
-    Mail::send([], [], function ($message) {
-        $message->to('test@example.com')
-                ->subject('Test Email from KTM-WDC')
-                ->html('<h1>🙏 Namaste!</h1><p>This is a test email from your KTM-WDC system.</p><p>If you see this, your email configuration is working!</p>');
-    });
-    return 'Test email sent! Check your Mailtrap inbox.';
-})->name('test.mail');
-Route::get('/test-invoice', function () {
-    $dispatch = \App\Models\DispatchOrder::first();
-    if (!$dispatch) return "No dispatch orders found. Please create a dispatch first.";
-    $service = new \App\Services\InvoiceService();
-    $invoice = $service->generateDispatchInvoice($dispatch);
-    if ($invoice) return redirect()->route('invoices.show', $invoice);
-    return "Failed to generate invoice";
-})->middleware('auth')->name('test.invoice');
 Route::get('/invoice/verify/{invoiceNumber}', [InvoiceController::class, 'verify'])->name('invoice.verify');
-Route::get('/test-maps', function () {
-    $service = new \App\Services\GoogleMapsService();
-    $result = $service->getTrafficDuration(27.7172, 85.3240, 27.7000, 85.3200);
-    dd($result);
-});
-Route::get('/test-email', function () {
-    try {
-        Mail::raw('This is a test email from KTM-WDC system.', function($message) {
-            $message->to('kiran.kwdc@gmail.com')
-                    ->subject('[TEST] KTM-WDC Email Test');
-        });
-        return "✅ Test email sent successfully to kiran.kwdc@gmail.com!";
-    } catch (\Exception $e) {
-        return "❌ Email failed: " . $e->getMessage();
-    }
-});
 
 // ================================================================
-// 3. AUTHENTICATION ROUTES (All-in-one – no duplicates!)
+// 2. AUTHENTICATION ROUTES (All-in-one – no duplicates!)
 // ================================================================
 Auth::routes();
 
@@ -129,6 +69,9 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
+Route::get('/activate', [ActivationController::class, 'show'])->name('activation.notice');
+Route::post('/activate', [ActivationController::class, 'activate'])->name('activation.verify');
+Route::post('/activate/resend', [ActivationController::class, 'resend'])->name('activation.resend')->middleware('throttle:3,1');
 
 // Home & Dashboard – only ONE should have name 'dashboard'
 Route::get('/home', [HomeController::class, 'index'])->name('home');  // renamed to 'home'
@@ -141,7 +84,7 @@ Route::get('/password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordCo
 Route::post('/password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 
 // ================================================================
-// 4. PROTECTED ROUTES (Authentication required)
+// 3. PROTECTED ROUTES (Authentication required)
 // ================================================================
 Route::middleware(['auth'])->group(function () {
 
@@ -209,6 +152,9 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy'])->name('destroy');
         Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('unread-count');
     });
+
+    // ==================== REMINDER CALENDAR ====================
+    Route::resource('reminders', ReminderController::class)->only(['index', 'store', 'update', 'destroy']);
 
     // ==================== TRACKING ====================
     Route::prefix('tracking')->name('tracking.')->group(function () {
@@ -589,5 +535,5 @@ Route::prefix('reports')->middleware(['auth', 'admin'])->name('reports.')->group
 // 6. FALLBACK
 // ================================================================
 Route::fallback(function () {
-    return view('errors.404');
+    return response()->view('errors.404', [], 404);
 });

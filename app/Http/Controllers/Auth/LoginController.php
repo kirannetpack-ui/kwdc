@@ -68,6 +68,21 @@ class LoginController extends Controller
         ]);
     }
 
+    protected function authenticated(Request $request, $user)
+    {
+        if (!$user->hasVerifiedEmail()) {
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()
+                ->route('activation.notice', ['email' => $user->email])
+                ->with('status', 'Please activate your account before signing in.');
+        }
+
+        return null;
+    }
+
     protected function sendFailedLoginResponse(Request $request)
     {
         Log::error('Login failed response sent', ['email' => $request->email]);
