@@ -9,9 +9,9 @@ use App\Models\Vehicle;
 use App\Models\DriverRate;
 use App\Models\Warehouse;
 use App\Models\Stock;
+use App\Events\OrderDelivered;
 use App\Events\LocationUpdated;
 use App\Services\NotificationService;
-use App\Notifications\DispatchStatusUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -91,15 +91,26 @@ class DispatchController extends Controller
 
     public function store(Request $request)
     {
+        if (!$request->has('delivery_stops') && $request->filled('delivery_address')) {
+            $request->merge([
+                'delivery_stops' => [[
+                    'address' => $request->delivery_address,
+                    'recipient_name' => $request->input('recipient_name', $request->user()->name),
+                    'recipient_phone' => $request->input('recipient_phone', $request->user()->phone ?? 'N/A'),
+                ]],
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'pickup_address' => 'required|string|max:500',
-            'driver_id' => 'required|exists:users,id',
+            'driver_id' => 'nullable|exists:users,id',
             'vehicle_type' => 'nullable|string',
             'delivery_stops' => 'required|array|min:1',
             'delivery_stops.*.address' => 'required|string|max:500',
             'delivery_stops.*.recipient_name' => 'required|string|max:100',
             'delivery_stops.*.recipient_phone' => 'required|string|max:20',
             'total_distance' => 'nullable|numeric|min:0',
+            'base_price' => 'nullable|numeric|min:0',
             'total_price' => 'nullable|numeric|min:0',
             'client_id' => 'nullable|exists:users,id',
             'pickup_contact_person' => 'nullable|string|max:100',
@@ -123,15 +134,19 @@ class DispatchController extends Controller
 
         try {
             $clientId = $request->client_id ?? auth()->id();
+            $basePrice = (float) ($request->input('total_price', $request->input('base_price', 0)));
 
             $dispatch = DispatchOrder::create([
                 'client_id' => $clientId,
                 'driver_id' => $request->driver_id,
                 'pickup_address' => $request->pickup_address,
+                'delivery_address' => $request->delivery_address,
                 'pickup_contact_person' => $request->pickup_contact_person,
                 'pickup_contact_phone' => $request->pickup_contact_phone,
                 'total_distance' => $request->total_distance ?? 0,
-                'base_price' => $request->total_price ?? 0,
+                'base_price' => $basePrice,
+                'driver_earning' => $basePrice * 0.75,
+                'admin_margin' => $basePrice * 0.25,
                 'status' => 'pending',
                 'tracking_id' => 'TRK-' . strtoupper(Str::random(8)),
                 'bill_type' => $request->bill_type ?? 'regular',
@@ -141,7 +156,7 @@ class DispatchController extends Controller
             foreach ($request->delivery_stops as $index => $stopData) {
                 DeliveryStop::create([
                     'dispatch_order_id' => $dispatch->id,
-                    'stop_order' => $stopData['stop_order'] ?? ($index + 1),
+                    'stop_number' => $stopData['stop_number'] ?? $stopData['stop_order'] ?? ($index + 1),
                     'address' => $stopData['address'],
                     'recipient_name' => $stopData['recipient_name'],
                     'recipient_phone' => $stopData['recipient_phone'],
@@ -304,6 +319,7 @@ class DispatchController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+        $oldStatus = $dispatch->status;
         $status = $request->status;
 
         if (!in_array($status, ['pending', 'in_progress', 'delivered', 'cancelled'])) {
@@ -314,26 +330,18 @@ class DispatchController extends Controller
 
         if ($status === 'delivered') {
             $dispatch->delivered_at = now();
+            if (!$dispatch->driver_earning) {
+                $dispatch->driver_earning = (float) $dispatch->base_price * 0.75;
+            }
         }
 
         $dispatch->save();
 
-        $notificationService = new NotificationService();
-        $notification = new DispatchStatusUpdatedNotification($dispatch);
+        NotificationService::notifyStatusUpdate($dispatch, 'dispatch', $oldStatus, $status);
 
-        if ($dispatch->client_id) {
-            $client = User::find($dispatch->client_id);
-            if ($client) {
-                $notificationService->send($client, $notification);
-            }
+        if ($oldStatus !== 'delivered' && $status === 'delivered') {
+            event(new OrderDelivered($dispatch, 'dispatch'));
         }
-        if ($dispatch->driver_id) {
-            $driver = User::find($dispatch->driver_id);
-            if ($driver) {
-                $notificationService->send($driver, $notification);
-            }
-        }
-        $notificationService->sendToAdmins($notification);
 
         return response()->json(['success' => true]);
     }

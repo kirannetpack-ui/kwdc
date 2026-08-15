@@ -8,7 +8,7 @@ class DeliveryStop extends Model
 {
     protected $fillable = [
         'dispatch_order_id',
-        'stop_order',
+        'stop_number',
         'recipient_name',
         'recipient_phone',
         'address',
@@ -35,5 +35,10 @@ class DeliveryStop extends Model
     public function dispatchOrder()
     {
         return $this->belongsTo(DispatchOrder::class);
+    }
+
+    public function getStopOrderAttribute()
+    {
+        return $this->stop_number;
     }
 }

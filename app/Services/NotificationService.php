@@ -212,37 +212,42 @@ class NotificationService
                         ->from(config('mail.from.address'), config('mail.from.name'));
             });
             
-            // Save notification record
-            Notification::create([
-                'notification_number' => 'NOT-' . date('Ymd') . '-' . uniqid(),
-                'type' => $notificationType,
-                'dispatch_order_id' => $dispatchId,
-                'pickup_request_id' => $pickupId,
-                'user_id' => $userId,
-                'recipient_email' => $to,
-                'recipient_name' => $name,
-                'subject' => $subject,
-                'message' => json_encode($data),
-                'status' => 'sent',
-                'sent_at' => now(),
-            ]);
+            if ($userId) {
+                Notification::create([
+                    'notification_number' => 'NOT-' . date('Ymd') . '-' . uniqid(),
+                    'type' => $notificationType,
+                    'title' => $subject,
+                    'dispatch_order_id' => $dispatchId,
+                    'pickup_request_id' => $pickupId,
+                    'user_id' => $userId,
+                    'recipient_email' => $to,
+                    'recipient_name' => $name,
+                    'subject' => $subject,
+                    'message' => json_encode($data),
+                    'status' => 'sent',
+                    'sent_at' => now(),
+                ]);
+            }
             
         } catch (\Exception $e) {
             Log::error('Failed to send email: ' . $e->getMessage());
             
-            Notification::create([
-                'notification_number' => 'NOT-' . date('Ymd') . '-' . uniqid(),
-                'type' => $notificationType,
-                'dispatch_order_id' => $dispatchId,
-                'pickup_request_id' => $pickupId,
-                'user_id' => $userId,
-                'recipient_email' => $to,
-                'recipient_name' => $name,
-                'subject' => $subject,
-                'message' => json_encode($data),
-                'status' => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
+            if ($userId) {
+                Notification::create([
+                    'notification_number' => 'NOT-' . date('Ymd') . '-' . uniqid(),
+                    'type' => $notificationType,
+                    'title' => $subject,
+                    'dispatch_order_id' => $dispatchId,
+                    'pickup_request_id' => $pickupId,
+                    'user_id' => $userId,
+                    'recipient_email' => $to,
+                    'recipient_name' => $name,
+                    'subject' => $subject,
+                    'message' => json_encode($data),
+                    'status' => 'failed',
+                    'error_message' => $e->getMessage(),
+                ]);
+            }
         }
     }
     

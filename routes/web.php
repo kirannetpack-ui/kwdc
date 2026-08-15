@@ -31,6 +31,12 @@ use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ActivationController;
+use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\PropertyOwnerController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PaymentController;
@@ -53,7 +59,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
+    return app(LoginController::class)->showLoginForm();
 })->name('landing');
 Route::get('/ping', fn() => 'pong');
 Route::get('/invoice/verify/{invoiceNumber}', [InvoiceController::class, 'verify'])->name('invoice.verify');
@@ -72,6 +78,21 @@ Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 
 Route::get('/activate', [ActivationController::class, 'show'])->name('activation.notice');
 Route::post('/activate', [ActivationController::class, 'activate'])->name('activation.verify');
 Route::post('/activate/resend', [ActivationController::class, 'resend'])->name('activation.resend')->middleware('throttle:3,1');
+
+Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->middleware('guest')->name('password.request.breeze');
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('guest')->name('password.email.breeze');
+Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->middleware('guest')->name('password.reset.breeze');
+Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('guest')->name('password.store');
+Route::get('/confirm-password', [ConfirmablePasswordController::class, 'show'])->middleware('auth')->name('password.confirm.breeze');
+Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('auth');
+Route::put('/password', [PasswordController::class, 'update'])->middleware('auth')->name('password.update.breeze');
+Route::get('/verify-email', fn() => view('auth.verify-email'))->middleware('auth')->name('verification.notice');
+Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['auth', 'signed', 'throttle:6,1'])
+    ->name('verification.verify');
+Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    ->middleware(['auth', 'throttle:6,1'])
+    ->name('verification.send');
 
 // Home & Dashboard – only ONE should have name 'dashboard'
 Route::get('/home', [HomeController::class, 'index'])->name('home');  // renamed to 'home'
