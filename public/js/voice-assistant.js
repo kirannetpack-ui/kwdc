@@ -1,7 +1,5 @@
 // public/js/voice-assistant.js
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ Voice assistant script loaded');
-
     // ===== DOM Elements =====
     const launchBtn = document.getElementById('voiceLaunchBtn');
     const chatWindow = document.getElementById('voiceChatWindow');
@@ -93,7 +91,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    console.log('✅ Voice elements found');
     const initialMessagesHtml = messagesEl.innerHTML;
 
     function setListeningUi(active, message = null) {

@@ -41,4 +41,17 @@ class ProductionHardeningTest extends TestCase
             'recipient_email' => $user->email,
         ]);
     }
+
+    public function test_source_views_and_scripts_do_not_ship_console_debug_logs(): void
+    {
+        $paths = [
+            public_path('js/voice-assistant.js'),
+            resource_path('views/warehouses/create.blade.php'),
+            resource_path('views/equipment-requests/create.blade.php'),
+        ];
+
+        foreach ($paths as $path) {
+            $this->assertStringNotContainsString('console.log', file_get_contents($path), $path);
+        }
+    }
 }

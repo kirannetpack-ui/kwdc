@@ -338,9 +338,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Show alert on page load to confirm new file is loaded
-    console.log('✅ New warehouse form loaded!');
-    
     const verifyBtn = document.getElementById('verifyKatahoBtn');
     const katahoCodeInput = document.getElementById('kataho_code');
     

@@ -384,9 +384,6 @@ document.getElementById('recommendBtn').addEventListener('click', function() {
     .then(data => {
         loadingDiv.classList.add('hidden');
 
-        // 🔍 DEBUG: Look at your browser console (F12) to see this!
-        console.log("🟢 AI Server Response:", data);
-
         // Force the result box to open
         resultsDiv.classList.remove('hidden');
         resultsDiv.style.display = 'block';
