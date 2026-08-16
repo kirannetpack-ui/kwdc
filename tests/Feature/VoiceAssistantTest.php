@@ -85,6 +85,24 @@ class VoiceAssistantTest extends TestCase
         $this->assertSame('/dispatch', $data['url']);
     }
 
+    public function test_voice_assistant_can_fill_pickup_contact_person_on_current_form(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'fill-contact@example.com']);
+        $this->actingAs($user);
+
+        $response = $this->postJson('/ai/voice-assistant', [
+            'message' => 'put the contact person name as srijan gautam on pickup request that u opened',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertSame('open_page', $data['action']);
+        $this->assertSame('/pickup/direct-create', $data['url']);
+        $this->assertSame('srijan gautam', $data['data']['pickup_contact_person'] ?? null);
+    }
+
     public function test_voice_assistant_responds_with_message(): void
     {
         $user = User::factory()->create(['role' => 'client', 'email' => 'msg@example.com']);

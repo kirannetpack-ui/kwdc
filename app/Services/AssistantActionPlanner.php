@@ -198,6 +198,16 @@ PROMPT;
             $data['recipient_name'] = $this->cleanValue($matches[1]);
         }
 
+        if (preg_match('/(?:put|set|make|change|fill|add)\s+(?:the\s+)?(?:pickup\s+)?contact(?:\s+person)?(?:\s+name)?\s+(?:as|to|=)\s+(.+?)(?=\s+(?:on|for|in|at|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+            $data['pickup_contact_person'] = $this->cleanValue($matches[1]);
+        } elseif (preg_match('/(?:contact\s+person|pickup\s+contact|contact\s+name)\s+(?:is|as|to|=)\s+(.+?)(?=\s+(?:on|for|in|at|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+            $data['pickup_contact_person'] = $this->cleanValue($matches[1]);
+        }
+
+        if (preg_match('/(?:put|set|make|change|fill|add)\s+(?:the\s+)?(?:recipient\s+)?(?:name)\s+(?:as|to|=)\s+(.+?)(?=\s+(?:on|for|in|at|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+            $data['recipient_name'] = $this->cleanValue($matches[1]);
+        }
+
         if (preg_match('/(?:\+977[-\s]?)?(9[78]\d{8})\b/', $clean, $matches)) {
             $data['recipient_phone'] = $matches[1];
             $data['pickup_contact_phone'] = $matches[1];

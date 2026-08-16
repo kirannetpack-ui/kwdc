@@ -210,14 +210,24 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
+        const fieldAliases = {
+            pickup_contact_person: ['pickup_contact_person', 'contact_person', 'contact_name'],
+            pickup_contact_phone: ['pickup_contact_phone', 'contact_phone', 'phone'],
+            recipient_name: ['recipient_name', 'delivery_stops[0][recipient_name]'],
+            recipient_phone: ['recipient_phone', 'delivery_stops[0][recipient_phone]'],
+        };
+
         let filled = false;
         Object.entries(data).forEach(([key, value]) => {
             if (value === null || value === undefined || value === '') {
                 return;
             }
 
-            const selector = `[name="${CSS.escape(key)}"], #${CSS.escape(key)}`;
-            const field = document.querySelector(selector);
+            const names = fieldAliases[key] || [key];
+            const field = names
+                .map((name) => document.querySelector(`[name="${CSS.escape(name)}"], #${CSS.escape(name)}`))
+                .find(Boolean);
+
             if (!field) {
                 return;
             }
