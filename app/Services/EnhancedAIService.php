@@ -16,12 +16,15 @@ use Illuminate\Support\Facades\Log;
  */
 class EnhancedAIService
 {
-    protected $primaryProvider = 'gemini';
-    protected $fallbackProviders = ['openai', 'groq'];
+    protected string $primaryProvider = 'gemini';
+    protected array $fallbackProviders = ['openai', 'groq'];
 
     public function __construct()
     {
-        // Try primary, fallback to others if needed
+        if (config('services.openai.api_key')) {
+            $this->primaryProvider = 'openai';
+            $this->fallbackProviders = ['gemini', 'groq'];
+        }
     }
 
     /**
@@ -57,7 +60,7 @@ class EnhancedAIService
      */
     protected function chatGemini(string $systemPrompt, string $userPrompt, string $format = 'json')
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = config('services.gemini.api_key');
         if (!$apiKey) {
             Log::warning('Gemini API key missing');
             return null;
@@ -110,25 +113,30 @@ class EnhancedAIService
      */
     protected function chatOpenAI(string $systemPrompt, string $userPrompt, string $format = 'json')
     {
-        $apiKey = env('OPENAI_API_KEY');
+        $apiKey = config('services.openai.api_key');
         if (!$apiKey) {
             return null;
         }
 
         try {
             $url = "https://api.openai.com/v1/chat/completions";
+            $payload = [
+                'model' => config('services.openai.model', 'gpt-4o-mini'),
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => $userPrompt . ($format === 'json' ? "\n\nReturn ONLY valid JSON." : '')]
+                ],
+                'temperature' => $format === 'json' ? 0.2 : 0.7,
+                'max_tokens' => 1024,
+            ];
+
+            if ($format === 'json') {
+                $payload['response_format'] = ['type' => 'json_object'];
+            }
 
             $response = Http::timeout(10)
                 ->withToken($apiKey)
-                ->post($url, [
-                    'model' => 'gpt-3.5-turbo',
-                    'messages' => [
-                        ['role' => 'system', 'content' => $systemPrompt],
-                        ['role' => 'user', 'content' => $userPrompt . ($format === 'json' ? '\n\nReturn ONLY valid JSON.' : '')]
-                    ],
-                    'temperature' => 0.7,
-                    'max_tokens' => 1024,
-                ]);
+                ->post($url, $payload);
 
             if ($response->failed()) {
                 Log::warning('OpenAI error: ' . $response->status());
@@ -158,7 +166,7 @@ class EnhancedAIService
      */
     protected function chatGroq(string $systemPrompt, string $userPrompt, string $format = 'json')
     {
-        $apiKey = env('GROQ_API_KEY');
+        $apiKey = config('services.groq.api_key');
         if (!$apiKey) {
             return null;
         }
@@ -310,15 +318,15 @@ class EnhancedAIService
         $status = [];
 
         // Check Gemini
-        $geminiKey = env('GEMINI_API_KEY') ? '✅' : '❌';
+        $geminiKey = config('services.gemini.api_key') ? 'set' : 'missing';
         $status['gemini'] = $geminiKey;
 
         // Check OpenAI
-        $openaiKey = env('OPENAI_API_KEY') ? '✅' : '❌';
+        $openaiKey = config('services.openai.api_key') ? 'set' : 'missing';
         $status['openai'] = $openaiKey;
 
         // Check Groq
-        $groqKey = env('GROQ_API_KEY') ? '✅' : '❌';
+        $groqKey = config('services.groq.api_key') ? 'set' : 'missing';
         $status['groq'] = $groqKey;
 
         return $status;

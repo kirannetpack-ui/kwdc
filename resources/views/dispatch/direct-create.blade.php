@@ -378,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
     addStop();
     setupAutoComplete();
     initMap();
+    prefillDispatchFromAssistant();
 });
 
 function initMap() {
@@ -561,6 +562,63 @@ function addStockToDispatch(productName, stockId) {
     showToast('Added: ' + productName + ' to dispatch', 'info');
 }
 
+function prefillDispatchFromAssistant() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.toString()) return;
+
+    const setValue = (id, value) => {
+        const input = document.getElementById(id);
+        if (input && value) input.value = value;
+    };
+
+    setValue('pickup_address', params.get('pickup_address'));
+    setValue('pickup_contact_person', params.get('pickup_contact_person'));
+    setValue('pickup_contact_phone', params.get('pickup_contact_phone'));
+    setValue('total_distance', params.get('total_distance'));
+    setValue('total_price', params.get('total_price'));
+
+    const vehicleType = params.get('vehicle_type');
+    const vehicleSelect = document.getElementById('vehicle_type');
+    if (vehicleType && vehicleSelect) {
+        [...vehicleSelect.options].some(option => {
+            if (option.value.toLowerCase() === vehicleType.toLowerCase()) {
+                vehicleSelect.value = option.value;
+                return true;
+            }
+            return false;
+        });
+    }
+
+    const firstStop = document.querySelector('.stop-card');
+    if (firstStop) {
+        const deliveryAddress = params.get('delivery_address');
+        const recipientName = params.get('recipient_name') || params.get('pickup_contact_person') || 'Customer';
+        const recipientPhone = params.get('recipient_phone') || params.get('pickup_contact_phone') || 'N/A';
+        const notes = params.get('items_description');
+
+        if (deliveryAddress) firstStop.querySelector('.stop-address').value = deliveryAddress;
+        const nameInput = firstStop.querySelector('input[name*="recipient_name"]');
+        const phoneInput = firstStop.querySelector('input[name*="recipient_phone"]');
+        const notesInput = firstStop.querySelector('textarea[name*="notes"]');
+        if (nameInput && recipientName) nameInput.value = recipientName;
+        if (phoneInput && recipientPhone) phoneInput.value = recipientPhone;
+        if (notesInput && notes) notesInput.value = notes;
+    }
+
+    const totalDistance = params.get('total_distance');
+    const totalPrice = params.get('total_price');
+    if (totalDistance) {
+        document.getElementById('total_distance_display').innerText = totalDistance + ' km';
+    }
+    if (totalPrice) {
+        document.getElementById('base_price_display').innerText = 'रू ' + totalPrice;
+        document.getElementById('total_price_display').innerText = 'रू ' + totalPrice;
+    }
+
+    renderMapMarkers();
+    showToast('Assistant filled the dispatch form. Please review before saving.', 'info');
+}
+
 // ------------------ AI ENHANCED PRICE CALCULATION ------------------
 async function calculateDistance() {
     const pickup = document.getElementById('pickup_address').value;
@@ -720,11 +778,6 @@ document.getElementById('dispatchForm').addEventListener('submit', async functio
     
     if (!pickupAddress) {
         showToast('Please enter pickup address', 'error');
-        return;
-    }
-    
-    if (!driverId) {
-        showToast('Please select a driver', 'error');
         return;
     }
     

@@ -15,10 +15,12 @@ use Illuminate\Support\Facades\Cache;
 class SmartAIService
 {
     protected $aiService;
+    protected $actionPlanner;
 
-    public function __construct(EnhancedAIService $aiService)
+    public function __construct(EnhancedAIService $aiService, AssistantActionPlanner $actionPlanner)
     {
         $this->aiService = $aiService;
+        $this->actionPlanner = $actionPlanner;
     }
 
     /**
@@ -26,6 +28,13 @@ class SmartAIService
      */
     public function processQuery(string $userQuery, ?int $userId = null): array
     {
+        $user = $userId ? User::find($userId) : null;
+        $plannedAction = $this->actionPlanner->plan($userQuery, $userId, $user?->role);
+
+        if (($plannedAction['intent'] ?? 'general_help') !== 'general_help') {
+            return $this->withGuidance($plannedAction);
+        }
+
         $lower = strtolower($userQuery);
         
         // Detect intent across all business functions
@@ -113,6 +122,80 @@ class SmartAIService
         }
 
         return null;
+    }
+
+    private function withGuidance(array $plannedAction): array
+    {
+        $intent = $plannedAction['intent'] ?? 'general_help';
+        $data = $plannedAction['data'] ?? [];
+
+        return array_merge([
+            'done' => false,
+            'requires_confirmation' => in_array($intent, ['pickup_request', 'dispatch_request', 'reminder_create'], true),
+            'guidance' => [
+                'title' => $this->guidanceTitle($intent),
+                'description' => 'I filled what I could understand. Please review the form before saving.',
+                'fields_guidance' => $this->fieldsForIntent($intent, $data),
+            ],
+        ], $plannedAction);
+    }
+
+    private function guidanceTitle(string $intent): string
+    {
+        return match ($intent) {
+            'pickup_request' => 'Pickup form ready',
+            'dispatch_request' => 'Dispatch form ready',
+            'reminder_create' => 'Reminder ready',
+            'tracking' => 'Tracking page ready',
+            'invoice_lookup' => 'Invoices ready',
+            'warehouse_rental' => 'Warehouse request ready',
+            'equipment_rental' => 'Equipment request ready',
+            'security_booking' => 'Security booking ready',
+            default => 'KWDC assistant',
+        };
+    }
+
+    private function fieldsForIntent(string $intent, array $data): array
+    {
+        $commonRoute = [
+            'pickup_address' => [
+                'label' => 'Pickup Location',
+                'hint' => 'Where the item or cargo starts',
+                'required' => true,
+                'value' => $data['pickup_address'] ?? null,
+            ],
+            'delivery_address' => [
+                'label' => 'Destination',
+                'hint' => 'Where it should go',
+                'required' => true,
+                'value' => $data['delivery_address'] ?? null,
+            ],
+            'items_description' => [
+                'label' => 'Goods',
+                'hint' => 'Boxes, weight, or item details',
+                'required' => false,
+                'value' => $data['items_description'] ?? null,
+            ],
+        ];
+
+        return match ($intent) {
+            'pickup_request', 'dispatch_request' => $commonRoute,
+            'reminder_create' => [
+                'title' => [
+                    'label' => 'Title',
+                    'hint' => 'What to remember',
+                    'required' => true,
+                    'value' => $data['title'] ?? null,
+                ],
+                'starts_at' => [
+                    'label' => 'Date and Time',
+                    'hint' => 'When the reminder is due',
+                    'required' => true,
+                    'value' => $data['starts_at'] ?? null,
+                ],
+            ],
+            default => [],
+        };
     }
 
     /**

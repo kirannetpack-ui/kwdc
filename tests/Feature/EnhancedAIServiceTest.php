@@ -24,7 +24,7 @@ class EnhancedAIServiceTest extends TestCase
 
         $this->assertIsArray($health);
         $this->assertArrayHasKey('gemini', $health);
-        $this->assertContains($health['gemini'], ['✅', '❌']);
+        $this->assertContains($health['gemini'], ['set', 'missing']);
     }
 
     public function test_semantic_search_finds_relevant_documents(): void

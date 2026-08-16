@@ -102,4 +102,17 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.toString()) return;
+
+    const fields = ['title', 'starts_at', 'remind_at', 'notes'];
+    fields.forEach(function (field) {
+        const value = params.get(field);
+        const input = document.getElementById(field);
+        if (input && value) input.value = value;
+    });
+});
+</script>
 @endsection
