@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     let conversationActive = false;
     let isSpeaking = false;
     let lastSpokenText = '';
+    let heardSpeech = false;
+    let lastRecognitionError = null;
+    let recognitionStartedAt = 0;
 
     // ===== Load Voices (fix for getVoices empty array) =====
     let voicesLoaded = false;
@@ -72,6 +75,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('✅ Voice elements found');
 
+    function setListeningUi(active, message = null) {
+        isListening = active;
+        window.isListening = active;
+        toggleBtn.innerHTML = active
+            ? '<i class="fas fa-stop"></i> Stop'
+            : '<i class="fas fa-microphone"></i> Start';
+        statusEl.textContent = message || (active ? 'Listening... speak now' : 'Click to speak or type below');
+        toggleBtn.classList.toggle('listening', active);
+    }
+
     // ===== TOGGLE CHAT WINDOW =====
     launchBtn.addEventListener('click', function(e) {
         e.preventDefault();
@@ -87,11 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
             launchBtn.style.transform = 'scale(1)';
             if (isListening) {
                 recognition?.stop();
-                isListening = false;
-                window.isListening = false;
-                toggleBtn.textContent = 'Start';
-                statusEl.textContent = 'Click to speak';
-                toggleBtn.classList.remove('listening');
+                setListeningUi(false);
             }
             window.speechSynthesis.cancel(); // Stop any speech
         });
@@ -111,6 +120,7 @@ document.addEventListener('DOMContentLoaded', function() {
         recognition.continuous = false;
         recognition.interimResults = false;
         recognition.lang = 'en-US';
+        recognition.maxAlternatives = 1;
 
         window.recognition = recognition;
     }
@@ -143,11 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 lastSpokenText = '';
                 if (isListening) {
                     recognition.stop();
-                    isListening = false;
-                    window.isListening = false;
-                    toggleBtn.textContent = 'Start';
-                    statusEl.textContent = 'Click to speak';
-                    toggleBtn.classList.remove('listening');
+                    setListeningUi(false);
                 }
             };
 
@@ -247,46 +253,103 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== RECOGNITION EVENTS =====
+    async function ensureMicrophoneAccess() {
+        if (!navigator.mediaDevices?.getUserMedia) {
+            return true;
+        }
+
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            stream.getTracks().forEach(track => track.stop());
+            return true;
+        } catch (error) {
+            console.warn('Microphone access failed:', error);
+            statusEl.textContent = 'Mic permission blocked. Type below.';
+            addMessage('Microphone permission is blocked or unavailable. Please allow microphone access in your browser, or type your request below.', 'assistant');
+            return false;
+        }
+    }
+
     if (recognition) recognition.onresult = function(event) {
         let finalTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
+            if (transcript.trim() !== '') {
+                heardSpeech = true;
+            }
             if (event.results[i].isFinal) {
                 finalTranscript += transcript;
             }
         }
         if (finalTranscript.trim() !== '') {
             recognition.stop();
-            isListening = false;
-            window.isListening = false;
-            toggleBtn.textContent = 'Start';
-            statusEl.textContent = 'Processing...';
-            toggleBtn.classList.remove('listening');
+            setListeningUi(false, 'Processing...');
             window.speechSynthesis.cancel();
             sendToBackend(finalTranscript.trim());
         }
     };
 
+    if (recognition) recognition.onstart = function() {
+        heardSpeech = false;
+        lastRecognitionError = null;
+        recognitionStartedAt = Date.now();
+        setListeningUi(true, 'Listening... speak now');
+    };
+
+    if (recognition) recognition.onspeechstart = function() {
+        heardSpeech = true;
+        statusEl.textContent = 'Hearing you...';
+    };
+
+    if (recognition) recognition.onspeechend = function() {
+        statusEl.textContent = 'Processing...';
+    };
+
+    if (recognition) recognition.onend = function() {
+        if (!isListening) {
+            return;
+        }
+
+        const listenedForMs = Date.now() - recognitionStartedAt;
+        setListeningUi(false);
+
+        if (lastRecognitionError === 'not-allowed' || lastRecognitionError === 'service-not-allowed') {
+            statusEl.textContent = 'Mic permission blocked. Type below.';
+            return;
+        }
+
+        if (!heardSpeech || listenedForMs < 1200) {
+            statusEl.textContent = 'I did not hear anything. Try again or type below.';
+        }
+    };
+
     if (recognition) recognition.onerror = function(event) {
         console.error('❌ Recognition error:', event.error);
-        if (event.error === 'not-allowed') {
-            statusEl.textContent = 'Mic blocked. Type below.';
-            addMessage('Microphone permission is blocked. You can still type your request below.', 'assistant');
+        lastRecognitionError = event.error;
+
+        const messages = {
+            'not-allowed': 'Microphone permission is blocked. Please allow mic access in your browser, or type below.',
+            'service-not-allowed': 'Speech recognition is blocked by this browser. Type below or try Chrome.',
+            'no-speech': 'I did not hear anything. Click Start and speak after the listening message appears.',
+            'audio-capture': 'No microphone was found. Check your mic, or type below.',
+            'network': 'Browser speech service could not connect. Type below or try again.',
+        };
+
+        if (messages[event.error]) {
+            statusEl.textContent = event.error === 'no-speech' ? 'I did not hear anything. Try again.' : 'Mic unavailable. Type below.';
+            addMessage(messages[event.error], 'assistant');
         }
+
         if (isListening) {
             recognition.stop();
-            isListening = false;
-            window.isListening = false;
-            toggleBtn.textContent = 'Start';
-            statusEl.textContent = 'Click to speak';
-            toggleBtn.classList.remove('listening');
+            setListeningUi(false);
             window.speechSynthesis.cancel();
         }
     };
 
     // ===== TOGGLE LISTENING =====
     if (toggleBtn) {
-        toggleBtn.addEventListener('click', function() {
+        toggleBtn.addEventListener('click', async function() {
             if (!recognition) {
                 statusEl.textContent = 'Mic not supported here. Type below.';
                 textInput?.focus();
@@ -302,13 +365,18 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isListening) {
                 recognition.lang = currentLanguage === 'np' ? 'ne-NP' : 'en-US';
                 window.speechSynthesis.cancel();
+                toggleBtn.disabled = true;
+                statusEl.textContent = 'Checking microphone...';
+
+                const hasMicAccess = await ensureMicrophoneAccess();
+                toggleBtn.disabled = false;
+                if (!hasMicAccess) {
+                    textInput?.focus();
+                    return;
+                }
+
                 try {
                     recognition.start();
-                    isListening = true;
-                    window.isListening = true;
-                    toggleBtn.textContent = 'Stop';
-                    statusEl.textContent = 'Listening...';
-                    toggleBtn.classList.add('listening');
                 } catch (error) {
                     console.error('Recognition start failed:', error);
                     statusEl.textContent = 'Could not start mic. Type below.';
@@ -316,11 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 recognition.stop();
                 window.speechSynthesis.cancel();
-                isListening = false;
-                window.isListening = false;
-                toggleBtn.textContent = 'Start';
-                statusEl.textContent = 'Click to speak';
-                toggleBtn.classList.remove('listening');
+                setListeningUi(false);
             }
         });
     }
