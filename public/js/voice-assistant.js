@@ -12,46 +12,64 @@ document.addEventListener('DOMContentLoaded', function() {
     const langSelect = document.getElementById('voiceLangSelect');
     const textInput = document.getElementById('voiceTextInput');
     const sendBtn = document.getElementById('voiceSendBtn');
-    const quickActions = document.getElementById('assistantQuickActions');
+    const clearBtn = document.getElementById('assistantClearBtn');
 
     let currentLanguage = 'en'; // default
     let isListening = false;
     let conversationActive = false;
-    let isSpeaking = false;
-    let lastSpokenText = '';
     let heardSpeech = false;
     let lastRecognitionError = null;
     let recognitionStartedAt = 0;
     let lastAssistantNotice = '';
+    const historyKey = 'kwdcAssistantHistory';
+    const openKey = 'kwdcAssistantOpen';
+    const maxHistoryItems = 60;
 
-    // ===== Load Voices (fix for getVoices empty array) =====
-    let voicesLoaded = false;
-    let availableVoices = [];
+    function readHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(historyKey) || '[]').filter(item => item?.text && item?.sender);
+        } catch (error) {
+            console.warn('Assistant history could not be read.', error);
+            return [];
+        }
+    }
 
-    function loadVoices() {
-        return new Promise((resolve) => {
-            if (!window.speechSynthesis) {
-                resolve([]);
-                return;
-            }
+    function writeHistory(items) {
+        try {
+            localStorage.setItem(historyKey, JSON.stringify(items.slice(-maxHistoryItems)));
+        } catch (error) {
+            console.warn('Assistant history could not be saved.', error);
+        }
+    }
 
-            if (voicesLoaded) {
-                resolve(availableVoices);
-                return;
-            }
-            const voices = window.speechSynthesis.getVoices();
-            if (voices.length > 0) {
-                availableVoices = voices;
-                voicesLoaded = true;
-                resolve(voices);
-            } else {
-                window.speechSynthesis.onvoiceschanged = function() {
-                    availableVoices = window.speechSynthesis.getVoices();
-                    voicesLoaded = true;
-                    resolve(availableVoices);
-                };
-            }
-        });
+    function clearHistory() {
+        try {
+            localStorage.removeItem(historyKey);
+        } catch (error) {
+            console.warn('Assistant history could not be cleared.', error);
+        }
+    }
+
+    function rememberMessage(text, sender) {
+        const items = readHistory();
+        items.push({ text, sender, at: new Date().toISOString() });
+        writeHistory(items);
+    }
+
+    function setAssistantOpen(open) {
+        try {
+            sessionStorage.setItem(openKey, open ? '1' : '0');
+        } catch (error) {
+            console.warn('Assistant open state could not be saved.', error);
+        }
+    }
+
+    function shouldRestoreOpen() {
+        try {
+            return sessionStorage.getItem(openKey) === '1';
+        } catch (error) {
+            return false;
+        }
     }
 
     // ===== Language Selector =====
@@ -59,8 +77,8 @@ document.addEventListener('DOMContentLoaded', function() {
         langSelect.addEventListener('change', function() {
             currentLanguage = this.value;
             const msg = currentLanguage === 'en' 
-                ? '🌐 Language changed to English' 
-                : '🌐 भाषा नेपालीमा परिवर्तन भयो';
+                ? 'Language changed to English' 
+                : 'भाषा नेपालीमा परिवर्तन भयो';
             addMessage(msg, 'assistant');
         });
     }
@@ -76,6 +94,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     console.log('✅ Voice elements found');
+    const initialMessagesHtml = messagesEl.innerHTML;
 
     function setListeningUi(active, message = null) {
         isListening = active;
@@ -93,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
         chatWindow.style.display = isHidden ? 'flex' : 'none';
         launchBtn.style.transform = isHidden ? 'scale(1.1)' : 'scale(1)';
+        setAssistantOpen(isHidden);
     });
 
     // ===== CLOSE BUTTON =====
@@ -104,7 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 recognition?.stop();
                 setListeningUi(false);
             }
-            window.speechSynthesis.cancel(); // Stop any speech
+            stopSpeaking();
+            setAssistantOpen(false);
         });
     }
 
@@ -128,52 +149,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     window.isListening = false;
 
-    // ===== SPEAK FUNCTION (bilingual, with voice loading) =====
-    async function speak(text, lang = 'en') {
-        if (!window.speechSynthesis || !text) return;
-        if (text === lastSpokenText && isSpeaking) return;
-
-        window.speechSynthesis.cancel();
-        isSpeaking = true;
-        lastSpokenText = text;
-
-        try {
-            await loadVoices();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang === 'np' ? 'ne-NP' : 'en-US';
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
-            utterance.volume = 1;
-
-            if (lang === 'np') {
-                const nepaliVoice = availableVoices.find(v => v.lang.startsWith('ne'));
-                if (nepaliVoice) utterance.voice = nepaliVoice;
-            }
-
-            utterance.onend = function() {
-                isSpeaking = false;
-                lastSpokenText = '';
-                if (isListening) {
-                    recognition.stop();
-                    setListeningUi(false);
-                }
-            };
-
-            utterance.onerror = function() {
-                isSpeaking = false;
-                lastSpokenText = '';
-            };
-
-            window.speechSynthesis.speak(utterance);
-        } catch (error) {
-            console.error('Speech synthesis error:', error);
-            isSpeaking = false;
-            lastSpokenText = '';
+    function stopSpeaking() {
+        if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
         }
     }
 
     // ===== ADD MESSAGE =====
-    function addMessage(text, sender) {
+    function renderMessage(text, sender) {
         if (!messagesEl || !text) return;
         const div = document.createElement('div');
         div.className = sender === 'user'
@@ -191,6 +174,28 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    function addMessage(text, sender) {
+        renderMessage(text, sender);
+        rememberMessage(text, sender);
+    }
+
+    function restoreHistory() {
+        const items = readHistory();
+        if (items.length === 0) {
+            return;
+        }
+
+        messagesEl.innerHTML = '';
+        items.forEach(item => renderMessage(item.text, item.sender));
+    }
+
+    function resetAssistantMessages() {
+        clearHistory();
+        messagesEl.innerHTML = initialMessagesHtml;
+        lastAssistantNotice = '';
+        statusEl.textContent = 'Ready';
+    }
+
     function addAssistantNotice(text) {
         if (!text || text === lastAssistantNotice) {
             return;
@@ -198,6 +203,61 @@ document.addEventListener('DOMContentLoaded', function() {
 
         lastAssistantNotice = text;
         addMessage(text, 'assistant');
+    }
+
+    function applyDataToCurrentPage(data) {
+        if (!data || typeof data !== 'object') {
+            return false;
+        }
+
+        let filled = false;
+        Object.entries(data).forEach(([key, value]) => {
+            if (value === null || value === undefined || value === '') {
+                return;
+            }
+
+            const selector = `[name="${CSS.escape(key)}"], #${CSS.escape(key)}`;
+            const field = document.querySelector(selector);
+            if (!field) {
+                return;
+            }
+
+            field.value = value;
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+            field.dispatchEvent(new Event('change', { bubbles: true }));
+            filled = true;
+        });
+
+        return filled;
+    }
+
+    function handleAssistantAction(data) {
+        if (!((data.action === 'open_page' || data.action === 'redirect') && data.url)) {
+            return false;
+        }
+
+        const params = new URLSearchParams(data.data || {});
+        const targetUrl = params.toString() ? `${data.url}?${params.toString()}` : data.url;
+        const target = new URL(targetUrl, window.location.origin);
+
+        setAssistantOpen(true);
+
+        if (target.pathname === window.location.pathname) {
+            if (params.toString()) {
+                window.history.pushState({}, '', target.pathname + target.search);
+            }
+
+            const filled = applyDataToCurrentPage(data.data || {});
+            statusEl.textContent = filled ? 'Filled this page' : 'Ready';
+            if (filled) {
+                addAssistantNotice('I filled what I could on this page. Please review before saving.');
+            }
+            return true;
+        }
+
+        addAssistantNotice('Opening the right page and keeping this chat here.');
+        window.location.href = targetUrl;
+        return true;
     }
 
     // ===== SEND TO BACKEND (with better error handling) =====
@@ -234,22 +294,17 @@ document.addEventListener('DOMContentLoaded', function() {
             const responseMessage = data.message || 'I didn\'t understand that.';
             addMessage(responseMessage, 'assistant');
             statusEl.textContent = 'Ready';
-            speak(responseMessage, language);
 
             // ===== HANDLE ACTIONS =====
-            if ((data.action === 'open_page' || data.action === 'redirect') && data.url) {
-                const params = new URLSearchParams(data.data || {});
-                const targetUrl = params.toString() ? `${data.url}?${params.toString()}` : data.url;
-                window.location.href = targetUrl;
+            if (handleAssistantAction(data)) {
                 return;
             }
 
             if (data.action === 'submit') {
                 const msg = language === 'np' 
-                    ? '✅ कार्य सफलतापूर्वक पूरा भयो!' 
-                    : '✅ Action completed successfully!';
+                    ? 'कार्य सफलतापूर्वक पूरा भयो!' 
+                    : 'Action completed successfully.';
                 addMessage(msg, 'assistant');
-                speak(msg, language);
             }
 
             if (data.done) {
@@ -303,7 +358,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (finalTranscript.trim() !== '') {
             recognition.stop();
             setListeningUi(false, 'Processing...');
-            window.speechSynthesis.cancel();
+            stopSpeaking();
             sendToBackend(finalTranscript.trim());
         }
     };
@@ -362,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isListening) {
             recognition.stop();
             setListeningUi(false);
-            window.speechSynthesis.cancel();
+            stopSpeaking();
         }
     };
 
@@ -375,15 +430,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (isSpeaking) {
-                window.speechSynthesis.cancel();
-                isSpeaking = false;
-                lastSpokenText = '';
-            }
-
             if (!isListening) {
                 recognition.lang = currentLanguage === 'np' ? 'ne-NP' : 'en-US';
-                window.speechSynthesis.cancel();
+                stopSpeaking();
                 toggleBtn.disabled = true;
                 statusEl.textContent = 'Checking microphone...';
 
@@ -402,7 +451,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 recognition.stop();
-                window.speechSynthesis.cancel();
+                stopSpeaking();
                 setListeningUi(false);
             }
         });
@@ -432,8 +481,15 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    if (quickActions) {
-        quickActions.addEventListener('click', function(event) {
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function() {
+            resetAssistantMessages();
+            textInput?.focus();
+        });
+    }
+
+    if (messagesEl) {
+        messagesEl.addEventListener('click', function(event) {
             const button = event.target.closest('[data-prompt]');
             if (!button) return;
 
@@ -449,9 +505,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Start with chat window hidden
-    chatWindow.style.display = 'none';
-
-    // Preload voices
-    loadVoices();
+    restoreHistory();
+    if (shouldRestoreOpen()) {
+        chatWindow.style.display = 'flex';
+        launchBtn.style.transform = 'scale(1.1)';
+    } else {
+        chatWindow.style.display = 'none';
+    }
 });

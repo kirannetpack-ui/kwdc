@@ -889,6 +889,7 @@
             <option value="en">English</option>
             <option value="np">Nepali</option>
         </select>
+        <button id="assistantClearBtn" class="kwdc-assistant-close" aria-label="Clear assistant chat"><i class="fas fa-rotate-left"></i></button>
         <button id="voiceCloseBtn" class="kwdc-assistant-close" aria-label="Close assistant"><i class="fas fa-times"></i></button>
     </div>
 </div>
