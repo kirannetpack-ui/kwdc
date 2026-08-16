@@ -20,6 +20,11 @@ class AssistantActionPlanner
             return $this->unknown();
         }
 
+        $distanceAnswer = $this->planDistanceAnswer($query);
+        if ($distanceAnswer) {
+            return $distanceAnswer;
+        }
+
         $aiPlan = $this->planWithAi($query, $role);
         if ($this->isUsablePlan($aiPlan)) {
             return $this->normalizePlan($aiPlan);
@@ -38,8 +43,8 @@ class AssistantActionPlanner
 You are the KWDC logistics assistant planner. Convert the user request into one safe app action.
 Never include secrets. Never submit final paid/irreversible actions. Prefer opening and prefilling a form.
 Return JSON with keys: intent, action, url, data, message, confidence.
-Allowed intents: pickup_request, dispatch_request, reminder_create, tracking, invoice_lookup, warehouse_rental, equipment_rental, security_booking, general_help.
-Allowed actions: open_page, guidance.
+Allowed intents: pickup_request, dispatch_request, reminder_create, tracking, invoice_lookup, warehouse_rental, equipment_rental, security_booking, distance_answer, general_help.
+Allowed actions: open_page, guidance, answer.
 Use these urls: /pickup/direct-create, /dispatch/direct-create, /reminders, /dispatch, /client/invoices, /my-requests, /equipment-requests/create, /security/dashboard.
 For pickup/dispatch data, use: pickup_address, delivery_address, pickup_contact_person, pickup_contact_phone, recipient_name, recipient_phone, total_distance, total_price, vehicle_type, items_description, scheduled_date, scheduled_time.
 For reminders, use: title, starts_at, remind_at, notes, using datetime-local format YYYY-MM-DDTHH:MM when possible.
@@ -216,6 +221,109 @@ PROMPT;
         return array_filter($data, fn ($value) => $value !== null && $value !== '');
     }
 
+    private function planDistanceAnswer(string $query): ?array
+    {
+        $clean = trim(preg_replace('/\s+/', ' ', $query));
+        $patterns = [
+            '/\bhow\s+far\s+is\s+(.+?)\s+(?:to|from)\s+(.+?)(?:\?|$)/i',
+            '/\bdistance\s+(?:from\s+)?(.+?)\s+to\s+(.+?)(?:\?|$)/i',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (!preg_match($pattern, $clean, $matches)) {
+                continue;
+            }
+
+            $fromName = $this->cleanPlaceName($matches[1]);
+            $toName = $this->cleanPlaceName($matches[2]);
+            $from = $this->knownPlace($fromName);
+            $to = $this->knownPlace($toName);
+
+            if (!$from || !$to) {
+                return [
+                    'intent' => 'distance_answer',
+                    'action' => 'answer',
+                    'url' => '#',
+                    'data' => [
+                        'from' => $fromName,
+                        'to' => $toName,
+                    ],
+                    'message' => "I do not have enough local map data for {$fromName} to {$toName} yet. Try nearby known places like Koteshwor, Bhaktapur, Boudha, Thamel, Kalanki, Kathmandu, Patan, Pokhara, or Birgunj.",
+                    'confidence' => 0.45,
+                ];
+            }
+
+            $straightKm = $this->haversineKm($from['lat'], $from['lng'], $to['lat'], $to['lng']);
+            $roadKm = max($straightKm, $straightKm * 1.25);
+            $roundedKm = max(1, round($roadKm));
+            $minMinutes = max(8, (int) round(($roadKm / 28) * 60));
+            $maxMinutes = max($minMinutes + 8, (int) round(($roadKm / 18) * 60));
+
+            return [
+                'intent' => 'distance_answer',
+                'action' => 'answer',
+                'url' => '#',
+                'data' => [
+                    'from' => $from['name'],
+                    'to' => $to['name'],
+                    'estimated_distance_km' => $roundedKm,
+                    'estimated_time_minutes' => "{$minMinutes}-{$maxMinutes}",
+                ],
+                'message' => "{$from['name']} to {$to['name']} is roughly {$roundedKm} km by road, usually about {$minMinutes}-{$maxMinutes} minutes depending on traffic.",
+                'confidence' => 0.78,
+            ];
+        }
+
+        return null;
+    }
+
+    private function cleanPlaceName(string $value): string
+    {
+        $value = preg_replace('/\b(distance|far|km|kilometer|kilometers|road|by\s+road|from|to|is|the)\b/i', ' ', $value);
+
+        return ucwords($this->cleanValue($value));
+    }
+
+    private function knownPlace(string $name): ?array
+    {
+        $key = strtolower(preg_replace('/[^a-z0-9]+/i', '', $name));
+        $places = [
+            'koteshwor' => ['name' => 'Koteshwor', 'lat' => 27.6785, 'lng' => 85.3491],
+            'koteswor' => ['name' => 'Koteshwor', 'lat' => 27.6785, 'lng' => 85.3491],
+            'koteshor' => ['name' => 'Koteshwor', 'lat' => 27.6785, 'lng' => 85.3491],
+            'koteswar' => ['name' => 'Koteshwor', 'lat' => 27.6785, 'lng' => 85.3491],
+            'ateshor' => ['name' => 'Koteshwor', 'lat' => 27.6785, 'lng' => 85.3491],
+            'ateshwar' => ['name' => 'Koteshwor', 'lat' => 27.6785, 'lng' => 85.3491],
+            'bhaktapur' => ['name' => 'Bhaktapur', 'lat' => 27.6710, 'lng' => 85.4298],
+            'bhatapur' => ['name' => 'Bhaktapur', 'lat' => 27.6710, 'lng' => 85.4298],
+            'bhaktpur' => ['name' => 'Bhaktapur', 'lat' => 27.6710, 'lng' => 85.4298],
+            'boudha' => ['name' => 'Boudha', 'lat' => 27.7215, 'lng' => 85.3620],
+            'boudhanath' => ['name' => 'Boudha', 'lat' => 27.7215, 'lng' => 85.3620],
+            'thamel' => ['name' => 'Thamel', 'lat' => 27.7154, 'lng' => 85.3123],
+            'kalanki' => ['name' => 'Kalanki', 'lat' => 27.6932, 'lng' => 85.2816],
+            'baneshwor' => ['name' => 'Baneshwor', 'lat' => 27.6889, 'lng' => 85.3358],
+            'newbaneshwor' => ['name' => 'New Baneshwor', 'lat' => 27.6889, 'lng' => 85.3358],
+            'patan' => ['name' => 'Patan', 'lat' => 27.6766, 'lng' => 85.3188],
+            'lalitpur' => ['name' => 'Lalitpur', 'lat' => 27.6766, 'lng' => 85.3188],
+            'kathmandu' => ['name' => 'Kathmandu', 'lat' => 27.7172, 'lng' => 85.3240],
+            'pokhara' => ['name' => 'Pokhara', 'lat' => 28.2096, 'lng' => 83.9856],
+            'birgunj' => ['name' => 'Birgunj', 'lat' => 27.0104, 'lng' => 84.8774],
+        ];
+
+        return $places[$key] ?? null;
+    }
+
+    private function haversineKm(float $fromLat, float $fromLng, float $toLat, float $toLng): float
+    {
+        $earthRadiusKm = 6371;
+        $latDelta = deg2rad($toLat - $fromLat);
+        $lngDelta = deg2rad($toLng - $fromLng);
+        $a = sin($latDelta / 2) ** 2
+            + cos(deg2rad($fromLat)) * cos(deg2rad($toLat)) * sin($lngDelta / 2) ** 2;
+
+        return $earthRadiusKm * 2 * atan2(sqrt($a), sqrt(1 - $a));
+    }
+
     private function extractReminderData(string $query): array
     {
         $title = preg_replace('/\b(remind me to|remind|reminder|calendar|schedule)\b/i', '', $query);
@@ -266,7 +374,7 @@ PROMPT;
     {
         $intent = $plan['intent'] ?? 'general_help';
         $url = $plan['url'] ?? $this->urlForIntent($intent);
-        $action = in_array($plan['action'] ?? null, ['open_page', 'guidance'], true) ? $plan['action'] : 'guidance';
+        $action = in_array($plan['action'] ?? null, ['open_page', 'guidance', 'answer'], true) ? $plan['action'] : 'guidance';
 
         return [
             'intent' => $intent,
@@ -293,6 +401,7 @@ PROMPT;
             'warehouse_rental',
             'equipment_rental',
             'security_booking',
+            'distance_answer',
             'general_help',
         ], true);
     }

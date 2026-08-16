@@ -205,6 +205,206 @@ document.addEventListener('DOMContentLoaded', function() {
         addMessage(text, 'assistant');
     }
 
+    function makeCssSafe(value) {
+        if (window.CSS?.escape) {
+            return CSS.escape(value);
+        }
+
+        return String(value).replace(/"/g, '\\"');
+    }
+
+    function prettifyFieldName(value) {
+        return String(value || '')
+            .replace(/\[[^\]]*\]/g, ' ')
+            .replace(/[_-]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .replace(/\b\w/g, letter => letter.toUpperCase());
+    }
+
+    function normalizeFieldText(value) {
+        return String(value || '')
+            .toLowerCase()
+            .replace(/[_-]+/g, ' ')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\b(the|a|an|field|input|box|please|current|this|page|request|form|value)\b/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function fieldTextParts(field) {
+        const id = field.id || '';
+        const parts = [
+            field.name,
+            id,
+            field.placeholder,
+            field.getAttribute('aria-label'),
+            field.dataset.label,
+        ];
+
+        if (id) {
+            const label = document.querySelector(`label[for="${makeCssSafe(id)}"]`);
+            if (label) parts.push(label.textContent);
+        }
+
+        const wrappedLabel = field.closest('label');
+        if (wrappedLabel) parts.push(wrappedLabel.textContent);
+
+        const nearbyLabel = field.closest('.form-group, .mb-3, .mb-4, .col, .col-md-6, .row')?.querySelector('label');
+        if (nearbyLabel) parts.push(nearbyLabel.textContent);
+
+        return parts.filter(Boolean).map(part => String(part).trim()).filter(Boolean);
+    }
+
+    function visibleAssistantFields() {
+        return Array.from(document.querySelectorAll('input, textarea, select'))
+            .filter(field => {
+                const type = (field.getAttribute('type') || '').toLowerCase();
+                if (field.disabled || field.readOnly) return false;
+                if (['hidden', 'password', 'file', 'submit', 'button', 'reset'].includes(type)) return false;
+                if (field.name && ['_token', '_method'].includes(field.name)) return false;
+
+                const style = window.getComputedStyle(field);
+                const rect = field.getBoundingClientRect();
+                return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+            });
+    }
+
+    function fieldAliasesForQuery(query) {
+        const normalized = normalizeFieldText(query);
+        const aliases = [];
+
+        if (/\b(contact person|contact name|pickup contact|person name)\b/.test(normalized)) {
+            aliases.push('pickup contact person', 'contact person', 'contact name', 'pickup_contact_person');
+        }
+        if (/\b(phone|mobile|number|contact phone|contact number)\b/.test(normalized)) {
+            aliases.push('pickup contact phone', 'contact phone', 'recipient phone', 'phone', 'mobile');
+        }
+        if (/\b(email|mail)\b/.test(normalized)) {
+            aliases.push('email', 'email address');
+        }
+        if (/\b(pickup|from|origin|collection)\b/.test(normalized) && /\b(address|location|place)\b/.test(normalized)) {
+            aliases.push('pickup address', 'from address', 'origin', 'pickup_address');
+        }
+        if (/\b(delivery|drop|destination|to|recipient)\b/.test(normalized) && /\b(address|location|place)\b/.test(normalized)) {
+            aliases.push('delivery address', 'destination address', 'drop address', 'delivery_address');
+        }
+        if (/\b(recipient|receiver|customer)\b/.test(normalized) && /\b(name|person)\b/.test(normalized)) {
+            aliases.push('recipient name', 'receiver name');
+        }
+        if (/\b(item|items|cargo|goods|description|details)\b/.test(normalized)) {
+            aliases.push('items description', 'cargo description', 'description');
+        }
+        if (/\b(price|amount|cost|total|rate)\b/.test(normalized)) {
+            aliases.push('total price', 'amount', 'price');
+        }
+        if (/\b(distance|km|kilometer)\b/.test(normalized)) {
+            aliases.push('total distance', 'distance', 'km');
+        }
+        if (/\b(date|day)\b/.test(normalized)) {
+            aliases.push('scheduled date', 'date');
+        }
+        if (/\b(time|hour)\b/.test(normalized)) {
+            aliases.push('scheduled time', 'time');
+        }
+        if (/\b(vehicle|truck|van|bike)\b/.test(normalized)) {
+            aliases.push('vehicle type', 'vehicle');
+        }
+
+        aliases.push(normalized);
+        return aliases.filter(Boolean);
+    }
+
+    function scoreField(field, requestedLabel) {
+        const needles = fieldAliasesForQuery(requestedLabel).map(normalizeFieldText).filter(Boolean);
+        const haystackParts = fieldTextParts(field).map(normalizeFieldText).filter(Boolean);
+        const haystack = haystackParts.join(' ');
+
+        return needles.reduce((best, needle) => {
+            if (!needle) return best;
+            if (haystackParts.includes(needle)) return Math.max(best, 100);
+            if (haystack.includes(needle)) return Math.max(best, 80);
+
+            const words = needle.split(' ').filter(word => word.length > 1);
+            const matches = words.filter(word => haystack.includes(word)).length;
+            if (matches === words.length && words.length > 0) return Math.max(best, 70);
+            if (matches > 0) return Math.max(best, matches * 18);
+            return best;
+        }, 0);
+    }
+
+    function findVisibleField(requestedLabel) {
+        return visibleAssistantFields()
+            .map(field => ({ field, score: scoreField(field, requestedLabel) }))
+            .filter(item => item.score >= 35)
+            .sort((a, b) => b.score - a.score)[0]?.field || null;
+    }
+
+    function fillAssistantField(field, value) {
+        const type = (field.getAttribute('type') || '').toLowerCase();
+        const cleanValue = String(value).trim();
+
+        if (field.tagName === 'SELECT') {
+            const normalizedValue = normalizeFieldText(cleanValue);
+            const match = Array.from(field.options).find(option => {
+                return normalizeFieldText(option.textContent) === normalizedValue
+                    || normalizeFieldText(option.value) === normalizedValue
+                    || normalizeFieldText(option.textContent).includes(normalizedValue);
+            });
+            if (match) field.value = match.value;
+        } else if (type === 'checkbox' || type === 'radio') {
+            field.checked = /^(yes|true|on|checked|enable|enabled|1)$/i.test(cleanValue);
+        } else {
+            field.value = cleanValue;
+        }
+
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+        field.focus({ preventScroll: true });
+        field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function parseCurrentPageFill(text) {
+        const clean = text.trim().replace(/\s+/g, ' ');
+        const patterns = [
+            /^(?:please\s+)?(?:put|set|change|fill|add|make)\s+(?:the\s+)?(.+?)\s+(?:as|to|=)\s+(.+?)(?=\s+(?:on|for|in|at)\s+.+$|$)/i,
+            /^(?:please\s+)?(?:enter|type)\s+(.+?)\s+(?:in|into|for)\s+(?:the\s+)?(.+?)$/i,
+        ];
+
+        for (const pattern of patterns) {
+            const match = clean.match(pattern);
+            if (!match) continue;
+
+            if (/^(?:please\s+)?(?:enter|type)\b/i.test(clean)) {
+                return { label: match[2], value: match[1] };
+            }
+
+            return { label: match[1], value: match[2] };
+        }
+
+        return null;
+    }
+
+    function tryCurrentPageFill(text) {
+        const command = parseCurrentPageFill(text);
+        if (!command) {
+            return false;
+        }
+
+        const field = findVisibleField(command.label);
+        if (!field) {
+            return false;
+        }
+
+        addMessage(text, 'user');
+        lastAssistantNotice = '';
+        fillAssistantField(field, command.value);
+        const fieldName = fieldTextParts(field)[0] || field.name || field.id || command.label;
+        addAssistantNotice(`Done. I set ${prettifyFieldName(fieldName)} to ${command.value}. Review it before saving.`);
+        statusEl.textContent = 'Filled current page';
+        return true;
+    }
+
     function applyDataToCurrentPage(data) {
         if (!data || typeof data !== 'object') {
             return false;
@@ -225,16 +425,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const names = fieldAliases[key] || [key];
             const field = names
-                .map((name) => document.querySelector(`[name="${CSS.escape(name)}"], #${CSS.escape(name)}`))
+                .map((name) => document.querySelector(`[name="${makeCssSafe(name)}"], #${makeCssSafe(name)}`))
                 .find(Boolean);
 
             if (!field) {
                 return;
             }
 
-            field.value = value;
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-            field.dispatchEvent(new Event('change', { bubbles: true }));
+            fillAssistantField(field, value);
             filled = true;
         });
 
@@ -336,6 +534,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    function handleAssistantInput(text) {
+        if (tryCurrentPageFill(text)) {
+            if (textInput) textInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            return;
+        }
+
+        sendToBackend(text);
+    }
+
     // ===== RECOGNITION EVENTS =====
     async function ensureMicrophoneAccess() {
         if (!navigator.mediaDevices?.getUserMedia) {
@@ -369,7 +577,7 @@ document.addEventListener('DOMContentLoaded', function() {
             recognition.stop();
             setListeningUi(false, 'Processing...');
             stopSpeaking();
-            sendToBackend(finalTranscript.trim());
+            handleAssistantInput(finalTranscript.trim());
         }
     };
 
@@ -479,7 +687,7 @@ document.addEventListener('DOMContentLoaded', function() {
             textInput.disabled = true;
             sendBtn.disabled = true;
             statusEl.textContent = 'Processing...';
-            sendToBackend(text);
+            handleAssistantInput(text);
         };
 
         sendBtn.addEventListener('click', sendTypedMessage);
@@ -511,7 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 textInput.focus();
             }
 
-            sendToBackend(prompt);
+            handleAssistantInput(prompt);
         });
     }
 

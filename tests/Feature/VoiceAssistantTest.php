@@ -103,6 +103,26 @@ class VoiceAssistantTest extends TestCase
         $this->assertSame('srijan gautam', $data['data']['pickup_contact_person'] ?? null);
     }
 
+    public function test_voice_assistant_answers_local_distance_questions(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'distance@example.com']);
+        $this->actingAs($user);
+
+        $response = $this->postJson('/ai/voice-assistant', [
+            'message' => 'how far is ateshor to bhatapur',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertSame('answer', $data['action']);
+        $this->assertSame('distance_answer', $data['intent']);
+        $this->assertStringContainsString('Koteshwor', $data['message']);
+        $this->assertStringContainsString('Bhaktapur', $data['message']);
+        $this->assertStringContainsString('km', $data['message']);
+    }
+
     public function test_voice_assistant_responds_with_message(): void
     {
         $user = User::factory()->create(['role' => 'client', 'email' => 'msg@example.com']);
