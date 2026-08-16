@@ -43,6 +43,7 @@ class Kernel extends HttpKernel
         'client' => \App\Http\Middleware\ClientMiddleware::class,
         'driver' => \App\Http\Middleware\DriverMiddleware::class,
         'property_owner' => \App\Http\Middleware\PropertyOwnerMiddleware::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
     ];
 
     protected $middlewareAliases = [
@@ -58,5 +59,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
     ];
 }

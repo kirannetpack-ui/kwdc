@@ -113,6 +113,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/ai/voice-assistant', [AiVoiceController::class, 'voiceAssistant'])->name('ai.voice.assistant');
 
     // ==================== SECURITY AGENCY DASHBOARD (Agency’s own) ====================
+    Route::middleware('role:security_agency')->group(function () {
     Route::get('/security/dashboard', [SecurityDashboardController::class, 'index'])->name('security.dashboard');
 
     // Security agency profile and compliance details
@@ -154,6 +155,7 @@ Route::middleware(['auth'])->group(function () {
             'update'  => 'security.assignments.update',
             'destroy' => 'security.assignments.destroy',
         ]);
+    });
 
     // ==================== PROFILE ====================
     Route::prefix('profile')->name('profile.')->group(function () {
@@ -259,7 +261,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/client/invoices', [InvoiceController::class, 'clientIndex'])->name('invoices.client-index');
 
     // ==================== CLIENT ZONE ====================
-    Route::prefix('client')->name('client.')->group(function () {
+    Route::prefix('client')->middleware('role:client')->name('client.')->group(function () {
         Route::get('/driver-rates', [ClientController::class, 'driverRates'])->name('driver.rates');
         Route::get('/reports', [ClientController::class, 'reports'])->name('reports');
         Route::get('/my-stock', [ClientRequestHandler::class, 'myStock'])->name('my-stock');
@@ -291,7 +293,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ==================== DRIVER ZONE ====================
-    Route::prefix('driver')->name('driver.')->group(function () {
+    Route::prefix('driver')->middleware('role:driver')->name('driver.')->group(function () {
         Route::get('/dashboard', [DriverController::class, 'dashboard'])->name('dashboard');
         Route::get('/jobs', [DriverController::class, 'jobs'])->name('jobs');
         Route::get('/available-jobs', [DriverController::class, 'availableJobs'])->name('available-jobs');
@@ -326,7 +328,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ==================== EQUIPMENT OWNER ZONE ====================
-    Route::prefix('equipment')->name('equipment.')->group(function () {
+    Route::prefix('equipment')->middleware('role:equipment_owner')->name('equipment.')->group(function () {
         Route::get('/dashboard', [EquipmentController::class, 'dashboard'])->name('dashboard');
         Route::get('/register', [EquipmentController::class, 'create'])->name('register');
         Route::post('/', [EquipmentController::class, 'store'])->name('store');
@@ -368,7 +370,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ==================== PROPERTY OWNER ZONE ====================
-    Route::prefix('property')->name('property.')->group(function () {
+    Route::prefix('property')->middleware('role:property_owner')->name('property.')->group(function () {
         Route::get('/pending', [PropertyOwnerController::class, 'pending'])->name('pending');
         Route::get('/approved', [PropertyOwnerController::class, 'approved'])->name('approved');
         Route::get('/rejected', [PropertyOwnerController::class, 'rejected'])->name('rejected');
@@ -531,6 +533,7 @@ Route::middleware(['auth'])->group(function () {
 
 // Incidents
 Route::resource('security/incidents', SecurityIncidentController::class)
+    ->middleware('role:security_agency')
     ->names([
         'index'   => 'security.incidents.index',
         'create'  => 'security.incidents.create',
