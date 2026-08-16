@@ -116,6 +116,8 @@ class VoiceAssistantTest extends TestCase
         $this->assertStringContainsString('id="voiceTextInput"', $html);
         $this->assertStringContainsString('id="voiceSendBtn"', $html);
         $this->assertStringContainsString('KWDC Assistant', $html);
+        $this->assertStringContainsString('id="assistantQuickActions"', $html);
+        $this->assertStringContainsString('kwdc-assistant-panel', $html);
         $this->assertStringNotContainsString('id="ai-chat-btn"', $html);
         $this->assertStringNotContainsString('id="voice-btn"', $html);
     }

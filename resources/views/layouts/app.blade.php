@@ -661,37 +661,259 @@
 <!-- ============================================================ -->
 <!-- KWDC ASSISTANT -->
 <!-- ============================================================ -->
-<div id="voice-assistant-container" style="position: fixed; bottom: 40px; right: 25px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-end;">
-    <div class="voice-chat-window" id="voiceChatWindow" style="background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden; width: 380px; max-width: 90vw; max-height: 80vh; display: none; flex-direction: column; position: absolute; bottom: 75px; right: 0;">
-        <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 14px 20px; color: white; display: flex; justify-content: space-between; align-items: center;">
-    <div>
-        <i class="fas fa-headset me-2"></i> KWDC Assistant
-        <select id="voiceLangSelect" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 6px; font-size: 11px; margin-left: 8px;">
-            <option value="en" style="background: #1e293b;">🇬🇧 English</option>
-            <option value="np" style="background: #1e293b;">🇳🇵 Nepali</option>
-        </select>
+<style>
+    .kwdc-assistant {
+        position: fixed;
+        bottom: 32px;
+        right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    .kwdc-assistant-panel {
+        width: 390px;
+        max-width: calc(100vw - 32px);
+        height: 560px;
+        max-height: calc(100vh - 112px);
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        bottom: 76px;
+        right: 0;
+        overflow: hidden;
+        background: #ffffff;
+        border: 1px solid #dfe5ee;
+        border-radius: 8px;
+        box-shadow: 0 18px 50px rgba(15, 23, 42, 0.22);
+    }
+    .kwdc-assistant-header {
+        padding: 14px 16px;
+        color: #ffffff;
+        background: #14213d;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    .kwdc-assistant-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+    .kwdc-assistant-title strong {
+        display: block;
+        font-size: 15px;
+        line-height: 1.15;
+    }
+    .kwdc-assistant-title span {
+        display: block;
+        font-size: 11px;
+        color: #b9c6d8;
+        line-height: 1.2;
+    }
+    .kwdc-assistant-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .kwdc-assistant-select {
+        height: 30px;
+        background: #20314f;
+        color: #ffffff;
+        border: 1px solid #405272;
+        border-radius: 6px;
+        padding: 0 8px;
+        font-size: 12px;
+    }
+    .kwdc-assistant-close {
+        color: #ffffff;
+        background: transparent;
+        border: 0;
+        width: 30px;
+        height: 30px;
+        border-radius: 6px;
+    }
+    .kwdc-assistant-close:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+    .kwdc-assistant-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px;
+        background: #f4f7fb;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .kwdc-assistant-msg {
+        display: flex;
+        flex-direction: column;
+        max-width: 86%;
+    }
+    .kwdc-assistant-msg.user-msg {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+    .kwdc-assistant-msg.assistant-msg {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+    .kwdc-assistant-bubble {
+        padding: 11px 13px;
+        border-radius: 8px;
+        line-height: 1.45;
+        font-size: 14px;
+        white-space: pre-line;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+    .assistant-msg .kwdc-assistant-bubble {
+        background: #ffffff;
+        color: #172033;
+        border: 1px solid #e2e8f0;
+    }
+    .user-msg .kwdc-assistant-bubble {
+        background: #f59e0b;
+        color: #ffffff;
+    }
+    .kwdc-quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 4px;
+        width: 100%;
+    }
+    .kwdc-quick-action {
+        border: 1px solid #d9e2ee;
+        background: #ffffff;
+        color: #24324a;
+        border-radius: 8px;
+        padding: 9px 10px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    .kwdc-quick-action:hover {
+        border-color: #f59e0b;
+        color: #9a5b00;
+    }
+    .kwdc-assistant-footer {
+        padding: 12px;
+        border-top: 1px solid #e2e8f0;
+        background: #ffffff;
+    }
+    .kwdc-assistant-status-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .kwdc-assistant-mic {
+        background: #f59e0b;
+        border: none;
+        border-radius: 8px;
+        padding: 9px 12px;
+        min-width: 94px;
+        color: #ffffff;
+        font-weight: 700;
+    }
+    .kwdc-assistant-mic.listening {
+        background: #dc2626;
+    }
+    .kwdc-assistant-status {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.3;
+    }
+    .kwdc-assistant-input-row {
+        display: flex;
+        border: 1px solid #cfd8e5;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    .kwdc-assistant-input-row input {
+        flex: 1;
+        border: 0;
+        min-width: 0;
+        padding: 12px;
+        font-size: 14px;
+        outline: none;
+    }
+    .kwdc-assistant-send {
+        width: 52px;
+        border: 0;
+        background: #14213d;
+        color: #ffffff;
+    }
+    .kwdc-assistant-launch {
+        width: 60px;
+        height: 60px;
+        background: #f59e0b;
+        border: none;
+        color: white;
+        font-size: 24px;
+        border-radius: 50%;
+        box-shadow: 0 8px 24px rgba(245, 158, 11, 0.38);
+    }
+    @media (max-width: 640px) {
+        .kwdc-assistant {
+            right: 16px;
+            bottom: 18px;
+        }
+        .kwdc-assistant-panel {
+            right: -8px;
+            width: calc(100vw - 24px);
+            height: min(590px, calc(100vh - 96px));
+        }
+    }
+</style>
+
+<div id="voice-assistant-container" class="kwdc-assistant">
+    <div class="kwdc-assistant-panel" id="voiceChatWindow">
+        <div class="kwdc-assistant-header">
+    <div class="kwdc-assistant-title">
+        <i class="fas fa-headset"></i>
+        <div>
+            <strong>KWDC Assistant</strong>
+            <span>Free mode: forms, reminders, tracking</span>
+        </div>
     </div>
-    <button id="voiceCloseBtn" class="btn btn-sm btn-link text-white"><i class="fas fa-times"></i></button>
+    <div class="kwdc-assistant-actions">
+        <select id="voiceLangSelect" class="kwdc-assistant-select">
+            <option value="en">English</option>
+            <option value="np">Nepali</option>
+        </select>
+        <button id="voiceCloseBtn" class="kwdc-assistant-close" aria-label="Close assistant"><i class="fas fa-times"></i></button>
+    </div>
 </div>
-        <div class="voice-messages" id="voiceMessages" style="height: 350px; overflow-y: auto; padding: 16px; background: #f8fafc; display: flex; flex-direction: column;">
-            <div class="assistant-msg">
-                <div class="msg-bubble" style="background: #e5e7eb; color: #1e293b; padding: 10px 14px; border-radius: 12px; margin: 4px 0; max-width: 80%; align-self: flex-start;">
-                   Tell me what you need. I can open and prefill pickup, dispatch, tracking, invoices, equipment, security, and reminders.
+        <div class="kwdc-assistant-messages" id="voiceMessages">
+            <div class="kwdc-assistant-msg assistant-msg">
+                <div class="kwdc-assistant-bubble">
+                    Tell me what you need. I can prepare pickup, dispatch, tracking, invoices, equipment, security, and reminder forms.
+                </div>
+                <div class="kwdc-quick-actions" id="assistantQuickActions">
+                    <button type="button" class="kwdc-quick-action" data-prompt="Create a pickup from Boudha to Bhaktapur">Pickup</button>
+                    <button type="button" class="kwdc-quick-action" data-prompt="Create a dispatch from Kathmandu to Pokhara">Dispatch</button>
+                    <button type="button" class="kwdc-quick-action" data-prompt="Track my dispatch order">Track</button>
+                    <button type="button" class="kwdc-quick-action" data-prompt="Remind me to call the driver tomorrow at 5 PM">Reminder</button>
                 </div>
             </div>
         </div>
-        <div style="padding: 12px; border-top: 1px solid #e5e7eb; background: white;">
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
-                <button id="voiceToggleBtn" class="btn" style="background: #f59e0b; border: none; border-radius: 30px; padding: 8px 20px; color: white; font-weight: 600;"><i class="fas fa-microphone"></i> Start</button>
-                <span id="voiceStatus" style="font-size: 13px; color: #64748b;">Click to speak or type below</span>
+        <div class="kwdc-assistant-footer">
+            <div class="kwdc-assistant-status-row">
+                <button id="voiceToggleBtn" class="kwdc-assistant-mic"><i class="fas fa-microphone"></i> Start</button>
+                <span id="voiceStatus" class="kwdc-assistant-status">Speak or type a request</span>
             </div>
-            <div class="input-group">
-                <input type="text" id="voiceTextInput" class="form-control" placeholder="Type a request, e.g. pickup from Boudha to Bhaktapur" style="border: 1px solid #e2e8f0; border-right: none; border-radius: 8px 0 0 8px; padding: 10px 12px; font-size: 14px;">
-                <button id="voiceSendBtn" class="btn" style="background: #1e293b; border: 1px solid #1e293b; border-radius: 0 8px 8px 0; color: white;"><i class="fas fa-paper-plane"></i></button>
+            <div class="kwdc-assistant-input-row">
+                <input type="text" id="voiceTextInput" placeholder="Ask for pickup, dispatch, tracking, or reminder">
+                <button id="voiceSendBtn" class="kwdc-assistant-send" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
     </div>
-    <button id="voiceLaunchBtn" class="btn rounded-circle shadow-lg" style="width: 60px; height: 60px; background: #f59e0b; border: none; color: white; font-size: 28px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
+    <button id="voiceLaunchBtn" class="kwdc-assistant-launch" aria-label="Open KWDC assistant">
         <i class="fas fa-headset"></i>
     </button>
 </div>

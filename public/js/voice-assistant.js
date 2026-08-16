@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const langSelect = document.getElementById('voiceLangSelect');
     const textInput = document.getElementById('voiceTextInput');
     const sendBtn = document.getElementById('voiceSendBtn');
+    const quickActions = document.getElementById('assistantQuickActions');
 
     let currentLanguage = 'en'; // default
     let isListening = false;
@@ -21,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let heardSpeech = false;
     let lastRecognitionError = null;
     let recognitionStartedAt = 0;
+    let lastAssistantNotice = '';
 
     // ===== Load Voices (fix for getVoices empty array) =====
     let voicesLoaded = false;
@@ -81,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleBtn.innerHTML = active
             ? '<i class="fas fa-stop"></i> Stop'
             : '<i class="fas fa-microphone"></i> Start';
-        statusEl.textContent = message || (active ? 'Listening... speak now' : 'Click to speak or type below');
+        statusEl.textContent = message || (active ? 'Listening... speak now' : 'Speak or type a request');
         toggleBtn.classList.toggle('listening', active);
     }
 
@@ -174,21 +176,36 @@ document.addEventListener('DOMContentLoaded', function() {
     function addMessage(text, sender) {
         if (!messagesEl || !text) return;
         const div = document.createElement('div');
-        div.className = sender === 'user' ? 'user-msg' : 'assistant-msg';
+        div.className = sender === 'user'
+            ? 'kwdc-assistant-msg user-msg'
+            : 'kwdc-assistant-msg assistant-msg';
         const isNepali = currentLanguage === 'np';
         const bubble = document.createElement('div');
-        bubble.className = 'msg-bubble';
+        bubble.className = 'kwdc-assistant-bubble';
         bubble.textContent = text;
-        bubble.style.cssText = `background: ${sender === 'user' ? '#f59e0b' : '#e5e7eb'}; color: ${sender === 'user' ? 'white' : '#1e293b'}; padding: 10px 14px; border-radius: 12px; margin: 4px 0; max-width: 80%; align-self: ${sender === 'user' ? 'flex-end' : 'flex-start'}; font-size: ${isNepali ? '16px' : '14px'}; white-space: pre-line;`;
+        if (isNepali) {
+            bubble.style.fontSize = '15px';
+        }
         div.appendChild(bubble);
         messagesEl.appendChild(div);
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    function addAssistantNotice(text) {
+        if (!text || text === lastAssistantNotice) {
+            return;
+        }
+
+        lastAssistantNotice = text;
+        addMessage(text, 'assistant');
+    }
+
     // ===== SEND TO BACKEND (with better error handling) =====
     function sendToBackend(text) {
         addMessage(text, 'user');
+        lastAssistantNotice = '';
         const language = currentLanguage;
+        statusEl.textContent = 'Working on it...';
 
         fetch('/ai/voice-assistant', {
             method: 'POST',
@@ -216,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const responseMessage = data.message || 'I didn\'t understand that.';
             addMessage(responseMessage, 'assistant');
+            statusEl.textContent = 'Ready';
             speak(responseMessage, language);
 
             // ===== HANDLE ACTIONS =====
@@ -243,8 +261,9 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('❌ Backend error:', err);
             const msg = currentLanguage === 'np' 
                 ? 'क्षमा गर्नुहोस्, मैले एउटा त्रुटि भेटाएँ। कृपया फेरि प्रयास गर्नुहोस्।' 
-                : 'Sorry, I encountered an error. Please try again.';
-            addMessage(msg, 'assistant');
+                : 'Sorry, I could not complete that. You can try again or use the form directly.';
+            addAssistantNotice(msg);
+            statusEl.textContent = 'Could not complete request';
         })
         .finally(() => {
             if (textInput) textInput.disabled = false;
@@ -265,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } catch (error) {
             console.warn('Microphone access failed:', error);
             statusEl.textContent = 'Mic permission blocked. Type below.';
-            addMessage('Microphone permission is blocked or unavailable. Please allow microphone access in your browser, or type your request below.', 'assistant');
+            addAssistantNotice('Microphone permission is blocked or unavailable. Please allow microphone access in your browser, or type your request below.');
             return false;
         }
     }
@@ -337,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (messages[event.error]) {
             statusEl.textContent = event.error === 'no-speech' ? 'I did not hear anything. Try again.' : 'Mic unavailable. Type below.';
-            addMessage(messages[event.error], 'assistant');
+            addAssistantNotice(messages[event.error]);
         }
 
         if (isListening) {
@@ -410,6 +429,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 event.preventDefault();
                 sendTypedMessage();
             }
+        });
+    }
+
+    if (quickActions) {
+        quickActions.addEventListener('click', function(event) {
+            const button = event.target.closest('[data-prompt]');
+            if (!button) return;
+
+            const prompt = button.dataset.prompt;
+            if (!prompt) return;
+
+            if (textInput) {
+                textInput.value = prompt;
+                textInput.focus();
+            }
+
+            sendToBackend(prompt);
         });
     }
 
