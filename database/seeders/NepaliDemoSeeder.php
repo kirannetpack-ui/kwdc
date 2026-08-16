@@ -139,10 +139,25 @@ class NepaliDemoSeeder extends Seeder
         $this->securityGood($agencyId, 'Handheld Metal Detector', 'screening');
         $this->securityAssignment($warehouseOne->id, $agencyId, $guardId);
 
-        foreach ([$admin, $client, $clientTwo, $driver, $driverTwo, $propertyOwner, $equipmentOwner, $securityUser] as $user) {
+        $extraUsers = $this->seedHeavyDemoLayer(
+            $password,
+            $admin,
+            [$client, $clientTwo],
+            [$driver, $driverTwo],
+            $propertyOwner,
+            $equipmentOwner,
+            $securityUser,
+            [$warehouseOne, $warehouseTwo],
+            $agencyId
+        );
+
+        foreach (array_merge([$admin, $client, $clientTwo, $driver, $driverTwo, $propertyOwner, $equipmentOwner, $securityUser], $extraUsers) as $user) {
             $this->reminder($user->id, 'Follow up demo calendar task', 'Check today dashboard and pending actions.');
             $this->reminder($user->id, 'Monthly billing review', 'Review demo invoices, pickup requests, and dispatch payments.');
-            $this->notification($user->id, 'Demo data ready', 'Nepali demo records have been loaded for this role.');
+            $this->reminder($user->id, 'Morning operations standup', 'Review assigned jobs, stock alerts, invoices, and messages before 10 AM.');
+            $this->notification($user->id, 'Demo data ready', 'Nepali demo records have been loaded for this role.', 'demo');
+            $this->notification($user->id, 'Reminder calendar synced', 'Your calendar now has demo reminders and follow-up tasks.', 'reminder');
+            $this->notification($user->id, 'Unread demo activity', 'There are fresh role-specific notifications waiting in this account.', 'activity');
         }
     }
 
@@ -223,7 +238,7 @@ class NepaliDemoSeeder extends Seeder
         );
     }
 
-    private function dispatch(?int $clientId, ?int $driverId, string $tracking, string $pickup, string $delivery, float $distance, int $price, string $status): void
+    private function dispatch(?int $clientId, ?int $driverId, string $tracking, string $pickup, string $delivery, float $distance, int $price, string $status): int
     {
         DB::table('dispatch_orders')->updateOrInsert(
             ['tracking_id' => $tracking],
@@ -248,6 +263,8 @@ class NepaliDemoSeeder extends Seeder
 
         $dispatchId = (int) DB::table('dispatch_orders')->where('tracking_id', $tracking)->value('id');
         $this->deliveryStop($dispatchId, 1, $delivery, $status);
+
+        return $dispatchId;
     }
 
     private function deliveryStop(int $dispatchId, int $stopNumber, string $address, string $status): void
@@ -269,10 +286,10 @@ class NepaliDemoSeeder extends Seeder
         );
     }
 
-    private function pickup(int $clientId, ?int $driverId, string $tracking, string $pickupAddress, float $distance, int $price, string $status, string $destination): void
+    private function pickup(int $clientId, ?int $driverId, string $tracking, string $pickupAddress, float $distance, int $price, string $status, string $destination): int
     {
         if (!Schema::hasTable('pickup_requests')) {
-            return;
+            return 0;
         }
 
         DB::table('pickup_requests')->updateOrInsert(
@@ -303,6 +320,8 @@ class NepaliDemoSeeder extends Seeder
 
         $pickupId = (int) DB::table('pickup_requests')->where('tracking_id', $tracking)->value('id');
         $this->pickupStop($pickupId, 1, $pickupAddress, $status);
+
+        return $pickupId;
     }
 
     private function pickupStop(int $pickupId, int $stopNumber, string $address, string $status): void
@@ -349,7 +368,13 @@ class NepaliDemoSeeder extends Seeder
             ]
         );
 
-        return (int) DB::table('stocks')->where('batch_id', $batch)->value('id');
+        $stockId = (int) DB::table('stocks')->where('batch_id', $batch)->value('id');
+
+        for ($box = 1; $box <= 3; $box++) {
+            $this->box($stockId, $clientId, strtoupper($batch) . '-BOX-' . str_pad((string) $box, 2, '0', STR_PAD_LEFT));
+        }
+
+        return $stockId;
     }
 
     private function box(int $stockId, int $clientId, string $boxNumber): void
@@ -482,6 +507,443 @@ class NepaliDemoSeeder extends Seeder
         );
     }
 
+    private function seedHeavyDemoLayer(string $password, User $admin, array $clients, array $drivers, User $propertyOwner, User $equipmentOwner, User $securityUser, array $warehouses, int $agencyId): array
+    {
+        $moreClients = [
+            $this->user('client.lalitpur@kwdc.test', 'Lalitpur Hardware Suppliers', 'client', $password, [
+                'is_client' => true,
+                'phone' => '9801112255',
+                'address' => 'Lagankhel, Lalitpur',
+                'user_code' => 'CLI-LTP',
+            ]),
+            $this->user('client.biratnagar@kwdc.test', 'Biratnagar Pharma House', 'client', $password, [
+                'is_client' => true,
+                'phone' => '9801112266',
+                'address' => 'Traffic Chowk, Biratnagar',
+                'user_code' => 'CLI-BRT',
+            ]),
+            $this->user('client.chitwan@kwdc.test', 'Chitwan Agro Traders', 'client', $password, [
+                'is_client' => true,
+                'phone' => '9801112277',
+                'address' => 'Narayanghat, Chitwan',
+                'user_code' => 'CLI-CTW',
+            ]),
+        ];
+
+        $moreDrivers = [
+            $this->user('driver.sita@kwdc.test', 'Sita Rai', 'driver', $password, [
+                'is_driver' => true,
+                'phone' => '9802223366',
+                'address' => 'Dharan, Sunsari',
+                'user_code' => 'DRV-SITA',
+            ]),
+            $this->user('driver.hari@kwdc.test', 'Hari Shrestha', 'driver', $password, [
+                'is_driver' => true,
+                'phone' => '9802223377',
+                'address' => 'Baneshwor, Kathmandu',
+                'user_code' => 'DRV-HARI',
+            ]),
+            $this->user('driver.tsering@kwdc.test', 'Tsering Lama', 'driver', $password, [
+                'is_driver' => true,
+                'phone' => '9802223388',
+                'address' => 'Boudha, Kathmandu',
+                'user_code' => 'DRV-TSERING',
+            ]),
+        ];
+
+        $propertyOwnerTwo = $this->user('property.gita.demo@kwdc.test', 'Gita Property Demo', 'property_owner', $password, [
+            'is_property_owner' => true,
+            'phone' => '9803334466',
+            'address' => 'Bharatpur, Chitwan',
+            'user_code' => 'PRO-GITA',
+        ]);
+
+        $equipmentOwnerTwo = $this->user('equipment.maya.demo@kwdc.test', 'Maya Heavy Equipment Demo', 'equipment_owner', $password, [
+            'is_equipment_owner' => true,
+            'phone' => '9804445577',
+            'address' => 'Hetauda, Makwanpur',
+            'user_code' => 'EQP-MAYA',
+        ]);
+
+        $securityUserTwo = $this->user('security.birgunj@kwdc.test', 'Birgunj Suraksha Agency', 'security_agency', $password, [
+            'phone' => '9805556699',
+            'address' => 'Adarsh Nagar, Birgunj',
+            'user_code' => 'SEC-BRJ',
+        ]);
+
+        $allClients = array_merge($clients, $moreClients);
+        $allDrivers = array_merge($drivers, $moreDrivers);
+
+        $moreWarehouses = [
+            $this->warehouse($propertyOwnerTwo->id, 'Chitwan Agro Hub Demo', 'Bharatpur, Chitwan', [
+                'address' => 'Bharatpur bypass road, Chitwan',
+                'email' => 'chitwan.agro@kwdc.test',
+                'area_sqft' => 9800,
+                'price_per_sqft' => 34,
+                'description' => 'Agro warehouse for rice, feed, seasonal fruits, and festival goods.',
+                'loading_dock' => true,
+                'parking_spaces' => 14,
+                'cctv_count' => 12,
+                'guards_count' => 3,
+                'status' => 'approved',
+                'city' => 'Bharatpur',
+            ]),
+            $this->warehouse($propertyOwnerTwo->id, 'Dharan Retail Storage Demo', 'Dharan, Sunsari', [
+                'address' => 'Dharan Bazar line, Sunsari',
+                'email' => 'dharan.storage@kwdc.test',
+                'area_sqft' => 4200,
+                'price_per_sqft' => 29,
+                'description' => 'Medium warehouse for retail cartons and small distributors.',
+                'parking_spaces' => 7,
+                'cctv_count' => 10,
+                'guards_count' => 2,
+                'status' => 'pending',
+                'city' => 'Dharan',
+            ]),
+        ];
+
+        $allWarehouses = array_merge($warehouses, $moreWarehouses);
+
+        foreach ($allDrivers as $index => $driver) {
+            $this->vehicle($driver->id, 'DEMO ' . ($index + 10) . ' KHA ' . (3300 + $index), $index % 2 === 0 ? 'truck' : 'mini truck', $index % 2 === 0 ? 'Eicher' : 'Tata', 'Demo Fleet ' . ($index + 1), $index % 2 === 0 ? 6.0 : 2.0);
+            $this->driverRate($driver->id, 260 + ($index * 35), $index % 2 === 0 ? 'Truck' : 'Mini Truck');
+        }
+
+        $routes = [
+            ['TRK-HEAVY-011', 'Teku, Kathmandu', 'Patan Industrial Area', 12.2, 2900, 'assigned'],
+            ['TRK-HEAVY-012', 'Boudha, Kathmandu', 'Nagarkot Road, Bhaktapur', 24.8, 4800, 'on_the_way'],
+            ['TRK-HEAVY-013', 'Bharatpur, Chitwan', 'Hetauda Industrial Area', 78.4, 13200, 'pending'],
+            ['TRK-HEAVY-014', 'Biratnagar Airport Road', 'Itahari Chowk', 23.5, 4500, 'picked_up'],
+            ['TRK-HEAVY-015', 'Dharan Bazar', 'Birtamode, Jhapa', 84.3, 13900, 'delivered'],
+            ['TRK-HEAVY-016', 'Pokhara Industrial Area', 'Damauli Bazar', 51.7, 8300, 'assigned'],
+            ['TRK-HEAVY-017', 'Balaju, Kathmandu', 'Tokha Road', 7.8, 1700, 'delivered'],
+            ['TRK-HEAVY-018', 'Bhairahawa ICD', 'Butwal Golpark', 25.1, 4700, 'pending'],
+        ];
+
+        foreach ($routes as $index => [$tracking, $pickup, $delivery, $distance, $price, $status]) {
+            $client = $allClients[$index % count($allClients)];
+            $driver = in_array($status, ['pending'], true) ? null : $allDrivers[$index % count($allDrivers)];
+            $dispatchId = $this->dispatch($client->id, $driver?->id, $tracking, $pickup, $delivery, $distance, $price, $status);
+            $this->notifyDispatchFlow($admin, $client, $driver, $dispatchId, $tracking, $status, $pickup, $delivery);
+            if ($driver && in_array($status, ['delivered', 'picked_up', 'on_the_way'], true)) {
+                $this->partnerEarning($driver->id, 'dispatch', $dispatchId, (float) ($price * 0.75), $status === 'delivered' ? 'paid' : 'pending');
+            }
+        }
+
+        $pickupRoutes = [
+            ['PUP-HEAVY-008', 'Kirtipur, Kathmandu', 8.8, 1800, 'assigned', 'Kalimati Cold Store Demo'],
+            ['PUP-HEAVY-009', 'Sanepa, Lalitpur', 5.4, 1300, 'completed', 'Lagankhel, Lalitpur'],
+            ['PUP-HEAVY-010', 'Kausaltar, Bhaktapur', 10.2, 2100, 'pending', 'Lokanthali, Bhaktapur'],
+            ['PUP-HEAVY-011', 'Biratnagar Main Road', 18.7, 3800, 'picked_up', 'Itahari Warehouse Line'],
+            ['PUP-HEAVY-012', 'Bharatpur, Chitwan', 14.0, 2700, 'assigned', 'Chitwan Agro Hub Demo'],
+            ['PUP-HEAVY-013', 'Lakeside, Pokhara', 9.2, 1850, 'completed', 'Prithvi Chowk, Pokhara'],
+        ];
+
+        foreach ($pickupRoutes as $index => [$tracking, $pickupAddress, $distance, $price, $status, $destination]) {
+            $client = $allClients[$index % count($allClients)];
+            $driver = in_array($status, ['pending'], true) ? null : $allDrivers[$index % count($allDrivers)];
+            $pickupId = $this->pickup($client->id, $driver?->id, $tracking, $pickupAddress, $distance, $price, $status, $destination);
+            $this->notifyPickupFlow($admin, $client, $driver, $pickupId, $tracking, $status, $pickupAddress, $destination);
+            if ($driver && $status === 'completed') {
+                $this->partnerEarning($driver->id, 'pickup', $pickupId, (float) ($price * 0.75), 'paid');
+            }
+        }
+
+        foreach ($allClients as $index => $client) {
+            $warehouse = $allWarehouses[$index % count($allWarehouses)];
+            $requestId = $this->warehouseRequest($client->id, $warehouse->id, $index % 2 === 0 ? 'approved' : 'pending', 800 + ($index * 250), 'Demo storage for ' . $client->name);
+            $this->invoice($client->id, $warehouse->id, $requestId, 'INV-DEMO-' . str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT), 12000 + ($index * 3500), $index % 2 === 0 ? 'paid' : 'unpaid');
+            $this->stock($client->id, $warehouse->id, $client->name . ' Mixed Demo Stock', 'BATCH-' . str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT), 'SKU-DEMO-' . str_pad((string) ($index + 1), 3, '0', STR_PAD_LEFT), 30 + ($index * 12));
+            $this->notification($client->id, 'Warehouse request updated', $warehouse->name . ' request is now ' . ($index % 2 === 0 ? 'approved' : 'waiting for admin review') . '.', 'warehouse_request', $requestId, 'warehouse_request');
+            $this->notification($propertyOwner->id, 'Client requested warehouse space', $client->name . ' requested space at ' . $warehouse->name . '.', 'warehouse_request', $requestId, 'warehouse_request');
+        }
+
+        $equipmentIds = [
+            $this->equipmentRecord($equipmentOwner->id, 'Excavator Chain Demo', 'excavator', 'Hetauda Industrial Area', 24000),
+            $this->equipmentRecord($equipmentOwnerTwo->id, 'Road Roller Demo', 'road_roller', 'Bharatpur, Chitwan', 21000),
+            $this->equipmentRecord($equipmentOwnerTwo->id, 'Mobile Crane Demo', 'crane', 'Birgunj Dry Port', 32000),
+        ];
+
+        foreach ($equipmentIds as $index => $equipmentId) {
+            $client = $allClients[$index % count($allClients)];
+            $owner = $index === 0 ? $equipmentOwner : $equipmentOwnerTwo;
+            $requestId = $this->equipmentRequest($client->id, $equipmentId, $owner->id, ['excavator', 'road_roller', 'crane'][$index], ['pending', 'approved', 'completed'][$index]);
+            $jobId = $this->equipmentJob($equipmentId, $owner->id, $client->id, ['pending', 'accepted', 'completed'][$index], 18000 + ($index * 7000));
+            $this->notification($client->id, 'Equipment request status', 'Your equipment request has demo status update: ' . ['pending', 'approved', 'completed'][$index] . '.', 'equipment_request', $requestId, 'equipment_request');
+            $this->notification($owner->id, 'Equipment job activity', 'New equipment job activity is available for review.', 'equipment_job', $jobId, 'equipment_job');
+            if ($index === 2) {
+                $this->partnerEarning($owner->id, 'equipment', $jobId, 25000, 'paid');
+            }
+        }
+
+        $agencyTwoId = $this->securityAgencyFor($securityUserTwo->id, 'Birgunj Border Security Demo', 'SEC-BRJ-2083', 'LIC-BRJ-9922', 'Adarsh Nagar, Birgunj');
+        $guardTwoId = $this->securityPersonnel($agencyTwoId, 'Nabin Chaudhary', 'SEC-GRD-002');
+        $this->securityGood($agencyTwoId, 'CCTV Portable Kit', 'monitoring');
+        $assignmentTwoId = $this->securityAssignmentRecord($allWarehouses[1]->id, $agencyTwoId, $guardTwoId, 'day');
+        $this->securityIncident($allWarehouses[1]->id, $securityUserTwo->id, $assignmentTwoId, 'gate_check', 'Truck entered without updated visitor slip.', 'medium', 'resolved');
+        $this->securityIncident($allWarehouses[0]->id, $securityUser->id, null, 'stock_audit', 'Night audit found two cartons needing recount.', 'low', 'investigating');
+        $this->notification($securityUserTwo->id, 'Security incident logged', 'A demo gate-check incident was recorded and resolved.', 'security_incident');
+        $this->notification($admin->id, 'Security monitoring update', 'Security agency demo incidents and assignments are ready for review.', 'security_incident');
+
+        foreach (array_merge([$admin, $propertyOwner, $equipmentOwner, $equipmentOwnerTwo, $securityUser, $securityUserTwo], $allClients, $allDrivers) as $index => $user) {
+            $this->notification($user->id, 'Dashboard has new demo activity', 'Open your dashboard to review fresh Nepali logistics records.', 'dashboard');
+            $this->notification($user->id, 'Payment and invoice reminder', 'Demo billing activity has been added for review and follow-up.', 'invoice');
+            $this->notification($user->id, 'Operations alert ' . ($index + 1), 'New route, stock, partner, or security activity is waiting for this account.', 'operations');
+        }
+
+        return array_merge($moreClients, $moreDrivers, [$propertyOwnerTwo, $equipmentOwnerTwo, $securityUserTwo]);
+    }
+
+    private function equipmentRecord(int $ownerId, string $name, string $type, string $location, int $dailyRate): int
+    {
+        $this->equipment($ownerId, $name, $type, $location, $dailyRate);
+
+        return (int) DB::table('equipment')->where('name', $name)->value('id');
+    }
+
+    private function warehouseRequest(int $clientId, int $warehouseId, string $status, int $spaceRequired, string $purpose): int
+    {
+        if (!Schema::hasTable('warehouse_requests')) {
+            return 0;
+        }
+
+        $key = ['client_id' => $clientId, 'warehouse_id' => $warehouseId, 'purpose' => $purpose];
+        $values = [
+            'start_date' => now()->addDays(3)->toDateString(),
+            'end_date' => now()->addMonths(3)->toDateString(),
+            'space_required' => $spaceRequired,
+            'status' => $status,
+            'approved_at' => $status === 'approved' ? now() : null,
+            'approved_by' => $status === 'approved' ? User::where('role', 'admin')->value('id') : null,
+            'admin_notes' => $status === 'approved' ? 'Approved for demo storage flow.' : 'Pending demo admin review.',
+            'preferred_warehouse' => (string) $warehouseId,
+            'agreed_price' => $status === 'approved' ? $spaceRequired * 42 : null,
+            'pricing_details' => json_encode(['rate_per_sqft' => 42, 'demo' => true]),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+
+        DB::table('warehouse_requests')->updateOrInsert($key, $this->onlyColumns('warehouse_requests', $values));
+
+        return (int) DB::table('warehouse_requests')->where($key)->value('id');
+    }
+
+    private function invoice(int $clientId, int $warehouseId, int $warehouseRequestId, string $invoiceNumber, int $amount, string $paymentStatus): void
+    {
+        if (!Schema::hasTable('invoices') || $warehouseRequestId === 0) {
+            return;
+        }
+
+        $subtotal = $amount;
+        $tax = round($subtotal * 0.13, 2);
+        DB::table('invoices')->updateOrInsert(
+            ['invoice_number' => $invoiceNumber],
+            $this->onlyColumns('invoices', [
+                'user_id' => $clientId,
+                'client_id' => $clientId,
+                'warehouse_id' => $warehouseId,
+                'warehouse_request_id' => $warehouseRequestId,
+                'order_type' => 'warehouse_request',
+                'order_id' => $warehouseRequestId,
+                'amount' => $subtotal,
+                'subtotal' => $subtotal,
+                'discount' => 0,
+                'tax_rate' => 13,
+                'tax_amount' => $tax,
+                'grand_total' => $subtotal + $tax,
+                'billing_type' => 'regular',
+                'billing_address' => 'Demo billing address, Nepal',
+                'items' => json_encode([['name' => 'Warehouse storage demo charge', 'amount' => $subtotal]]),
+                'status' => $paymentStatus === 'paid' ? 'paid' : 'pending',
+                'payment_status' => $paymentStatus,
+                'due_date' => now()->addDays(10)->toDateString(),
+                'payment_due_date' => now()->addDays(10)->toDateString(),
+                'paid_at' => $paymentStatus === 'paid' ? now() : null,
+                'payment_method' => $paymentStatus === 'paid' ? 'cash_demo' : null,
+                'notes' => 'Demo invoice for seeded Nepali warehouse activity.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+
+        $this->notification($clientId, 'Invoice ' . $invoiceNumber . ' is ' . $paymentStatus, 'Demo invoice amount NPR ' . number_format($amount) . ' has been added.', 'invoice');
+    }
+
+    private function equipmentRequest(int $clientId, int $equipmentId, int $ownerId, string $type, string $status): int
+    {
+        if (!Schema::hasTable('equipment_requests')) {
+            return 0;
+        }
+
+        $key = ['client_id' => $clientId, 'equipment_type' => $type, 'start_date' => now()->addDays(2)->toDateString()];
+        DB::table('equipment_requests')->updateOrInsert(
+            $key,
+            $this->onlyColumns('equipment_requests', [
+                'equipment_id' => $equipmentId,
+                'owner_id' => $ownerId,
+                'title' => ucwords(str_replace('_', ' ', $type)) . ' demo request',
+                'description' => 'Seeded demo equipment request for Nepali construction work.',
+                'equipment_name' => ucwords(str_replace('_', ' ', $type)),
+                'quantity' => 1,
+                'end_date' => now()->addDays(6)->toDateString(),
+                'duration_days' => 4,
+                'location' => 'Kathmandu Valley demo site',
+                'budget' => 65000,
+                'quoted_price' => 62000,
+                'proposed_price' => 62000,
+                'agreed_price' => $status === 'completed' ? 62000 : null,
+                'status' => $status,
+                'special_requirements' => 'Operator, fuel estimate, and safety checklist required.',
+                'preferred_brands' => json_encode(['JCB', 'Tata Hitachi']),
+                'budget_range' => '50000-75000',
+                'notes' => 'Heavy demo request.',
+                'approved_at' => in_array($status, ['approved', 'completed'], true) ? now() : null,
+                'completed_at' => $status === 'completed' ? now() : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+
+        return (int) DB::table('equipment_requests')->where($key)->value('id');
+    }
+
+    private function equipmentJob(int $equipmentId, int $ownerId, int $clientId, string $status, int $price): int
+    {
+        if (!Schema::hasTable('equipment_jobs')) {
+            return 0;
+        }
+
+        $key = ['equipment_id' => $equipmentId, 'client_id' => $clientId, 'job_type' => 'rental_demo'];
+        DB::table('equipment_jobs')->updateOrInsert(
+            $key,
+            $this->onlyColumns('equipment_jobs', [
+                'owner_id' => $ownerId,
+                'equipment_owner_id' => $ownerId,
+                'pickup_location' => 'Owner yard, Nepal',
+                'delivery_location' => 'Client project site, Nepal',
+                'start_date' => now()->addDays(2)->toDateString(),
+                'end_date' => now()->addDays(6)->toDateString(),
+                'description' => 'Seeded equipment job with realistic status and pricing.',
+                'location' => 'Kathmandu Valley demo project',
+                'price' => $price,
+                'proposed_price' => $price,
+                'amount' => $price,
+                'paid_amount' => $status === 'completed' ? $price : 0,
+                'proposal_message' => 'Demo owner proposal is ready.',
+                'client_message' => 'Client accepted demo equipment schedule.',
+                'status' => $status,
+                'accepted_by_client_status' => in_array($status, ['accepted', 'completed'], true) ? 'accepted' : null,
+                'accepted_by_owner_status' => in_array($status, ['accepted', 'completed'], true) ? 'accepted' : null,
+                'accepted_at' => in_array($status, ['accepted', 'completed'], true) ? now() : null,
+                'started_at' => $status === 'completed' ? now()->subDays(2) : null,
+                'completed_at' => $status === 'completed' ? now() : null,
+                'request_date' => now()->subDays(2),
+                'completion_date' => $status === 'completed' ? now() : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+
+        return (int) DB::table('equipment_jobs')->where($key)->value('id');
+    }
+
+    private function securityAgencyFor(int $userId, string $name, string $registration, string $license, string $address): int
+    {
+        DB::table('security_agencies')->updateOrInsert(
+            ['user_id' => $userId],
+            $this->onlyColumns('security_agencies', [
+                'agency_name' => $name,
+                'registration_number' => $registration,
+                'license_number' => $license,
+                'address' => $address,
+                'phone' => '9805556699',
+                'emergency_phone' => '9805556600',
+                'email' => 'security.birgunj@kwdc.test',
+                'services_offered' => 'Border warehouse guard, gate pass check, night patrol',
+                'year_established' => '2078',
+                'status' => 'approved',
+                'is_verified' => true,
+                'approved_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+
+        return (int) DB::table('security_agencies')->where('user_id', $userId)->value('id');
+    }
+
+    private function securityAssignmentRecord(int $warehouseId, int $agencyId, int $personnelId, string $shift): int
+    {
+        $this->securityAssignment($warehouseId, $agencyId, $personnelId);
+
+        DB::table('security_assignments')
+            ->where(['warehouse_id' => $warehouseId, 'agency_id' => $agencyId, 'personnel_id' => $personnelId])
+            ->update($this->onlyColumns('security_assignments', ['shift' => $shift, 'updated_at' => now()]));
+
+        return (int) DB::table('security_assignments')->where(['warehouse_id' => $warehouseId, 'agency_id' => $agencyId, 'personnel_id' => $personnelId])->value('id');
+    }
+
+    private function securityIncident(int $warehouseId, int $reportedByUserId, ?int $assignmentId, string $category, string $description, string $severity, string $status): void
+    {
+        if (!Schema::hasTable('security_incidents')) {
+            return;
+        }
+
+        DB::table('security_incidents')->updateOrInsert(
+            ['warehouse_id' => $warehouseId, 'category' => $category, 'description' => $description],
+            $this->onlyColumns('security_incidents', [
+                'reported_by_user_id' => $reportedByUserId,
+                'assignment_id' => $assignmentId,
+                'incident_time' => now()->subHours(6),
+                'severity' => $severity,
+                'actions_taken' => 'Demo record: supervisor notified, gate log checked, and follow-up reminder created.',
+                'attachments' => json_encode([]),
+                'status' => $status,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+    }
+
+    private function partnerEarning(int $partnerId, string $orderType, int $orderId, float $amount, string $status): void
+    {
+        if (!Schema::hasTable('partner_earnings') || $orderId === 0) {
+            return;
+        }
+
+        DB::table('partner_earnings')->updateOrInsert(
+            ['partner_id' => $partnerId, 'order_type' => $orderType, 'order_id' => $orderId],
+            $this->onlyColumns('partner_earnings', [
+                'amount' => $amount,
+                'status' => $status,
+                'earned_at' => now()->subDay(),
+                'notes' => 'Seeded partner earning for demo dashboard and payment review.',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ])
+        );
+    }
+
+    private function notifyDispatchFlow(User $admin, User $client, ?User $driver, int $dispatchId, string $tracking, string $status, string $pickup, string $delivery): void
+    {
+        $this->notification($client->id, 'Dispatch ' . $tracking . ' is ' . $status, $pickup . ' to ' . $delivery . ' has a demo status update.', 'dispatch', $dispatchId, 'dispatch_order');
+        $this->notification($admin->id, 'Dispatch monitoring: ' . $tracking, 'Admin demo monitoring has a ' . $status . ' dispatch.', 'dispatch', $dispatchId, 'dispatch_order');
+
+        if ($driver) {
+            $this->notification($driver->id, 'Driver job update ' . $tracking, 'You have demo dispatch activity from ' . $pickup . ' to ' . $delivery . '.', 'driver_job', $dispatchId, 'dispatch_order');
+        }
+    }
+
+    private function notifyPickupFlow(User $admin, User $client, ?User $driver, int $pickupId, string $tracking, string $status, string $pickupAddress, string $destination): void
+    {
+        $this->notification($client->id, 'Pickup ' . $tracking . ' is ' . $status, $pickupAddress . ' to ' . $destination . ' has a demo status update.', 'pickup', $pickupId, 'pickup_request');
+        $this->notification($admin->id, 'Pickup monitoring: ' . $tracking, 'Admin demo monitoring has a ' . $status . ' pickup request.', 'pickup', $pickupId, 'pickup_request');
+
+        if ($driver) {
+            $this->notification($driver->id, 'Pickup job update ' . $tracking, 'You have demo pickup activity from ' . $pickupAddress . '.', 'driver_pickup', $pickupId, 'pickup_request');
+        }
+    }
+
     private function reminder(int $userId, string $title, string $notes): void
     {
         DB::table('user_reminders')->updateOrInsert(
@@ -497,17 +959,34 @@ class NepaliDemoSeeder extends Seeder
         );
     }
 
-    private function notification(int $userId, string $title, string $message): void
+    private function notification(int $userId, string $title, string $message, string $type = 'demo', ?int $relatedId = null, ?string $relatedType = null): void
     {
         DB::table('notifications')->updateOrInsert(
             ['user_id' => $userId, 'title' => $title],
-            [
-                'type' => 'demo',
+            $this->onlyColumns('notifications', [
+                'type' => $type,
                 'message' => $message,
+                'related_id' => $relatedId,
+                'related_type' => $relatedType,
+                'notification_number' => 'NOT-DEMO-' . strtoupper(substr(md5($userId . $title), 0, 10)),
+                'recipient_email' => User::whereKey($userId)->value('email'),
+                'recipient_name' => User::whereKey($userId)->value('name'),
+                'subject' => $title,
+                'status' => 'sent',
+                'sent_at' => now(),
                 'is_read' => false,
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
+            ])
         );
+    }
+
+    private function onlyColumns(string $table, array $data): array
+    {
+        if (!Schema::hasTable($table)) {
+            return [];
+        }
+
+        return array_intersect_key($data, array_flip(Schema::getColumnListing($table)));
     }
 }

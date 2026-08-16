@@ -513,6 +513,8 @@ class DatabaseSeeder extends Seeder
             }
         }
 
+        $this->call(NepaliDemoSeeder::class);
+
         echo "\n🎉 Database seeding completed!\n";
         echo "============================================\n";
         echo "🔑 Test Credentials:\n";
