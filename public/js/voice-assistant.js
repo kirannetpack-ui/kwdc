@@ -222,6 +222,22 @@ document.addEventListener('DOMContentLoaded', function() {
             .replace(/\b\w/g, letter => letter.toUpperCase());
     }
 
+    function displayFieldName(field, fallback = 'that field') {
+        const name = String(field.name || field.id || '').toLowerCase();
+
+        if (name.includes('delivery_stops') && name.includes('address')) return 'Delivery Address';
+        if (name.includes('delivery_stops') && name.includes('recipient_name')) return 'Recipient Name';
+        if (name.includes('delivery_stops') && name.includes('recipient_phone')) return 'Recipient Phone';
+        if (name.includes('pickup_contact_person')) return 'Pickup Contact Person';
+        if (name.includes('pickup_contact_phone')) return 'Pickup Contact Phone';
+        if (name.includes('pickup_address')) return 'Pickup Address';
+        if (name.includes('total_distance')) return 'Total Distance';
+        if (name.includes('total_price')) return 'Total Price';
+
+        const readable = field.placeholder || fieldTextParts(field).find(part => !part.includes('[')) || fallback;
+        return prettifyFieldName(readable);
+    }
+
     function normalizeFieldText(value) {
         return String(value || '')
             .toLowerCase()
@@ -340,6 +356,36 @@ document.addEventListener('DOMContentLoaded', function() {
             .sort((a, b) => b.score - a.score)[0]?.field || null;
     }
 
+    function currentFieldValue(field) {
+        if (field.tagName === 'SELECT') {
+            return field.selectedOptions?.[0]?.textContent || field.value || '';
+        }
+
+        return field.value || '';
+    }
+
+    function findVisibleFieldByValue(value) {
+        const needle = normalizeFieldText(value);
+        if (!needle) return null;
+
+        return visibleAssistantFields()
+            .map(field => {
+                const rawValue = currentFieldValue(field);
+                const normalizedValue = normalizeFieldText(rawValue);
+                let score = 0;
+
+                if (normalizedValue === needle) {
+                    score = 100;
+                } else if (normalizedValue.includes(needle)) {
+                    score = 75;
+                }
+
+                return { field, score };
+            })
+            .filter(item => item.score > 0)
+            .sort((a, b) => b.score - a.score)[0]?.field || null;
+    }
+
     function fillAssistantField(field, value) {
         const type = (field.getAttribute('type') || '').toLowerCase();
         const cleanValue = String(value).trim();
@@ -364,6 +410,37 @@ document.addEventListener('DOMContentLoaded', function() {
         field.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    function replaceAssistantFieldValue(field, oldValue, newValue) {
+        const currentValue = currentFieldValue(field);
+        const escapedOldValue = oldValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const nextValue = currentValue.match(new RegExp(escapedOldValue, 'i'))
+            ? currentValue.replace(new RegExp(escapedOldValue, 'ig'), newValue)
+            : newValue;
+
+        fillAssistantField(field, nextValue);
+    }
+
+    function parseCurrentPageReplacement(text) {
+        const clean = text.trim().replace(/\s+/g, ' ');
+        const patterns = [
+            /^(?:please\s+)?instead\s+of\s+(.+?)\s+(?:put|use|make\s+it|set\s+it\s+to)\s+(.+?)$/i,
+            /^(?:please\s+)?replace\s+(.+?)\s+with\s+(.+?)$/i,
+            /^(?:please\s+)?(?:change|switch)\s+(.+?)\s+(?:to|into)\s+(.+?)$/i,
+        ];
+
+        for (const pattern of patterns) {
+            const match = clean.match(pattern);
+            if (match) {
+                return {
+                    oldValue: match[1].trim(),
+                    newValue: match[2].trim(),
+                };
+            }
+        }
+
+        return null;
+    }
+
     function parseCurrentPageFill(text) {
         const clean = text.trim().replace(/\s+/g, ' ');
         const patterns = [
@@ -386,6 +463,19 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function tryCurrentPageFill(text) {
+        const replacement = parseCurrentPageReplacement(text);
+        if (replacement) {
+            const replacementField = findVisibleFieldByValue(replacement.oldValue);
+            if (replacementField) {
+                addMessage(text, 'user');
+                lastAssistantNotice = '';
+                replaceAssistantFieldValue(replacementField, replacement.oldValue, replacement.newValue);
+                addAssistantNotice(`Done. I replaced ${replacement.oldValue} with ${replacement.newValue} in ${displayFieldName(replacementField)}. Review it before saving.`);
+                statusEl.textContent = 'Updated current page';
+                return true;
+            }
+        }
+
         const command = parseCurrentPageFill(text);
         if (!command) {
             return false;
@@ -399,8 +489,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addMessage(text, 'user');
         lastAssistantNotice = '';
         fillAssistantField(field, command.value);
-        const fieldName = fieldTextParts(field)[0] || field.name || field.id || command.label;
-        addAssistantNotice(`Done. I set ${prettifyFieldName(fieldName)} to ${command.value}. Review it before saving.`);
+        addAssistantNotice(`Done. I set ${displayFieldName(field, command.label)} to ${command.value}. Review it before saving.`);
         statusEl.textContent = 'Filled current page';
         return true;
     }
