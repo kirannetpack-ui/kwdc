@@ -15,11 +15,11 @@
         @csrf
         <div style="margin-bottom: 10px;">
             <label>Email:</label><br>
-            <input type="email" name="email" value="admin@ktmwdc.com" style="width: 300px; padding: 8px;">
+            <input type="email" name="email" value="" autocomplete="username" style="width: 300px; padding: 8px;">
         </div>
         <div style="margin-bottom: 10px;">
             <label>Password:</label><br>
-            <input type="password" name="password" value="password123" style="width: 300px; padding: 8px;">
+            <input type="password" name="password" autocomplete="current-password" style="width: 300px; padding: 8px;">
         </div>
         <button type="submit" style="padding: 10px 30px; background: #f59e0b; color: white; border: none; border-radius: 5px; cursor: pointer;">
             Login

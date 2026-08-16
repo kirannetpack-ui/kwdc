@@ -154,13 +154,13 @@
             @csrf
             <div class="form-group">
                 <label for="email">📧 Email Address</label>
-                <input type="email" name="email" id="email" value="{{ old('email', 'admin@ktmwdc.com') }}" 
-                       placeholder="Enter your email" required autofocus>
+                <input type="email" name="email" id="email" value="{{ old('email') }}"
+                       placeholder="Enter your email" required autofocus autocomplete="username">
             </div>
             <div class="form-group">
                 <label for="password">🔒 Password</label>
-                <input type="password" name="password" id="password" value="password123"
-                       placeholder="Enter your password" required>
+                <input type="password" name="password" id="password"
+                       placeholder="Enter your password" required autocomplete="current-password">
             </div>
             <div class="form-options">
                 <label>
