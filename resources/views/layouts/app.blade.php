@@ -659,173 +659,13 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- ============================================================ -->
-<!-- AI TOOLS (CHAT & VOICE) – Keep your existing code -->
-<!-- ============================================================ -->
-<div id="ai-tools-container" style="position: fixed; bottom: 40px; right: 25px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-end; gap: 15px; pointer-events: none;">
-    <div style="pointer-events: auto;">
-        <!-- CHAT -->
-        <div style="position: relative; margin-bottom: 15px;">
-            <button id="ai-chat-btn" class="btn rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: none; color: white; transition: all 0.3s ease;">
-                <i id="chat-icon-open" class="fas fa-comment-dots fa-lg"></i>
-                <i id="chat-icon-close" class="fas fa-times fa-lg d-none"></i>
-            </button>
-            <div id="ai-chat-window" class="d-none shadow-lg" style="width: 380px; max-width: 90vw; height: 550px; max-height: 80vh; border-radius: 16px; background: white; position: absolute; bottom: 75px; right: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
-                <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 16px 20px; color: white; display: flex; align-items: center; justify-content: space-between;">
-                    <div class="d-flex align-items-center">
-                        <div style="width: 40px; height: 40px; border-radius: 50%; background: #f59e0b; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-weight: bold; font-size: 18px;">AI</div>
-                        <div><h6 class="mb-0 fw-bold" style="font-size: 14px;">KTM-WDC Assistant</h6><span style="font-size: 11px; color: #94a3b8;"><span style="display: inline-block; width: 8px; height: 8px; background: #22c55e; border-radius: 50%; margin-right: 6px;"></span> Online</span></div>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <select id="lang-selector" class="form-select form-select-sm bg-dark text-white border-0" style="width: 95px; font-size: 12px; padding: 2px 8px;">
-                            <option value="English" selected>🇬🇧 English</option>
-                            <option value="Nepali">🇳🇵 Nepali</option>
-                            <option value="Hindi">🇮🇳 Hindi</option>
-                        </select>
-                        <button id="ai-chat-close-btn" class="btn btn-sm btn-link text-white p-0 opacity-75 hover:opacity-100" style="text-decoration: none;"><i class="fas fa-chevron-down"></i></button>
-                    </div>
-                </div>
-                <div id="ai-chat-messages" style="flex: 1; padding: 20px; overflow-y: auto; background: #f8fafc; display: flex; flex-direction: column;">
-                    <div class="mb-3 d-flex align-items-start">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0; font-size: 12px; color: #64748b;">AI</div>
-                        <div style="background: white; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 80%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #334155; font-size: 14px; line-height: 1.5;">Hello! 👋 I'm your KTM-WDC AI assistant.</div>
-                    </div>
-                    <div id="typing-indicator" class="d-none mb-3 d-flex align-items-start">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0; font-size: 12px; color: #64748b;">AI</div>
-                        <div style="background: white; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 60%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 4px;">
-                            <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: dot-typing 1.4s infinite;"></div>
-                            <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: dot-typing 1.4s 0.2s infinite;"></div>
-                            <div style="width: 6px; height: 6px; background: #94a3b8; border-radius: 50%; animation: dot-typing 1.4s 0.4s infinite;"></div>
-                        </div>
-                    </div>
-                </div>
-                <div style="padding: 16px; border-top: 1px solid #e2e8f0; background: white;">
-                    <div class="input-group">
-                        <input type="text" id="ai-chat-input" class="form-control" placeholder="Type your question..." style="border: 1px solid #e2e8f0; border-right: none; border-radius: 8px 0 0 8px; padding: 10px 14px; font-size: 14px; outline: none;">
-                        <button id="ai-chat-send" class="btn btn-primary" style="background: #f59e0b; border: 1px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 0 16px;"><i class="fas fa-paper-plane"></i></button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- VOICE -->
-        <button id="voice-btn" class="btn btn-lg rounded-circle shadow-lg d-flex align-items-center justify-content-center" style="width: 60px; height: 60px; background-color: #f59e0b; border: none; transition: all 0.3s ease;"><i class="fas fa-microphone text-white" style="font-size: 22px;"></i></button>
-    </div>
-</div>
-
-<style>@keyframes dot-typing { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }</style>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const langSelector = document.getElementById('lang-selector');
-    const chatMessages = document.getElementById('ai-chat-messages');
-    const typingInd = document.getElementById('typing-indicator');
-
-    // CHAT
-    const chatBtn = document.getElementById('ai-chat-btn');
-    const chatWindow = document.getElementById('ai-chat-window');
-    const openIcon = document.getElementById('chat-icon-open');
-    const closeIcon = document.getElementById('chat-icon-close');
-    const closeBtn = document.getElementById('ai-chat-close-btn');
-    const chatInput = document.getElementById('ai-chat-input');
-    const chatSend = document.getElementById('ai-chat-send');
-
-    function toggleChat() {
-        const isHidden = chatWindow.classList.contains('d-none');
-        chatWindow.classList.toggle('d-none');
-        openIcon.classList.toggle('d-none');
-        closeIcon.classList.toggle('d-none');
-        if (!isHidden) { chatMessages.scrollTop = chatMessages.scrollHeight; chatInput.focus(); }
-    }
-
-    chatBtn.addEventListener('click', toggleChat);
-    closeBtn.addEventListener('click', toggleChat);
-    chatSend.addEventListener('click', sendChatMessage);
-    chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendChatMessage(); });
-
-    async function sendChatMessage() {
-        const text = chatInput.value.trim();
-        const language = langSelector.value;
-        if (!text) return;
-
-        chatMessages.appendChild(createBubble(text, 'user'));
-        chatInput.value = '';
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-        typingInd.classList.remove('d-none');
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        try {
-            const response = await fetch('/ai/chat-support', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                body: JSON.stringify({ message: text, language: language })
-            });
-            const data = await response.json();
-            typingInd.classList.add('d-none');
-            if ((data.action === 'redirect' || data.action === 'open_page') && data.url) {
-                chatMessages.appendChild(createBubble("🔄 " + (data.message || "Opening page..."), 'bot'));
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                const params = new URLSearchParams(data.data || {});
-                const targetUrl = params.toString() ? `${data.url}?${params.toString()}` : data.url;
-                window.location.href = targetUrl;
-                return;
-            }
-            chatMessages.appendChild(createBubble(data.message || "I'm experiencing technical issues.", 'bot'));
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        } catch (e) {
-            typingInd.classList.add('d-none');
-            chatMessages.appendChild(createBubble("Network error.", 'bot'));
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    }
-
-    function createBubble(text, sender) {
-        const div = document.createElement('div');
-        div.className = 'mb-3 d-flex align-items-start';
-        function formatMessage(txt) {
-            if (!txt) return '';
-            let cleanText = txt.replace(/\*\*/g, '').replace(/__/g, '');
-            let lines = cleanText.split('\n').filter(p => p.trim() !== '');
-            let listItems = [], regularText = [];
-            for (let line of lines) {
-                if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) listItems.push(line.trim().substring(2));
-                else regularText.push(line);
-            }
-            let html = '';
-            if (regularText.length > 0) html += regularText.join('<br>');
-            if (listItems.length > 0) {
-                html += '<ul style="padding-left: 20px; margin-top: 5px; margin-bottom: 0;">';
-                for (let item of listItems) html += `<li style="margin-bottom: 4px;">${item}</li>`;
-                html += '</ul>';
-            }
-            return html;
-        }
-        if (sender === 'user') {
-            div.classList.add('flex-row-reverse');
-            div.innerHTML = `<div style="background: #f59e0b; padding: 10px 14px; border-radius: 12px 12px 0 12px; max-width: 80%; color: white; font-size: 14px; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">${text}</div>`;
-        } else {
-            div.innerHTML = `<div style="width: 32px; height: 32px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0; font-size: 12px; color: #64748b;">AI</div>
-                <div style="background: white; padding: 10px 14px; border-radius: 12px 12px 12px 0; max-width: 80%; box-shadow: 0 1px 3px rgba(0,0,0,0.05); color: #334155; font-size: 14px; line-height: 1.5;">${formatMessage(text)}</div>`;
-        }
-        return div;
-    }
-
-    // VOICE
-    const voiceBtn = document.getElementById('voice-btn');
-    if (!voiceBtn) return;
-    voiceBtn.addEventListener('click', function() {
-        document.getElementById('voiceLaunchBtn')?.click();
-    });
-});
-
-
-</script>
-
-<!-- ============================================================ -->
-<!-- VOICE ASSISTANT – Floating Button + Chat Window -->
+<!-- KWDC ASSISTANT -->
 <!-- ============================================================ -->
 <div id="voice-assistant-container" style="position: fixed; bottom: 40px; right: 25px; z-index: 99999; display: flex; flex-direction: column; align-items: flex-end;">
     <div class="voice-chat-window" id="voiceChatWindow" style="background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); overflow: hidden; width: 380px; max-width: 90vw; max-height: 80vh; display: none; flex-direction: column; position: absolute; bottom: 75px; right: 0;">
         <div style="background: linear-gradient(135deg, #1e293b, #0f172a); padding: 14px 20px; color: white; display: flex; justify-content: space-between; align-items: center;">
     <div>
-        <i class="fas fa-microphone-alt me-2"></i> Voice Assistant
+        <i class="fas fa-headset me-2"></i> KWDC Assistant
         <select id="voiceLangSelect" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; padding: 2px 6px; font-size: 11px; margin-left: 8px;">
             <option value="en" style="background: #1e293b;">🇬🇧 English</option>
             <option value="np" style="background: #1e293b;">🇳🇵 Nepali</option>
@@ -852,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
     <button id="voiceLaunchBtn" class="btn rounded-circle shadow-lg" style="width: 60px; height: 60px; background: #f59e0b; border: none; color: white; font-size: 28px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">
-        <i class="fas fa-microphone-alt"></i>
+        <i class="fas fa-headset"></i>
     </button>
 </div>
 

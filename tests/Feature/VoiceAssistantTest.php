@@ -115,5 +115,8 @@ class VoiceAssistantTest extends TestCase
         $this->assertSame(1, substr_count($html, 'id="voiceMessages"'));
         $this->assertStringContainsString('id="voiceTextInput"', $html);
         $this->assertStringContainsString('id="voiceSendBtn"', $html);
+        $this->assertStringContainsString('KWDC Assistant', $html);
+        $this->assertStringNotContainsString('id="ai-chat-btn"', $html);
+        $this->assertStringNotContainsString('id="voice-btn"', $html);
     }
 }
