@@ -23,3 +23,5 @@ Thumbs.db
 /public/vendor
 public/.htaccess
 bootstrap/cache/
+/backups/
+/tools/composer.phar
