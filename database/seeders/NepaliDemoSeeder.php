@@ -29,6 +29,13 @@ class NepaliDemoSeeder extends Seeder
             'user_code' => 'CLI-DEMO',
         ]);
 
+        $clientTwo = $this->user('client.pokhara@kwdc.test', 'Pokhara Fresh Mart Demo', 'client', $password, [
+            'is_client' => true,
+            'phone' => '9801112244',
+            'address' => 'Chipledhunga, Pokhara',
+            'user_code' => 'CLI-PKR',
+        ]);
+
         $driver = $this->user('driver.demo@kwdc.test', 'Ram Bahadur Driver', 'driver', $password, [
             'is_driver' => true,
             'phone' => '9802223344',
@@ -103,14 +110,26 @@ class NepaliDemoSeeder extends Seeder
         $this->dispatch($client->id, $driver->id, 'TRK-LTP-003', 'Lagankhel, Lalitpur', 'Boudha, Kathmandu', 13.1, 2500, 'delivered');
         $this->dispatch($client->id, null, 'TRK-BGW-004', 'Birgunj Dry Port', 'Hetauda Industrial Area', 92.0, 14500, 'pending');
         $this->dispatch($client->id, null, 'TRK-ITR-005', 'Itahari Chowk', 'Dharan Bazar', 21.4, 4100, 'pending');
+        $this->dispatch($client->id, $driverTwo->id, 'TRK-CTW-006', 'Narayanghat Bus Park, Chitwan', 'Bharatpur Hospital Road', 6.8, 1900, 'assigned');
+        $this->dispatch($client->id, null, 'TRK-BRT-007', 'Biratnagar Industrial Corridor', 'Damak Main Road', 72.5, 11800, 'pending');
+        $this->dispatch($clientTwo->id, $driverTwo->id, 'TRK-PKR-008', 'Prithvi Chowk, Pokhara', 'Baglung Bus Park', 68.0, 10200, 'on_the_way');
+        $this->dispatch($clientTwo->id, null, 'TRK-LMB-009', 'Bhairahawa ICD', 'Lumbini Sanskritik Gate', 24.5, 4700, 'pending');
+        $this->dispatch($clientTwo->id, $driver->id, 'TRK-KTM-010', 'Balaju Industrial Area', 'Durbarmarg, Kathmandu', 11.3, 2600, 'delivered');
 
-        $this->pickup($client->id, $driver->id, 'PUP-KTM-001', 'Asan, Kathmandu', 9.4, 2100, 'assigned');
-        $this->pickup($client->id, $driver->id, 'PUP-LTP-002', 'Jawalakhel, Lalitpur', 6.7, 1600, 'completed');
-        $this->pickup($client->id, null, 'PUP-BKT-003', 'Suryabinayak, Bhaktapur', 12.0, 2300, 'pending');
+        $this->pickup($client->id, $driver->id, 'PUP-KTM-001', 'Asan, Kathmandu', 9.4, 2100, 'assigned', 'New Road, Kathmandu');
+        $this->pickup($client->id, $driver->id, 'PUP-LTP-002', 'Jawalakhel, Lalitpur', 6.7, 1600, 'completed', 'Kalimati Cold Store Demo');
+        $this->pickup($client->id, null, 'PUP-BKT-003', 'Suryabinayak, Bhaktapur', 12.0, 2300, 'pending', 'Lokanthali, Bhaktapur');
+        $this->pickup($client->id, null, 'PUP-KTM-004', 'Maharajgunj, Kathmandu', 5.8, 1400, 'pending', 'Baluwatar, Kathmandu');
+        $this->pickup($client->id, $driverTwo->id, 'PUP-BRJ-005', 'Adarsh Nagar, Birgunj', 18.9, 3900, 'picked_up', 'Birgunj Transit Godown Demo');
+        $this->pickup($clientTwo->id, $driverTwo->id, 'PUP-PKR-006', 'Mahendrapool, Pokhara', 7.1, 1550, 'assigned', 'Lakeside, Pokhara');
+        $this->pickup($clientTwo->id, null, 'PUP-DHN-007', 'Dharan Bazar', 10.6, 2200, 'pending', 'Itahari Chowk');
 
         $stockId = $this->stock($client->id, $warehouseOne->id, 'Ilam Tea Cartons', 'ILAM-TEA-2083', 'SKU-TEA-001', 48);
         $this->box($stockId, $client->id, 'TEA-BOX-001');
         $this->box($stockId, $client->id, 'TEA-BOX-002');
+        $this->stock($client->id, $warehouseTwo->id, 'Birgunj FMCG Mixed Cartons', 'BRJ-FMCG-2083', 'SKU-FMCG-014', 130);
+        $this->stock($clientTwo->id, $warehouseOne->id, 'Pokhara Herbal Soap Packs', 'PKR-SOAP-2083', 'SKU-SOAP-025', 72);
+        $this->stock($clientTwo->id, $warehouseTwo->id, 'Mustang Apple Juice Cases', 'MST-JUICE-2083', 'SKU-JUICE-033', 96);
 
         $this->equipment($equipmentOwner->id, 'JCB Backhoe Loader Demo', 'backhoe_loader', 'Kathmandu Ring Road', 18000);
         $this->equipment($equipmentOwner->id, 'Forklift 3 Ton Demo', 'forklift', 'Birgunj Dry Port', 8500);
@@ -120,8 +139,9 @@ class NepaliDemoSeeder extends Seeder
         $this->securityGood($agencyId, 'Handheld Metal Detector', 'screening');
         $this->securityAssignment($warehouseOne->id, $agencyId, $guardId);
 
-        foreach ([$admin, $client, $driver, $propertyOwner, $equipmentOwner, $securityUser] as $user) {
+        foreach ([$admin, $client, $clientTwo, $driver, $driverTwo, $propertyOwner, $equipmentOwner, $securityUser] as $user) {
             $this->reminder($user->id, 'Follow up demo calendar task', 'Check today dashboard and pending actions.');
+            $this->reminder($user->id, 'Monthly billing review', 'Review demo invoices, pickup requests, and dispatch payments.');
             $this->notification($user->id, 'Demo data ready', 'Nepali demo records have been loaded for this role.');
         }
     }
@@ -225,9 +245,31 @@ class NepaliDemoSeeder extends Seeder
                 'updated_at' => now(),
             ]
         );
+
+        $dispatchId = (int) DB::table('dispatch_orders')->where('tracking_id', $tracking)->value('id');
+        $this->deliveryStop($dispatchId, 1, $delivery, $status);
     }
 
-    private function pickup(int $clientId, ?int $driverId, string $tracking, string $destination, float $distance, int $price, string $status): void
+    private function deliveryStop(int $dispatchId, int $stopNumber, string $address, string $status): void
+    {
+        DB::table('delivery_stops')->updateOrInsert(
+            ['dispatch_order_id' => $dispatchId, 'stop_number' => $stopNumber],
+            [
+                'address' => $address,
+                'recipient_name' => 'Demo Receiver ' . $stopNumber,
+                'recipient_phone' => '98100000' . str_pad((string) $stopNumber, 2, '0', STR_PAD_LEFT),
+                'distance_from_previous' => 4 + $stopNumber,
+                'distance_price' => 700 + ($stopNumber * 250),
+                'notes' => 'Demo delivery stop near ' . $address,
+                'status' => $status === 'delivered' ? 'delivered' : 'pending',
+                'delivered_at' => $status === 'delivered' ? now()->subHours(4) : null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+    }
+
+    private function pickup(int $clientId, ?int $driverId, string $tracking, string $pickupAddress, float $distance, int $price, string $status, string $destination): void
     {
         if (!Schema::hasTable('pickup_requests')) {
             return;
@@ -238,17 +280,45 @@ class NepaliDemoSeeder extends Seeder
             [
                 'client_id' => $clientId,
                 'driver_id' => $driverId,
-                'notes' => 'Pickup route near ' . $destination,
+                'pickup_address' => $pickupAddress,
+                'destination_address' => $destination,
+                'items_description' => 'Demo cartons and local market goods',
+                'weight' => 12,
+                'notes' => 'Pickup route from ' . $pickupAddress . ' to ' . $destination,
                 'total_distance' => $distance,
                 'total_price' => $price,
                 'driver_earning' => $driverId ? $price * 0.75 : null,
                 'admin_margin' => $price * 0.25,
                 'status' => $status,
+                'payment_status' => $status === 'completed' ? 'paid' : 'pending',
+                'payment_due_date' => now()->addDays(7)->toDateString(),
                 'assigned_at' => $driverId ? now()->subDay() : null,
                 'picked_up_at' => $status === 'completed' ? now()->subHours(9) : null,
                 'delivered_at' => $status === 'completed' ? now()->subHours(3) : null,
                 'completed_at' => $status === 'completed' ? now()->subHours(3) : null,
                 'created_at' => now()->subDays(rand(1, 8)),
+                'updated_at' => now(),
+            ]
+        );
+
+        $pickupId = (int) DB::table('pickup_requests')->where('tracking_id', $tracking)->value('id');
+        $this->pickupStop($pickupId, 1, $pickupAddress, $status);
+    }
+
+    private function pickupStop(int $pickupId, int $stopNumber, string $address, string $status): void
+    {
+        DB::table('pickup_stops')->updateOrInsert(
+            ['pickup_request_id' => $pickupId, 'stop_number' => $stopNumber],
+            [
+                'address' => $address,
+                'contact_name' => 'Demo Supplier ' . $stopNumber,
+                'contact_phone' => '98200000' . str_pad((string) $stopNumber, 2, '0', STR_PAD_LEFT),
+                'items_description' => 'Demo market cartons, fragile label included',
+                'estimated_weight' => 12 + $stopNumber,
+                'distance_price' => 500 + ($stopNumber * 200),
+                'status' => $status === 'completed' ? 'completed' : 'pending',
+                'picked_up_at' => $status === 'completed' ? now()->subHours(8) : null,
+                'created_at' => now(),
                 'updated_at' => now(),
             ]
         );

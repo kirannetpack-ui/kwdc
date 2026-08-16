@@ -55,6 +55,8 @@
 
     <form id="pickupForm" method="POST" action="{{ route('pickup.store') }}">
         @csrf
+        <input type="hidden" name="total_price" id="total_price" value="0">
+        <input type="hidden" name="total_distance" id="total_distance" value="0">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Form - 2 columns -->
@@ -320,6 +322,7 @@
 <script>
 let stopCount = 1;
 let totalDistance = 0;
+let selectedDriversPrice = 0;
 let mapInstance = null;
 let mapMarkers = [];
 
@@ -555,14 +558,8 @@ async function calculatePickupPrice() {
             tooltip.innerText = '🤖 ' + data.explanation;
 
             // Update hidden fields
-            let totalPriceInput = document.querySelector('input[name="total_price"]');
-            if (!totalPriceInput) {
-                totalPriceInput = document.createElement('input');
-                totalPriceInput.type = 'hidden';
-                totalPriceInput.name = 'total_price';
-                document.getElementById('pickupForm').appendChild(totalPriceInput);
-            }
-            totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
+            document.getElementById('total_price').value = parseFloat(String(data.final_price).replace(/,/g, ''));
+            document.getElementById('total_distance').value = data.total_distance;
             
             // Update Map with all markers after price calculation
             renderMapMarkers();
@@ -585,17 +582,12 @@ function updatePriceSummary(data = null) {
         document.getElementById('margin_display').innerHTML = 'रू ' + data.margin_amount;
         document.getElementById('total_price_display').innerHTML = 'रू ' + data.final_price;
         
-        let totalPriceInput = document.querySelector('input[name="total_price"]');
-        if (!totalPriceInput) {
-            totalPriceInput = document.createElement('input');
-            totalPriceInput.type = 'hidden';
-            totalPriceInput.name = 'total_price';
-            document.getElementById('pickupForm').appendChild(totalPriceInput);
-        }
-        totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
+        document.getElementById('total_price').value = parseFloat(String(data.final_price).replace(/,/g, ''));
+        document.getElementById('total_distance').value = data.total_distance;
     } else if (selectedDriversPrice) {
         const totalPrice = selectedDriversPrice;
         document.getElementById('total_price_display').innerHTML = 'रू ' + totalPrice.toFixed(2);
+        document.getElementById('total_price').value = totalPrice;
     }
 }
 
@@ -687,11 +679,6 @@ document.getElementById('pickupForm').addEventListener('submit', async function(
     
     if (!pickupAddress) {
         showToast('Please enter pickup address', 'error');
-        return;
-    }
-    
-    if (!driverId) {
-        showToast('Please select a driver', 'error');
         return;
     }
     

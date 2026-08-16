@@ -4,103 +4,111 @@
 @section('header', 'My Dispatch Orders')
 
 @section('content')
-<div class="bg-white rounded-xl shadow-md p-6">
-    <div class="flex justify-between items-center mb-6">
-    <h3 class="text-lg font-bold text-gray-800">
-        <i class="fas fa-truck text-orange-500 mr-2"></i> My Dispatch Orders
-    </h3>
-    <a href="{{ route('dispatch.direct-create') }}" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
-        <i class="fas fa-plus mr-2"></i> Create New Dispatch
-    </a>
-</div>
+@php
+    $statusColors = [
+        'pending' => 'bg-amber-100 text-amber-800',
+        'assigned' => 'bg-blue-100 text-blue-800',
+        'picked_up' => 'bg-purple-100 text-purple-800',
+        'on_the_way' => 'bg-orange-100 text-orange-800',
+        'delivered' => 'bg-green-100 text-green-800',
+        'cancelled' => 'bg-red-100 text-red-800',
+    ];
+@endphp
 
-
-    @if(session('success'))
-    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-        {{ session('success') }}
-    </div>
-    @endif
-
-    @php
-        $dispatches = \App\Models\DispatchOrder::where('client_id', auth()->id())
-            ->with(['driver', 'warehouseRequest'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-    @endphp
-
-    @if($dispatches->count() > 0)
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dispatch ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pickup Location</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Delivery Location</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Distance</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Driver</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-200">
-                @foreach($dispatches as $dispatch)
-                <tr>
-                    <td class="px-6 py-4 font-mono text-sm">#{{ $dispatch->id }}</td>
-                    <td class="px-6 py-4">{{ \Illuminate\Support\Str::limit($dispatch->pickup_address ?? 'N/A', 30) }}</td>
-                    <td class="px-6 py-4">{{ \Illuminate\Support\Str::limit($dispatch->delivery_address ?? ($dispatch->deliveryStops->first()->address ?? 'N/A'), 30) }}</td>
-                    <td class="px-6 py-4">{{ $dispatch->distance_km ?? 'N/A' }} km</td>
-                    <td class="px-6 py-4 font-semibold text-green-600">रु {{ number_format($dispatch->base_price ?? 0) }}</td>
-                    <td class="px-6 py-4">
-                        @php
-                            $statusColors = [
-                                'pending' => 'bg-yellow-100 text-yellow-800',
-                                'assigned' => 'bg-blue-100 text-blue-800',
-                                'picked_up' => 'bg-purple-100 text-purple-800',
-                                'on_the_way' => 'bg-orange-100 text-orange-800',
-                                'delivered' => 'bg-green-100 text-green-800',
-                                'cancelled' => 'bg-red-100 text-red-800',
-                            ];
-                            $statusColor = $statusColors[$dispatch->status] ?? 'bg-gray-100 text-gray-800';
-                        @endphp
-                        <span class="px-2 py-1 rounded-full text-xs font-semibold {{ $statusColor }}">
-                            {{ ucfirst(str_replace('_', ' ', $dispatch->status ?? 'Pending')) }}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4">{{ $dispatch->driver->name ?? 'Not Assigned' }}</td>
-                    <td class="px-6 py-4 text-sm">{{ $dispatch->created_at->format('Y-m-d') }}</td>
-                    <td class="px-6 py-4">
-                        <a href="{{ route('dispatch.show', $dispatch->id) }}" class="text-blue-500 hover:text-blue-700" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </a>
-                        @if($dispatch->status == 'assigned')
-                        <a href="{{ route('tracking.shipment', $dispatch->id) }}" class="text-orange-500 hover:text-orange-700 ml-2" title="Track">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </a>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-    <div class="mt-4">
-        {{ $dispatches->links() }}
-    </div>
-    @else
-    <div class="text-center py-12">
-        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-truck text-4xl text-gray-400"></i>
-        </div>
-        <p class="text-gray-500 text-lg">No dispatch orders found</p>
-        <p class="text-gray-400 mt-2">Create a warehouse request, get it approved, then create a dispatch order.</p>
-        <div class="mt-6 space-x-3">
-            <a href="{{ route('my-requests.index') }}" class="inline-block bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600">
-                <i class="fas fa-warehouse mr-2"></i> Go to Warehouse Requests
+<div class="space-y-6">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+                <h3 class="text-xl font-bold text-gray-900">Dispatch Orders</h3>
+                <p class="text-sm text-gray-500 mt-1">Send goods from warehouse or pickup point to customers around Nepal.</p>
+            </div>
+            <a href="{{ route('dispatch.direct-create') }}" class="inline-flex items-center justify-center bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition">
+                <i class="fas fa-plus mr-2"></i> New Dispatch
             </a>
         </div>
     </div>
+
+    @if(session('success'))
+        <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    @if($dispatches->count() > 0)
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 text-gray-600">
+                        <tr>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Tracking</th>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Route</th>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Stops</th>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Distance</th>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Amount</th>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Status</th>
+                            <th class="px-5 py-3 text-left font-semibold uppercase tracking-wide">Driver</th>
+                            <th class="px-5 py-3 text-right font-semibold uppercase tracking-wide">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @foreach($dispatches as $dispatch)
+                            @php
+                                $firstStop = $dispatch->deliveryStops->first();
+                                $deliveryAddress = $dispatch->delivery_address ?? optional($firstStop)->address ?? 'Destination not set';
+                                $statusClass = $statusColors[$dispatch->status] ?? 'bg-gray-100 text-gray-800';
+                            @endphp
+                            <tr class="hover:bg-orange-50/40">
+                                <td class="px-5 py-4">
+                                    <div class="font-mono font-semibold text-gray-900">{{ $dispatch->tracking_id ?? ('#' . $dispatch->id) }}</div>
+                                    <div class="text-xs text-gray-500">{{ $dispatch->created_at->format('M d, Y') }}</div>
+                                </td>
+                                <td class="px-5 py-4 min-w-72">
+                                    <div class="font-medium text-gray-900">{{ \Illuminate\Support\Str::limit($dispatch->pickup_address ?? 'Pickup not set', 46) }}</div>
+                                    <div class="text-gray-500 mt-1">
+                                        <i class="fas fa-arrow-right text-orange-400 mx-1"></i>
+                                        {{ \Illuminate\Support\Str::limit($deliveryAddress, 46) }}
+                                    </div>
+                                </td>
+                                <td class="px-5 py-4 text-gray-700">{{ $dispatch->deliveryStops->count() }}</td>
+                                <td class="px-5 py-4 text-gray-700">{{ number_format((float) $dispatch->total_distance, 1) }} km</td>
+                                <td class="px-5 py-4 font-semibold text-green-700">रु {{ number_format((float) $dispatch->base_price, 2) }}</td>
+                                <td class="px-5 py-4">
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold {{ $statusClass }}">
+                                        {{ ucfirst(str_replace('_', ' ', $dispatch->status ?? 'pending')) }}
+                                    </span>
+                                </td>
+                                <td class="px-5 py-4 text-gray-700">{{ $dispatch->driver->name ?? 'Awaiting assignment' }}</td>
+                                <td class="px-5 py-4 text-right">
+                                    <a href="{{ route('dispatch.show', $dispatch->id) }}" class="inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold">
+                                        View <i class="fas fa-chevron-right ml-2 text-xs"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            <div class="px-5 py-4 border-t border-gray-100">
+                {{ $dispatches->links() }}
+            </div>
+        </div>
+    @else
+        <div class="bg-white rounded-lg shadow-sm border border-gray-100 text-center py-14 px-6">
+            <div class="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-truck text-3xl text-orange-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">No dispatch orders yet</h3>
+            <p class="text-gray-500 mt-2">Create a dispatch for Kathmandu, Pokhara, Biratnagar, Butwal, or any customer delivery route.</p>
+            <a href="{{ route('dispatch.direct-create') }}" class="inline-flex items-center mt-5 bg-orange-500 text-white px-5 py-2 rounded-lg hover:bg-orange-600 transition">
+                <i class="fas fa-plus mr-2"></i> Create Dispatch
+            </a>
+        </div>
     @endif
 </div>
 @endsection

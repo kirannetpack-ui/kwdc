@@ -25,6 +25,16 @@ class PickupRequest extends Model
         'weight',
         'scheduled_date',
         'scheduled_time',
+        'driver_earning',
+        'admin_margin',
+        'tax_amount',
+        'grand_total',
+        'payment_status',
+        'payment_due_date',
+        'notes',
+        'picked_up_at',
+        'delivered_at',
+        'cancelled_at',
         'total_distance',
         'total_price',
         'status',
@@ -45,11 +55,19 @@ class PickupRequest extends Model
     protected $casts = [
         'total_distance' => 'decimal:2',
         'total_price' => 'decimal:2',
+        'driver_earning' => 'decimal:2',
+        'admin_margin' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
+        'grand_total' => 'decimal:2',
         'weight' => 'decimal:2',
         'scheduled_date' => 'date',
         'assigned_at' => 'datetime',
         'started_at' => 'datetime',
         'completed_at' => 'datetime',
+        'picked_up_at' => 'datetime',
+        'delivered_at' => 'datetime',
+        'cancelled_at' => 'datetime',
+        'payment_due_date' => 'date',
         'pickup_latitude' => 'decimal:8',
         'pickup_longitude' => 'decimal:8',
         'destination_latitude' => 'decimal:8',
@@ -76,6 +94,16 @@ class PickupRequest extends Model
     public function stops()
     {
         return $this->hasMany(PickupStop::class);
+    }
+
+    public function pickupStops()
+    {
+        return $this->stops();
+    }
+
+    public function vehicle()
+    {
+        return $this->hasOne(Vehicle::class, 'driver_id', 'driver_id');
     }
 
     public function katahoLocations()

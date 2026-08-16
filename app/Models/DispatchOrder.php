@@ -83,6 +83,14 @@ class DispatchOrder extends Model
     }
 
     /**
+     * Get the primary vehicle for the assigned driver.
+     */
+    public function vehicle()
+    {
+        return $this->hasOne(Vehicle::class, 'driver_id', 'driver_id');
+    }
+
+    /**
      * Get the warehouse associated with this dispatch order
      */
     public function warehouse()
@@ -104,6 +112,11 @@ class DispatchOrder extends Model
     public function stops()
     {
         return $this->hasMany(DeliveryStop::class);
+    }
+
+    public function deliveryStops()
+    {
+        return $this->stops();
     }
 
     // ==================== SCOPES ====================
