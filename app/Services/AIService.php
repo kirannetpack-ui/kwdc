@@ -9,7 +9,12 @@ class AIService
 {
     public function chat(string $systemPrompt, string $userPrompt, string $format = 'json')
     {
-        $apiKey = env('GEMINI_API_KEY');
+        if (config('services.ai.provider', 'free') === 'free') {
+            Log::info('External AI disabled; using built-in fallback response.');
+            return null;
+        }
+
+        $apiKey = config('services.gemini.api_key');
         
         if (!$apiKey) {
             Log::warning('Gemini API key is missing in .env');

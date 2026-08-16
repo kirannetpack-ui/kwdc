@@ -7,23 +7,30 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Enhanced AI Service with Multiple Providers & Fallback Strategy
- * 
+ *
  * This service now supports:
- * - Primary: Google Gemini (free tier)
- * - Fallback: OpenAI GPT (if configured)
- * - Specialized: Groq (ultra-fast for structured tasks)
+ * - Default: Free local/rule-based assistant mode
+ * - Optional: Google Gemini, OpenAI GPT, or Groq when explicitly enabled
  * - Semantic: Embedding-based search (local)
  */
 class EnhancedAIService
 {
-    protected string $primaryProvider = 'gemini';
-    protected array $fallbackProviders = ['openai', 'groq'];
+    protected string $primaryProvider = 'free';
+    protected array $fallbackProviders = [];
 
     public function __construct()
     {
-        if (config('services.openai.api_key')) {
-            $this->primaryProvider = 'openai';
-            $this->fallbackProviders = ['gemini', 'groq'];
+        $configuredProvider = strtolower((string) config('services.ai.provider', 'free'));
+
+        if ($configuredProvider === 'auto') {
+            $this->primaryProvider = 'gemini';
+            $this->fallbackProviders = ['openai', 'groq'];
+            return;
+        }
+
+        if (in_array($configuredProvider, ['gemini', 'openai', 'groq'], true)) {
+            $this->primaryProvider = $configuredProvider;
+            $this->fallbackProviders = [];
         }
     }
 
@@ -33,7 +40,12 @@ class EnhancedAIService
      */
     public function chat(string $systemPrompt, string $userPrompt, string $format = 'json', ?string $provider = null)
     {
-        $providers = $provider ? [$provider] : [$this->primaryProvider, ...$this->fallbackProviders];
+        $providers = $this->requestedProviders($provider);
+
+        if ($providers === []) {
+            Log::info('AI provider disabled; using free local assistant behavior.');
+            return null;
+        }
 
         foreach ($providers as $p) {
             $result = match($p) {
@@ -53,6 +65,28 @@ class EnhancedAIService
 
         Log::error("❌ All AI providers failed");
         return null;
+    }
+
+    private function requestedProviders(?string $provider): array
+    {
+        $configuredProvider = strtolower((string) config('services.ai.provider', 'free'));
+
+        if ($configuredProvider === 'free') {
+            return [];
+        }
+
+        if ($provider) {
+            $provider = strtolower($provider);
+
+            return ($configuredProvider === 'auto' || $configuredProvider === $provider)
+                ? [$provider]
+                : [];
+        }
+
+        return array_values(array_filter(
+            [$this->primaryProvider, ...$this->fallbackProviders],
+            fn (string $candidate) => $candidate !== 'free'
+        ));
     }
 
     /**
@@ -282,8 +316,7 @@ class EnhancedAIService
         $result = $this->chat(
             "You are a professional translator and content generator.",
             $prompt,
-            'text',
-            'groq' // Use fast Groq for this
+            'text'
         );
 
         return [
@@ -316,17 +349,27 @@ class EnhancedAIService
     public function healthCheck(): array
     {
         $status = [];
+        $configuredProvider = strtolower((string) config('services.ai.provider', 'free'));
+
+        $status['mode'] = $configuredProvider;
+        $status['external_ai'] = $configuredProvider === 'free' ? 'disabled' : 'enabled';
 
         // Check Gemini
-        $geminiKey = config('services.gemini.api_key') ? 'set' : 'missing';
+        $geminiKey = ($configuredProvider === 'free')
+            ? 'disabled'
+            : (config('services.gemini.api_key') ? 'set' : 'missing');
         $status['gemini'] = $geminiKey;
 
         // Check OpenAI
-        $openaiKey = config('services.openai.api_key') ? 'set' : 'missing';
+        $openaiKey = ($configuredProvider === 'free')
+            ? 'disabled'
+            : (config('services.openai.api_key') ? 'set' : 'missing');
         $status['openai'] = $openaiKey;
 
         // Check Groq
-        $groqKey = config('services.groq.api_key') ? 'set' : 'missing';
+        $groqKey = ($configuredProvider === 'free')
+            ? 'disabled'
+            : (config('services.groq.api_key') ? 'set' : 'missing');
         $status['groq'] = $groqKey;
 
         return $status;

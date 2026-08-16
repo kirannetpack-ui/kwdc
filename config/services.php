@@ -45,6 +45,10 @@ return [
     'api_key' => env('GOOGLE_MAPS_API_KEY'),
 ],
 
+'ai' => [
+    'provider' => env('AI_PROVIDER', 'free'),
+],
+
 'gemini' => [
     'api_key' => env('GEMINI_API_KEY'),
 ],
