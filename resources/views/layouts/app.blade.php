@@ -556,32 +556,59 @@
     @auth
     const userId = document.querySelector('meta[name="user-id"]')?.getAttribute('content');
     if (userId) {
-        // We'll load Echo dynamically (requires Vite or mix; but we can use CDN fallback)
-        // For simplicity, we'll use the CDN approach with Pusher.
-        // If you have Vite, you can import. We'll include the CDN script.
-        if (typeof Echo === 'undefined') {
-            // Load Pusher and Echo from CDN
-            const pusherScript = document.createElement('script');
-            pusherScript.src = 'https://js.pusher.com/8.2.0/pusher.min.js';
-            document.head.appendChild(pusherScript);
-            const echoScript = document.createElement('script');
-            echoScript.src = 'https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js';
-            document.head.appendChild(echoScript);
-            echoScript.onload = function() {
-                window.Pusher = Pusher;
-                window.Echo = new Echo({
-                    broadcaster: 'reverb',
-                    key: '{{ env('REVERB_APP_KEY') }}',
-                    wsHost: '{{ env('REVERB_HOST', 'localhost') }}',
-                    wsPort: {{ env('REVERB_PORT', 8080) }},
-                    forceTLS: false,
-                    enabledTransports: ['ws', 'wss'],
-                });
-                setupEcho();
+        const loadScript = (src) => new Promise((resolve, reject) => {
+            const existing = document.querySelector(`script[src="${src}"]`);
+            if (existing) {
+                existing.addEventListener('load', resolve, { once: true });
+                existing.addEventListener('error', reject, { once: true });
+                if (existing.dataset.loaded === 'true') resolve();
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = src;
+            script.async = true;
+            script.onload = () => {
+                script.dataset.loaded = 'true';
+                resolve();
             };
-        } else {
-            setupEcho();
-        }
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+
+        const startRealtimeNotifications = async () => {
+            try {
+                if (typeof window.Echo === 'undefined') {
+                    await loadScript('https://js.pusher.com/8.2.0/pusher.min.js');
+                    window.Pusher = window.Pusher || window.pusher;
+                    await loadScript('https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js');
+                }
+
+                if (typeof window.Echo === 'undefined' && typeof Echo !== 'undefined') {
+                    window.Echo = Echo;
+                }
+
+                if (typeof window.Echo === 'function') {
+                    window.Echo = new window.Echo({
+                        broadcaster: 'reverb',
+                        key: '{{ env('REVERB_APP_KEY') }}',
+                        wsHost: '{{ env('REVERB_HOST', 'localhost') }}',
+                        wsPort: {{ env('REVERB_PORT', 8080) }},
+                        forceTLS: false,
+                        enabledTransports: ['ws', 'wss'],
+                    });
+                }
+
+                if (window.Echo?.private) {
+                    setupEcho();
+                }
+            } catch (error) {
+                console.warn('Realtime notifications are unavailable on this page.', error);
+            }
+        };
+
+        startRealtimeNotifications();
+
         function setupEcho() {
             window.Echo.private('notifications.' + userId)
                 .notification((notification) => {
@@ -783,31 +810,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // VOICE
     const voiceBtn = document.getElementById('voice-btn');
     if (!voiceBtn) return;
-    const langCodeMap = { 'English': 'en-US', 'Nepali': 'ne-NP', 'Hindi': 'hi-IN' };
-    function resetBtn(btn) { btn.innerHTML = '<i class="fas fa-microphone text-white" style="font-size: 22px;"></i>'; btn.disabled = false; }
     voiceBtn.addEventListener('click', function() {
-        const btn = this, language = langSelector.value, langCode = langCodeMap[language] || 'en-US';
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin text-white" style="font-size: 22px;"></i>'; btn.disabled = true;
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) { alert("Voice input is not supported."); resetBtn(btn); return; }
-        const recognition = new SpeechRecognition(); recognition.lang = langCode; recognition.interimResults = false;
-        recognition.onresult = async function(event) {
-            const transcript = event.results[0][0].transcript;
-            try {
-                const response = await fetch('/ai/voice-command', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content },
-                    body: JSON.stringify({ command: transcript, language: language })
-                });
-                if (!response.ok) { resetBtn(btn); return; }
-                const data = await response.json();
-                if (data.action === 'redirect') window.location.href = data.url;
-                else if (data.action === 'info') alert("🤖 KTM-WDC AI:\n\n" + data.message);
-                else alert("Could not understand command. Please try again.");
-            } catch (error) { console.error(error); alert("Failed to connect to AI engine."); } finally { resetBtn(btn); }
-        };
-        recognition.onerror = function(event) { resetBtn(btn); if (event.error === 'not-allowed') alert("Microphone permission denied."); else if (event.error === 'no-speech') console.log("No speech detected."); else alert("Voice error: " + event.error); };
-        recognition.start();
+        document.getElementById('voiceLaunchBtn')?.click();
     });
 });
 
@@ -832,13 +836,19 @@ document.addEventListener('DOMContentLoaded', function() {
         <div class="voice-messages" id="voiceMessages" style="height: 350px; overflow-y: auto; padding: 16px; background: #f8fafc; display: flex; flex-direction: column;">
             <div class="assistant-msg">
                 <div class="msg-bubble" style="background: #e5e7eb; color: #1e293b; padding: 10px 14px; border-radius: 12px; margin: 4px 0; max-width: 80%; align-self: flex-start;">
-                   <div class="voice-messages" id="voiceMessages"></div>
+                   Tell me what you need. I can open and prefill pickup, dispatch, tracking, invoices, equipment, security, and reminders.
                 </div>
             </div>
         </div>
-        <div style="padding: 12px; border-top: 1px solid #e5e7eb; background: white; display: flex; gap: 8px; align-items: center;">
-            <button id="voiceToggleBtn" class="btn" style="background: #f59e0b; border: none; border-radius: 30px; padding: 8px 20px; color: white; font-weight: 600;"><i class="fas fa-microphone"></i> Start</button>
-            <span id="voiceStatus" style="font-size: 13px; color: #64748b;">Click to speak</span>
+        <div style="padding: 12px; border-top: 1px solid #e5e7eb; background: white;">
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 10px;">
+                <button id="voiceToggleBtn" class="btn" style="background: #f59e0b; border: none; border-radius: 30px; padding: 8px 20px; color: white; font-weight: 600;"><i class="fas fa-microphone"></i> Start</button>
+                <span id="voiceStatus" style="font-size: 13px; color: #64748b;">Click to speak or type below</span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="voiceTextInput" class="form-control" placeholder="Type a request, e.g. pickup from Boudha to Bhaktapur" style="border: 1px solid #e2e8f0; border-right: none; border-radius: 8px 0 0 8px; padding: 10px 12px; font-size: 14px;">
+                <button id="voiceSendBtn" class="btn" style="background: #1e293b; border: 1px solid #1e293b; border-radius: 0 8px 8px 0; color: white;"><i class="fas fa-paper-plane"></i></button>
+            </div>
         </div>
     </div>
     <button id="voiceLaunchBtn" class="btn rounded-circle shadow-lg" style="width: 60px; height: 60px; background: #f59e0b; border: none; color: white; font-size: 28px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);">

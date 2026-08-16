@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusEl = document.getElementById('voiceStatus');
     const messagesEl = document.getElementById('voiceMessages');
     const langSelect = document.getElementById('voiceLangSelect');
+    const textInput = document.getElementById('voiceTextInput');
+    const sendBtn = document.getElementById('voiceSendBtn');
 
     let currentLanguage = 'en'; // default
     let isListening = false;
@@ -23,6 +25,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadVoices() {
         return new Promise((resolve) => {
+            if (!window.speechSynthesis) {
+                resolve([]);
+                return;
+            }
+
             if (voicesLoaded) {
                 resolve(availableVoices);
                 return;
@@ -79,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
             chatWindow.style.display = 'none';
             launchBtn.style.transform = 'scale(1)';
             if (isListening) {
-                recognition.stop();
+                recognition?.stop();
                 isListening = false;
                 window.isListening = false;
                 toggleBtn.textContent = 'Start';
@@ -92,18 +99,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== SPEECH RECOGNITION =====
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = null;
+
     if (!SpeechRecognition) {
-        statusEl.textContent = 'Voice not supported';
-        console.warn('⚠️ SpeechRecognition not supported');
-        return;
+        statusEl.textContent = 'Mic not supported here. Type below.';
+        toggleBtn.disabled = true;
+        toggleBtn.style.opacity = '0.65';
+        console.warn('SpeechRecognition not supported; typed assistant fallback enabled.');
+    } else {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+
+        window.recognition = recognition;
     }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    window.recognition = recognition;
     window.isListening = false;
 
     // ===== SPEAK FUNCTION (bilingual, with voice loading) =====
@@ -160,7 +170,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const div = document.createElement('div');
         div.className = sender === 'user' ? 'user-msg' : 'assistant-msg';
         const isNepali = currentLanguage === 'np';
-        div.innerHTML = `<div class="msg-bubble" style="background: ${sender === 'user' ? '#f59e0b' : '#e5e7eb'}; color: ${sender === 'user' ? 'white' : '#1e293b'}; padding: 10px 14px; border-radius: 12px; margin: 4px 0; max-width: 80%; align-self: ${sender === 'user' ? 'flex-end' : 'flex-start'}; font-size: ${isNepali ? '16px' : '14px'};">${text}</div>`;
+        const bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        bubble.textContent = text;
+        bubble.style.cssText = `background: ${sender === 'user' ? '#f59e0b' : '#e5e7eb'}; color: ${sender === 'user' ? 'white' : '#1e293b'}; padding: 10px 14px; border-radius: 12px; margin: 4px 0; max-width: 80%; align-self: ${sender === 'user' ? 'flex-end' : 'flex-start'}; font-size: ${isNepali ? '16px' : '14px'}; white-space: pre-line;`;
+        div.appendChild(bubble);
         messagesEl.appendChild(div);
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -174,11 +188,16 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
             },
             body: JSON.stringify({ message: text, language: language })
         })
         .then(async res => {
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Request failed with ${res.status}: ${body.substring(0, 150)}`);
+            }
+
             // Check if response is JSON
             const contentType = res.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
@@ -220,11 +239,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 ? 'क्षमा गर्नुहोस्, मैले एउटा त्रुटि भेटाएँ। कृपया फेरि प्रयास गर्नुहोस्।' 
                 : 'Sorry, I encountered an error. Please try again.';
             addMessage(msg, 'assistant');
+        })
+        .finally(() => {
+            if (textInput) textInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
         });
     }
 
     // ===== RECOGNITION EVENTS =====
-    recognition.onresult = function(event) {
+    if (recognition) recognition.onresult = function(event) {
         let finalTranscript = '';
         for (let i = event.resultIndex; i < event.results.length; i++) {
             const transcript = event.results[i][0].transcript;
@@ -244,10 +267,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
-    recognition.onerror = function(event) {
+    if (recognition) recognition.onerror = function(event) {
         console.error('❌ Recognition error:', event.error);
         if (event.error === 'not-allowed') {
-            alert('Microphone permission required.');
+            statusEl.textContent = 'Mic blocked. Type below.';
+            addMessage('Microphone permission is blocked. You can still type your request below.', 'assistant');
         }
         if (isListening) {
             recognition.stop();
@@ -263,6 +287,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== TOGGLE LISTENING =====
     if (toggleBtn) {
         toggleBtn.addEventListener('click', function() {
+            if (!recognition) {
+                statusEl.textContent = 'Mic not supported here. Type below.';
+                textInput?.focus();
+                return;
+            }
+
             if (isSpeaking) {
                 window.speechSynthesis.cancel();
                 isSpeaking = false;
@@ -272,12 +302,17 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!isListening) {
                 recognition.lang = currentLanguage === 'np' ? 'ne-NP' : 'en-US';
                 window.speechSynthesis.cancel();
-                recognition.start();
-                isListening = true;
-                window.isListening = true;
-                toggleBtn.textContent = 'Stop';
-                statusEl.textContent = 'Listening...';
-                toggleBtn.classList.add('listening');
+                try {
+                    recognition.start();
+                    isListening = true;
+                    window.isListening = true;
+                    toggleBtn.textContent = 'Stop';
+                    statusEl.textContent = 'Listening...';
+                    toggleBtn.classList.add('listening');
+                } catch (error) {
+                    console.error('Recognition start failed:', error);
+                    statusEl.textContent = 'Could not start mic. Type below.';
+                }
             } else {
                 recognition.stop();
                 window.speechSynthesis.cancel();
@@ -286,6 +321,30 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleBtn.textContent = 'Start';
                 statusEl.textContent = 'Click to speak';
                 toggleBtn.classList.remove('listening');
+            }
+        });
+    }
+
+    if (sendBtn && textInput) {
+        const sendTypedMessage = function() {
+            const text = textInput.value.trim();
+            if (!text) {
+                textInput.focus();
+                return;
+            }
+
+            textInput.value = '';
+            textInput.disabled = true;
+            sendBtn.disabled = true;
+            statusEl.textContent = 'Processing...';
+            sendToBackend(text);
+        };
+
+        sendBtn.addEventListener('click', sendTypedMessage);
+        textInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                sendTypedMessage();
             }
         });
     }

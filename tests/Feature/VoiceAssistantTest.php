@@ -102,4 +102,18 @@ class VoiceAssistantTest extends TestCase
         $this->assertNotEmpty($data['message']);
         $this->assertSame('open_page', $data['action']);
     }
+
+    public function test_voice_assistant_widget_has_single_message_area_and_text_fallback(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'voice-widget@example.com']);
+
+        $response = $this->actingAs($user)->get('/pickup');
+
+        $response->assertOk();
+        $html = $response->getContent();
+
+        $this->assertSame(1, substr_count($html, 'id="voiceMessages"'));
+        $this->assertStringContainsString('id="voiceTextInput"', $html);
+        $this->assertStringContainsString('id="voiceSendBtn"', $html);
+    }
 }
