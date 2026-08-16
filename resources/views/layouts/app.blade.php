@@ -19,6 +19,7 @@
     <!-- Leaflet CSS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="{{ asset('css/kwdc-ui.css') }}">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -154,6 +155,7 @@
     @stack('styles')
 </head>
 <body>
+<div id="kwdc-page-progress" aria-hidden="true"></div>
 
 <!-- Mobile Menu Toggle -->
 <button class="menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
@@ -497,6 +499,7 @@
 <!-- ============================================================ -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ asset('js/kwdc-flow.js') }}" defer></script>
 <script>
     function toggleMobileMenu() {
         document.getElementById('sidebar').classList.toggle('mobile-open');
