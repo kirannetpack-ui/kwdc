@@ -13,6 +13,7 @@ class ProductionPreflight extends Command
     public function handle(): int
     {
         $failures = [];
+        $phaseOneDemo = filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN);
 
         $this->requireExact($failures, 'APP_ENV', config('app.env'), 'production');
         $this->requireFalse($failures, 'APP_DEBUG', (bool) config('app.debug'));
@@ -25,8 +26,8 @@ class ProductionPreflight extends Command
         $this->requireIn($failures, 'SESSION_SAME_SITE', config('session.same_site'), ['lax', 'strict']);
 
         $this->validateDatabase($failures);
-        $this->validateMail($failures);
-        $this->validatePayments($failures);
+        $this->validateMail($failures, $phaseOneDemo);
+        $this->validatePayments($failures, $phaseOneDemo);
 
         if ($failures !== []) {
             $this->error('Production preflight failed:');
@@ -57,9 +58,13 @@ class ProductionPreflight extends Command
         }
     }
 
-    private function validateMail(array &$failures): void
+    private function validateMail(array &$failures, bool $phaseOneDemo): void
     {
         $mailer = config('mail.default');
+
+        if ($phaseOneDemo && $mailer === 'log') {
+            return;
+        }
 
         $this->requireExact($failures, 'MAIL_MAILER', $mailer, 'smtp');
         $this->requireFilled($failures, 'MAIL_HOST', config('mail.mailers.smtp.host'));
@@ -68,8 +73,12 @@ class ProductionPreflight extends Command
         $this->requireFilled($failures, 'MAIL_FROM_ADDRESS', config('mail.from.address'));
     }
 
-    private function validatePayments(array &$failures): void
+    private function validatePayments(array &$failures, bool $phaseOneDemo): void
     {
+        if ($phaseOneDemo) {
+            return;
+        }
+
         $this->requireFilled($failures, 'KHALTI_PUBLIC_KEY', config('payment.khalti.public_key'));
         $this->requireFilled($failures, 'KHALTI_SECRET_KEY', config('payment.khalti.secret_key'));
         $this->requireHttpsUrl($failures, 'KHALTI_BASE_URL', config('payment.khalti.base_url'));
