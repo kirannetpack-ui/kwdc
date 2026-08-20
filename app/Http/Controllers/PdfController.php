@@ -3,11 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Warehouse;
-use App\Models\WarehouseRequest;
 use App\Models\DispatchOrder;
-use App\Models\Invoice;
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Auth;
 
 class PdfController extends Controller
 {
@@ -19,6 +17,9 @@ class PdfController extends Controller
     public function downloadWarehouse($id)
     {
         $warehouse = Warehouse::with('user')->findOrFail($id);
+
+        abort_unless($this->canDownloadWarehouse($warehouse), 403);
+
         $pdf = Pdf::loadView('pdf.warehouse', compact('warehouse'));
         return $pdf->download("Warehouse_{$warehouse->id}.pdf");
     }
@@ -26,14 +27,34 @@ class PdfController extends Controller
     public function downloadDispatch($id)
     {
         $dispatch = DispatchOrder::with(['client', 'driver', 'stops'])->findOrFail($id);
+
+        abort_unless($this->canDownloadDispatch($dispatch), 403);
+
         $pdf = Pdf::loadView('pdf.dispatch', compact('dispatch'));
         return $pdf->download("Dispatch_{$dispatch->tracking_id}.pdf");
     }
 
-    public function downloadInvoice($id)
+    protected function canDownloadWarehouse(Warehouse $warehouse): bool
     {
-        $invoice = Invoice::with('client')->findOrFail($id);
-        $pdf = Pdf::loadView('pdf.invoice', compact('invoice'));
-        return $pdf->download("Invoice_{$invoice->invoice_number}.pdf");
+        $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $warehouse->user_id === $user->id
+            || $warehouse->owner_id === $user->id;
+    }
+
+    protected function canDownloadDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        return $dispatch->client_id === $user->id
+            || $dispatch->driver_id === $user->id;
     }
 }

@@ -415,7 +415,6 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('pdf')->name('pdf.')->group(function () {
         Route::get('/warehouse/{id}', [PdfController::class, 'downloadWarehouse'])->name('warehouse');
         Route::get('/dispatch/{id}', [PdfController::class, 'downloadDispatch'])->name('dispatch');
-        Route::get('/invoice/{id}', [PdfController::class, 'downloadInvoice'])->name('invoice');
     });
 
     // ==================== ADMIN ROUTES (Admin middleware) ====================
