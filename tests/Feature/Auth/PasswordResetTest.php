@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class PasswordResetTest extends TestCase
@@ -17,6 +18,14 @@ class PasswordResetTest extends TestCase
         $response = $this->get('/forgot-password');
 
         $response->assertStatus(200);
+    }
+
+    public function test_legacy_password_reset_urls_are_not_registered(): void
+    {
+        $uris = collect(Route::getRoutes())->map(fn ($route) => $route->uri())->all();
+
+        $this->assertNotContains('password/reset', $uris);
+        $this->assertNotContains('password/email', $uris);
     }
 
     public function test_reset_password_link_can_be_requested(): void
@@ -69,5 +78,16 @@ class PasswordResetTest extends TestCase
 
             return true;
         });
+    }
+
+    public function test_password_reset_submission_routes_are_rate_limited(): void
+    {
+        $this->assertNotEmpty(
+            preg_grep('/^throttle:/', app('router')->getRoutes()->getByName('password.email')->gatherMiddleware())
+        );
+
+        $this->assertNotEmpty(
+            preg_grep('/^throttle:/', app('router')->getRoutes()->getByName('password.store')->gatherMiddleware())
+        );
     }
 }

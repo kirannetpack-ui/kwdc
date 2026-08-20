@@ -66,11 +66,8 @@ Route::get('/ping', fn() => 'pong');
 Route::get('/invoice/verify/{invoiceNumber}', [InvoiceController::class, 'verify'])->name('invoice.verify');
 
 // ================================================================
-// 2. AUTHENTICATION ROUTES (All-in-one – no duplicates!)
+// 2. AUTHENTICATION ROUTES
 // ================================================================
-Auth::routes();
-
-// Custom login/register overrides (if you need custom logic)
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -82,13 +79,13 @@ Route::post('/activate', [ActivationController::class, 'activate'])
     ->middleware('throttle:5,1');
 Route::post('/activate/resend', [ActivationController::class, 'resend'])->name('activation.resend')->middleware('throttle:3,1');
 
-Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->middleware('guest')->name('password.request.breeze');
-Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware('guest')->name('password.email.breeze');
-Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->middleware('guest')->name('password.reset.breeze');
-Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware('guest')->name('password.store');
-Route::get('/confirm-password', [ConfirmablePasswordController::class, 'show'])->middleware('auth')->name('password.confirm.breeze');
+Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->middleware('guest')->name('password.request');
+Route::post('/forgot-password', [PasswordResetLinkController::class, 'store'])->middleware(['guest', 'throttle:5,1'])->name('password.email');
+Route::get('/reset-password/{token}', [NewPasswordController::class, 'create'])->middleware('guest')->name('password.reset');
+Route::post('/reset-password', [NewPasswordController::class, 'store'])->middleware(['guest', 'throttle:5,1'])->name('password.store');
+Route::get('/confirm-password', [ConfirmablePasswordController::class, 'show'])->middleware('auth')->name('password.confirm');
 Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('auth');
-Route::put('/password', [PasswordController::class, 'update'])->middleware('auth')->name('password.update.breeze');
+Route::put('/password', [PasswordController::class, 'update'])->middleware('auth')->name('password.update');
 Route::get('/verify-email', fn() => view('auth.verify-email'))->middleware('auth')->name('verification.notice');
 Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['auth', 'signed', 'throttle:6,1'])
@@ -100,12 +97,6 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
 // Home & Dashboard – only ONE should have name 'dashboard'
 Route::get('/home', [HomeController::class, 'index'])->name('home');  // renamed to 'home'
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');  // main dashboard
-
-// Password Reset Routes (explicit, but Auth::routes() already provides them)
-Route::get('/password/reset', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])->name('password.request');
-Route::post('/password/email', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])->name('password.email');
-Route::get('/password/reset/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])->name('password.reset');
-Route::post('/password/reset', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])->name('password.update');
 
 // ================================================================
 // 3. PROTECTED ROUTES (Authentication required)

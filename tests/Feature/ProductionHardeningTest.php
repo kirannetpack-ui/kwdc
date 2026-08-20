@@ -6,6 +6,7 @@ use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class ProductionHardeningTest extends TestCase
@@ -187,5 +188,17 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString('->retry(', $service);
         $this->assertStringContainsString("blank(config('payment.khalti.secret_key'))", $service);
         $this->assertStringContainsString("blank(config('payment.esewa.merchant_code'))", $service);
+    }
+
+    public function test_auth_routes_use_single_canonical_password_reset_surface(): void
+    {
+        $routes = file_get_contents(base_path('routes/web.php'));
+        $uris = collect(Route::getRoutes())->map(fn ($route) => $route->uri())->all();
+
+        $this->assertStringNotContainsString('Auth::routes()', $routes);
+        $this->assertNotContains('password/reset', $uris);
+        $this->assertNotContains('password/email', $uris);
+        $this->assertContains('forgot-password', $uris);
+        $this->assertContains('reset-password/{token}', $uris);
     }
 }
