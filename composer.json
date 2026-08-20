@@ -8,13 +8,13 @@
         "php": "^8.2",
         "barryvdh/laravel-dompdf": "^3.1",
         "doctrine/dbal": "^4.4",
-        "gemini-api-php/client": "1.0",
+        "gemini-api-php/client": "^1.0",
         "guzzlehttp/guzzle": "^7.13",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^12.67",
         "laravel/reverb": "^1.11",
         "laravel/sanctum": "^4.3",
-        "laravel/tinker": "^2.9",
-        "laravel/ui": "^4.0",
+        "laravel/tinker": "^2.11",
+        "laravel/ui": "^4.6",
         "openai-php/client": "^0.20.1",
         "simplesoftwareio/simple-qrcode": "^4.2",
         "symfony/google-mailer": "^7.4",
@@ -25,7 +25,6 @@
         "laravel/pint": "^1.13",
         "laravel/sail": "^1.26",
         "mockery/mockery": "^1.6",
-        "nunomaduro/collision": "^8.0",
         "phpunit/phpunit": "^10.5"
     },
     "autoload": {
@@ -50,6 +49,9 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
+        ],
+        "test": [
+            "@php vendor/bin/phpunit"
         ]
     },
     "extra": {

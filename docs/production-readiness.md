@@ -59,7 +59,7 @@ This checklist tracks what must be true before KTM-WDC is safe to launch for rea
 
 - Local app mode is `local` with debug enabled.
 - Local database is SQLite.
-- Tests pass locally.
+- Backend tests pass locally with `composer test` / `vendor/bin/phpunit`.
 - `npm audit --audit-level=moderate` passes after upgrading Vite, the Laravel Vite plugin, and Sass.
-- `php tools/composer.phar audit` reports only the remaining Laravel framework advisories. The smaller package advisories for Dompdf, Guzzle, and League CommonMark were cleared by dependency updates.
-- Clearing the remaining Laravel advisories requires a deliberate Laravel 12 upgrade. A dry-run shows the current `nunomaduro/collision` dev dependency blocks `laravel/framework:^12.67`, and Collision has no stable Laravel 12-compatible release in the current package index.
+- `php tools/composer.phar audit` reports no known security vulnerability advisories after upgrading to Laravel 12 and patched HTTP/PDF/Markdown dependencies.
+- `php artisan test` is not available in this Laravel 12 dependency set, so use `composer test` for the standard local backend test run.
