@@ -176,4 +176,16 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('/storage/${data.', $indexView);
         $this->assertStringNotContainsString('Storage::url($box->', $trackView);
     }
+
+    public function test_payment_provider_calls_have_timeout_retry_and_config_guards(): void
+    {
+        $service = file_get_contents(app_path('Services/PaymentService.php'));
+        $paymentConfig = file_get_contents(config_path('payment.php'));
+
+        $this->assertStringContainsString("'timeout' => (int) env('PAYMENT_HTTP_TIMEOUT'", $paymentConfig);
+        $this->assertStringContainsString('Http::timeout(config(\'payment.http.timeout\'))', $service);
+        $this->assertStringContainsString('->retry(', $service);
+        $this->assertStringContainsString("blank(config('payment.khalti.secret_key'))", $service);
+        $this->assertStringContainsString("blank(config('payment.esewa.merchant_code'))", $service);
+    }
 }

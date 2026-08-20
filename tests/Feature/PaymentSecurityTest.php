@@ -9,7 +9,9 @@ use App\Models\Warehouse;
 use App\Services\AdminEmailService;
 use App\Services\PaymentService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -179,6 +181,82 @@ class PaymentSecurityTest extends TestCase
                 "Expected {$routeName} to include throttle middleware."
             );
         }
+    }
+
+    public function test_new_khalti_payment_session_retires_previous_pending_session(): void
+    {
+        $user = User::factory()->create(['role' => 'client']);
+        $invoice = $this->invoiceFor($user, 1500);
+
+        $oldTransaction = Transaction::create([
+            'invoice_id' => $invoice->id,
+            'user_id' => $user->id,
+            'amount' => 1500,
+            'payment_method' => 'khalti',
+            'transaction_id' => 'old-pidx',
+            'status' => 'pending',
+        ]);
+
+        $this->mock(PaymentService::class, function ($mock) use ($invoice) {
+            $mock->shouldReceive('initiateKhaltiPayment')
+                ->once()
+                ->with(1500.0, $invoice->invoice_number, $invoice->user_id, $invoice->id)
+                ->andReturn([
+                    'success' => true,
+                    'data' => [
+                        'pidx' => 'new-pidx',
+                        'payment_url' => 'https://payments.example/new-pidx',
+                    ],
+                ]);
+        });
+
+        $this->actingAs($user)
+            ->postJson(route('payment.khalti.init'), [
+                'invoice_id' => $invoice->id,
+                'amount' => 1500,
+            ])
+            ->assertOk()
+            ->assertJsonPath('pidx', 'new-pidx');
+
+        $this->assertDatabaseHas('transactions', [
+            'id' => $oldTransaction->id,
+            'status' => 'failed',
+            'notes' => 'Retired after a newer payment session was created.',
+        ]);
+
+        $this->assertDatabaseHas('transactions', [
+            'invoice_id' => $invoice->id,
+            'transaction_id' => 'new-pidx',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_payment_service_does_not_call_khalti_without_secret_key(): void
+    {
+        Http::fake();
+        Config::set('payment.khalti.secret_key', '');
+
+        $user = User::factory()->create(['role' => 'client']);
+
+        $this->actingAs($user);
+
+        $result = app(PaymentService::class)->initiateKhaltiPayment(1500, 'INV-MISSING-KEY', $user->id, 123);
+
+        $this->assertFalse($result['success']);
+        $this->assertSame('Payment provider is not configured. Please contact support.', $result['message']);
+        Http::assertNothingSent();
+    }
+
+    public function test_payment_service_does_not_call_esewa_without_merchant_code(): void
+    {
+        Http::fake();
+        Config::set('payment.esewa.merchant_code', '');
+
+        $result = app(PaymentService::class)->verifyEsewaPayment('pid-123', 'ref-456', 1500);
+
+        $this->assertFalse($result['success']);
+        $this->assertSame('Payment provider is not configured. Please contact support.', $result['message']);
+        Http::assertNothingSent();
     }
 
     private function invoiceFor(User $user, float $amount): Invoice

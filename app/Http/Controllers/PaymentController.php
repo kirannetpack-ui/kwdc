@@ -64,6 +64,8 @@ class PaymentController extends Controller
         );
 
         if ($result['success']) {
+            $this->retirePendingTransactions($invoice, 'khalti');
+
             // Store transaction
             Transaction::create([
                 'invoice_id' => $invoice->id,
@@ -72,7 +74,7 @@ class PaymentController extends Controller
                 'payment_method' => 'khalti',
                 'transaction_id' => $result['data']['pidx'],
                 'status' => 'pending',
-                'payment_details' => json_encode($result['data']),
+                'payment_details' => $result['data'],
             ]);
 
             return response()->json([
@@ -195,6 +197,8 @@ class PaymentController extends Controller
         );
 
         if ($result['success']) {
+            $this->retirePendingTransactions($invoice, 'esewa');
+
             // Store transaction
             Transaction::create([
                 'invoice_id' => $invoice->id,
@@ -203,6 +207,10 @@ class PaymentController extends Controller
                 'payment_method' => 'esewa',
                 'transaction_id' => $result['pid'],
                 'status' => 'pending',
+                'payment_details' => [
+                    'payment_url' => $result['url'],
+                    'pid' => $result['pid'],
+                ],
             ]);
 
             return redirect($result['url']);
@@ -344,5 +352,18 @@ class PaymentController extends Controller
 
         $this->adminEmailService->notifyPaymentReceived($transaction, $invoice);
         $this->sendReceipt($transaction, $invoice);
+    }
+
+    private function retirePendingTransactions(Invoice $invoice, string $method): void
+    {
+        Transaction::where('invoice_id', $invoice->id)
+            ->where('user_id', auth()->id())
+            ->where('payment_method', $method)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'failed',
+                'notes' => 'Retired after a newer payment session was created.',
+                'updated_at' => now(),
+            ]);
     }
 }

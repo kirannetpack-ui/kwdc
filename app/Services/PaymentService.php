@@ -12,6 +12,15 @@ class PaymentService
      */
     public function initiateKhaltiPayment($amount, $invoiceNumber, $userId, $invoiceId)
     {
+        if (blank(config('payment.khalti.secret_key'))) {
+            Log::warning('Khalti payment initiation blocked because KHALTI_SECRET_KEY is not configured.');
+
+            return [
+                'success' => false,
+                'message' => 'Payment provider is not configured. Please contact support.',
+            ];
+        }
+
         $payload = [
             'return_url' => route('payment.khalti.verify'),
             'website_url' => config('app.url'),
@@ -26,7 +35,7 @@ class PaymentService
         ];
 
         try {
-            $response = Http::withHeaders([
+            $response = $this->providerHttp()->withHeaders([
                 'Authorization' => 'Key ' . config('payment.khalti.secret_key'),
                 'Content-Type' => 'application/json',
             ])->post(rtrim(config('payment.khalti.base_url'), '/') . '/epayment/initiate/', $payload);
@@ -39,8 +48,10 @@ class PaymentService
             }
 
             Log::error('Khalti payment initiation failed', [
-                'response' => $response->body(),
-                'payload' => $payload,
+                'status' => $response->status(),
+                'invoice_number' => $invoiceNumber,
+                'invoice_id' => $invoiceId,
+                'user_id' => $userId,
             ]);
 
             return [
@@ -62,8 +73,17 @@ class PaymentService
      */
     public function verifyKhaltiPayment($pidx)
     {
+        if (blank(config('payment.khalti.secret_key'))) {
+            Log::warning('Khalti payment verification blocked because KHALTI_SECRET_KEY is not configured.');
+
+            return [
+                'success' => false,
+                'message' => 'Payment provider is not configured. Please contact support.',
+            ];
+        }
+
         try {
-            $response = Http::withHeaders([
+            $response = $this->providerHttp()->withHeaders([
                 'Authorization' => 'Key ' . config('payment.khalti.secret_key'),
                 'Content-Type' => 'application/json',
             ])->post(config('payment.khalti.verification_url'), [
@@ -98,6 +118,15 @@ class PaymentService
      */
     public function initiateEsewaPayment($amount, $invoiceNumber, $invoiceId)
     {
+        if (blank(config('payment.esewa.merchant_code'))) {
+            Log::warning('eSewa payment initiation blocked because ESEWA_MERCHANT_CODE is not configured.');
+
+            return [
+                'success' => false,
+                'message' => 'Payment provider is not configured. Please contact support.',
+            ];
+        }
+
         $pid = uniqid() . '-' . time();
         
         $url = config('payment.esewa.payment_url') . '?' . http_build_query([
@@ -124,11 +153,20 @@ class PaymentService
      */
     public function verifyEsewaPayment($pid, $refId, float $amount)
     {
+        if (blank(config('payment.esewa.merchant_code'))) {
+            Log::warning('eSewa payment verification blocked because ESEWA_MERCHANT_CODE is not configured.');
+
+            return [
+                'success' => false,
+                'message' => 'Payment provider is not configured. Please contact support.',
+            ];
+        }
+
         try {
             $amount = round($amount, 2);
             $url = config('payment.esewa.verification_url');
 
-            $response = Http::asForm()->post($url, [
+            $response = $this->providerHttp()->asForm()->post($url, [
                 'amt' => $amount,
                 'pdc' => 0,
                 'psc' => 0,
@@ -163,5 +201,15 @@ class PaymentService
                 'message' => 'Verification failed. Please contact support.',
             ];
         }
+    }
+
+    private function providerHttp()
+    {
+        return Http::timeout(config('payment.http.timeout'))
+            ->retry(
+                config('payment.http.retry_times'),
+                config('payment.http.retry_sleep_ms'),
+                throw: false
+            );
     }
 }
