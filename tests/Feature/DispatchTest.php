@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\DispatchOrder;
 use App\Models\DeliveryStop;
+use App\Models\Warehouse;
+use App\Models\WarehouseRequest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -139,5 +141,72 @@ class DispatchTest extends TestCase
             'id' => $stop->id,
             'status' => 'delivered',
         ]);
+    }
+
+    public function test_client_cannot_create_dispatch_for_another_client()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $otherClient = User::factory()->create(['role' => 'client']);
+
+        $response = $this->actingAs($client)->post(route('dispatch.store'), [
+            'client_id' => $otherClient->id,
+            'pickup_address' => '123 Pickup St, Kathmandu',
+            'delivery_address' => '456 Delivery Ave, Kathmandu',
+            'total_distance' => 15,
+            'base_price' => 500,
+        ]);
+
+        $response->assertRedirect(route('dispatch.index'));
+
+        $this->assertDatabaseHas('dispatch_orders', [
+            'client_id' => $client->id,
+            'pickup_address' => '123 Pickup St, Kathmandu',
+        ]);
+
+        $this->assertDatabaseMissing('dispatch_orders', [
+            'client_id' => $otherClient->id,
+            'pickup_address' => '123 Pickup St, Kathmandu',
+        ]);
+    }
+
+    public function test_admin_can_create_dispatch_for_selected_client()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $client = User::factory()->create(['role' => 'client']);
+
+        $response = $this->actingAs($admin)->post(route('dispatch.store'), [
+            'client_id' => $client->id,
+            'pickup_address' => 'Admin Pickup St, Kathmandu',
+            'delivery_address' => 'Client Delivery Ave, Kathmandu',
+            'total_distance' => 10,
+            'base_price' => 400,
+        ]);
+
+        $response->assertRedirect(route('dispatch.index'));
+
+        $this->assertDatabaseHas('dispatch_orders', [
+            'client_id' => $client->id,
+            'pickup_address' => 'Admin Pickup St, Kathmandu',
+        ]);
+    }
+
+    public function test_client_cannot_open_dispatch_create_for_another_clients_warehouse_request()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $otherClient = User::factory()->create(['role' => 'client']);
+        $warehouse = Warehouse::factory()->create();
+
+        $otherRequest = WarehouseRequest::create([
+            'client_id' => $otherClient->id,
+            'warehouse_id' => $warehouse->id,
+            'required_area' => 100,
+            'duration_months' => 2,
+            'purpose' => 'Consumer goods',
+            'status' => 'assigned',
+        ]);
+
+        $this->actingAs($client)
+            ->get(route('dispatch.create', $otherRequest->id))
+            ->assertNotFound();
     }
 }

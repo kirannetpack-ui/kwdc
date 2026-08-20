@@ -256,6 +256,9 @@ class ProductionHardeningTest extends TestCase
     {
         $controller = file_get_contents(app_path('Http/Controllers/DispatchController.php'));
 
+        $this->assertStringContainsString('private function dispatchClientId', $controller);
+        $this->assertStringContainsString('$clientId = $this->dispatchClientId($request);', $controller);
+        $this->assertStringContainsString('return $user->id;', $controller);
         $this->assertStringContainsString('private function canViewDispatch', $controller);
         $this->assertStringContainsString('private function canManageDispatch', $controller);
         $this->assertStringContainsString('private function canRateDispatch', $controller);

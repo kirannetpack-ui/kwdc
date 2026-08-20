@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\DriverRate;
 use App\Models\Warehouse;
+use App\Models\WarehouseRequest;
 use App\Models\Stock;
 use App\Events\OrderDelivered;
 use App\Events\LocationUpdated;
@@ -44,10 +45,16 @@ class DispatchController extends Controller
     {
         $warehouseRequest = null;
         if ($requestId) {
-            $warehouseRequest = \App\Models\WarehouseRequest::with('warehouse')->findOrFail($requestId);
+            $warehouseRequest = WarehouseRequest::with('warehouse')
+                ->when(!auth()->user()->isAdmin(), function ($query) {
+                    $query->where('client_id', auth()->id());
+                })
+                ->findOrFail($requestId);
         }
 
-        $clients = User::where('role', 'client')->get();
+        $clients = auth()->user()->isAdmin()
+            ? User::where('role', 'client')->get()
+            : User::where('id', auth()->id())->get();
         $drivers = User::where('role', 'driver')->get();
         $vehicles = Vehicle::all();
 
@@ -55,38 +62,39 @@ class DispatchController extends Controller
     } // <-- ✅ THIS BRACE IS NOW HERE
 
     public function directCreate()
-{
-    $clients = User::where('role', 'client')->get();
-    $drivers = User::where('role', 'driver')->get();
-    $vehicles = Vehicle::all();
+    {
+        $clients = auth()->user()->isAdmin()
+            ? User::where('role', 'client')->get()
+            : User::where('id', auth()->id())->get();
+        $drivers = User::where('role', 'driver')->get();
+        $vehicles = Vehicle::all();
 
-    // Get available drivers with their rates for AI recommendations
-    $availableDrivers = User::where('role', 'driver')
-        ->with(['driverRates' => function($q) {
-            $q->where('is_active', true);
-        }])
-        ->get()
-        ->map(function($driver) {
-            $rate = $driver->driverRates->first();
-            return [
-                'id' => $driver->id,
-                'name' => $driver->name,
-                'phone' => $driver->phone ?? 'N/A',
-                'vehicle_type' => $driver->vehicle_type ?? 'Standard',
-                'price' => $rate ? $rate->price_per_km * 10 : 500,
-                'rating' => $driver->average_rating ?? 4,
-            ];
-        });
+        // Get available drivers with their rates for AI recommendations
+        $availableDrivers = User::where('role', 'driver')
+            ->with(['driverRates' => function($q) {
+                $q->where('is_active', true);
+            }])
+            ->get()
+            ->map(function($driver) {
+                $rate = $driver->driverRates->first();
+                return [
+                    'id' => $driver->id,
+                    'name' => $driver->name,
+                    'phone' => $driver->phone ?? 'N/A',
+                    'vehicle_type' => $driver->vehicle_type ?? 'Standard',
+                    'price' => $rate ? $rate->price_per_km * 10 : 500,
+                    'rating' => $driver->average_rating ?? 4,
+                ];
+            });
 
-    // ✅ FIX: Use explicit query with correct foreign key 'user_id'
-    $assignedWarehouses = Warehouse::where('user_id', Auth::id())->get();
-    $stocks = Stock::where('user_id', Auth::id())->get();
+        $assignedWarehouses = Warehouse::where('user_id', Auth::id())->get();
+        $stocks = Stock::where('user_id', Auth::id())->get();
 
-    return view('dispatch.direct-create', compact(
-        'clients', 'drivers', 'vehicles', 'availableDrivers',
-        'assignedWarehouses', 'stocks'
-    ));
-}
+        return view('dispatch.direct-create', compact(
+            'clients', 'drivers', 'vehicles', 'availableDrivers',
+            'assignedWarehouses', 'stocks'
+        ));
+    }
 
 
     public function store(Request $request)
@@ -133,7 +141,7 @@ class DispatchController extends Controller
         DB::beginTransaction();
 
         try {
-            $clientId = $request->client_id ?? auth()->id();
+            $clientId = $this->dispatchClientId($request);
             $basePrice = (float) ($request->input('total_price', $request->input('base_price', 0)));
 
             $dispatch = DispatchOrder::create([
@@ -485,5 +493,16 @@ class DispatchController extends Controller
 
         return $user->isAdmin()
             || $dispatch->client_id === $user->id;
+    }
+
+    private function dispatchClientId(Request $request): int
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin()) {
+            return $user->id;
+        }
+
+        return (int) ($request->input('client_id') ?: $user->id);
     }
 }
