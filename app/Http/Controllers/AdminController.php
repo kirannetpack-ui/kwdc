@@ -506,7 +506,26 @@ class AdminController extends Controller
     public function updateEquipment(Request $request, $id)
     {
         $equipment = Equipment::findOrFail($id);
-        $equipment->update($request->all());
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'year' => 'nullable|integer|min:1900|max:' . (now()->year + 1),
+            'description' => 'nullable|string',
+            'weight' => 'nullable|numeric|min:0',
+            'engine_power' => 'nullable|numeric|min:0',
+            'bucket_capacity' => 'nullable|numeric|min:0',
+            'max_reach' => 'nullable|numeric|min:0',
+            'daily_rate' => 'nullable|numeric|min:0',
+            'weekly_rate' => 'nullable|numeric|min:0',
+            'monthly_rate' => 'nullable|numeric|min:0',
+            'security_deposit' => 'nullable|numeric|min:0',
+            'location' => 'nullable|string|max:255',
+            'status' => 'required|in:available,rented,in_use,maintenance,pending,approved,rejected',
+        ]);
+
+        $equipment->update($validated);
         return redirect()->route('admin.equipment-list')->with('success', 'Equipment updated successfully');
     }
 
@@ -566,8 +585,17 @@ class AdminController extends Controller
     public function updateDriver(Request $request, $id)
     {
         $driver = User::where('role', 'driver')->findOrFail($id);
-        // Add validation and update logic here
-        $driver->update($request->all());
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email,' . $driver->id,
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string|max:500',
+            'is_active' => 'nullable|boolean',
+            'avg_rating' => 'nullable|numeric|min:0|max:5',
+        ]);
+
+        $driver->update($validated);
         return redirect()->route('admin.drivers')->with('success', 'Driver updated successfully');
     }
 
@@ -683,17 +711,18 @@ class AdminController extends Controller
      */
       public function updateMarginTier(Request $request, $id)
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'service_type' => 'required|in:dispatch,pickup,warehouse,equipment',
             'margin_type' => 'required|in:percentage,flat',
             'margin_value' => 'required|numeric|min:0',
             'min_distance' => 'nullable|numeric|min:0',
             'max_distance' => 'nullable|numeric|gt:min_distance',
+            'is_active' => 'nullable|boolean',
         ]);
 
         $tier = MarginTier::findOrFail($id);
-        $tier->update($request->all());
+        $tier->update($validated);
 
         return redirect()->route('admin.margin-tiers')
             ->with('success', 'Margin tier updated successfully');

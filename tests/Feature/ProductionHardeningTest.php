@@ -276,6 +276,18 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString("route('dispatch.track', \$dispatch->tracking_id)", $emailService);
     }
 
+    public function test_admin_update_endpoints_do_not_mass_assign_raw_request_data(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/AdminController.php'));
+
+        $this->assertStringNotContainsString('$equipment->update($request->all())', $controller);
+        $this->assertStringNotContainsString('$driver->update($request->all())', $controller);
+        $this->assertStringNotContainsString('$tier->update($request->all())', $controller);
+        $this->assertStringContainsString('$equipment->update($validated)', $controller);
+        $this->assertStringContainsString('$driver->update($validated)', $controller);
+        $this->assertStringContainsString('$tier->update($validated)', $controller);
+    }
+
     public function test_equipment_compliance_documents_are_private_uploads(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/EquipmentController.php'));
