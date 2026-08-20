@@ -6,309 +6,375 @@
     <title>KTM-WDC | Warehouse & Distribution Connect</title>
     <meta name="description" content="KTM-WDC connects warehouse storage, dispatch, pickup requests, invoices, fleet operations, and field teams in one logistics platform.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #172033;
-            --muted: #64748b;
-            --line: #dbe3ee;
-            --amber: #f59e0b;
-            --amber-dark: #b45309;
-            --teal: #0f766e;
-            --blue: #1d4ed8;
+            --ink: #101724;
+            --muted: #62728a;
+            --line: #dbe4ef;
+            --gold: #f5a524;
+            --green: #0f766e;
+            --blue: #2563eb;
             --paper: #ffffff;
-            --soft: #f6f8fb;
+            --soft: #f4f7fb;
         }
+
         * { box-sizing: border-box; }
+
         body {
             margin: 0;
             color: var(--ink);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background: var(--paper);
         }
+
         a { color: inherit; text-decoration: none; }
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            border-bottom: 1px solid rgba(219, 227, 238, .9);
-            background: rgba(255, 255, 255, .94);
-            backdrop-filter: blur(14px);
+
+        .shell {
+            width: min(1180px, calc(100% - 36px));
+            margin: 0 auto;
         }
-        .shell { width: min(1160px, calc(100% - 40px)); margin: 0 auto; }
+
+        .site-header {
+            position: fixed;
+            inset: 0 0 auto;
+            z-index: 20;
+            border-bottom: 1px solid rgba(219, 228, 239, .18);
+            background: rgba(16, 23, 36, .78);
+            backdrop-filter: blur(18px);
+        }
+
         .nav {
+            min-height: 76px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            min-height: 74px;
             gap: 18px;
+            color: white;
         }
+
         .brand {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 12px;
-            font-weight: 800;
+            font-weight: 900;
+            font-size: 20px;
         }
+
         .brand-mark {
             width: 44px;
             height: 44px;
             display: grid;
             place-items: center;
             border-radius: 8px;
-            color: white;
-            background: linear-gradient(135deg, var(--amber), var(--teal));
-            box-shadow: 0 10px 24px rgba(15, 118, 110, .22);
+            color: #111827;
+            background: var(--gold);
+            box-shadow: 0 14px 30px rgba(245, 165, 36, .26);
         }
+
         .brand small {
             display: block;
-            color: var(--muted);
+            color: #c9d3e3;
             font-size: 12px;
-            font-weight: 700;
-            margin-top: 1px;
+            font-weight: 800;
+            margin-top: 2px;
         }
+
         .nav-links {
             display: flex;
             align-items: center;
-            gap: 22px;
-            color: #40506a;
+            gap: 24px;
+            color: #d8e0eb;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: 800;
         }
-        .nav-actions { display: flex; align-items: center; gap: 10px; }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .btn {
+            min-height: 42px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 9px;
-            min-height: 42px;
             padding: 0 16px;
+            border: 1px solid rgba(219, 228, 239, .22);
             border-radius: 8px;
-            border: 1px solid var(--line);
             font-size: 14px;
-            font-weight: 800;
+            font-weight: 900;
             white-space: nowrap;
         }
+
         .btn-primary {
             color: #111827;
-            border-color: var(--amber);
-            background: var(--amber);
-            box-shadow: 0 12px 28px rgba(245, 158, 11, .25);
+            border-color: var(--gold);
+            background: var(--gold);
+            box-shadow: 0 15px 30px rgba(245, 165, 36, .24);
         }
-        .btn-quiet { background: white; }
+
+        .btn-quiet {
+            color: white;
+            background: rgba(255, 255, 255, .08);
+        }
+
         .hero {
-            min-height: calc(100vh - 74px);
+            min-height: 92vh;
             display: grid;
             align-items: center;
-            padding: 56px 0 34px;
+            padding: 132px 0 76px;
+            color: white;
             background:
-                linear-gradient(90deg, rgba(255,255,255,.98) 0%, rgba(255,255,255,.9) 46%, rgba(246,248,251,.72) 100%),
-                url("{{ asset('images/landing-logistics.svg') }}") right center / min(58vw, 760px) auto no-repeat;
-            border-bottom: 1px solid var(--line);
+                linear-gradient(90deg, rgba(16, 23, 36, .96) 0%, rgba(16, 23, 36, .86) 43%, rgba(16, 23, 36, .50) 100%),
+                url("{{ asset('images/landing-logistics.svg') }}") right bottom / min(820px, 62vw) auto no-repeat,
+                #101724;
         }
-        .hero-grid {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(320px, 480px);
-            gap: 44px;
-            align-items: center;
+
+        .hero-copy {
+            max-width: 780px;
         }
+
         .eyebrow {
             display: inline-flex;
             align-items: center;
             gap: 9px;
             padding: 8px 11px;
-            border: 1px solid #d9eadf;
+            border: 1px solid rgba(219, 228, 239, .2);
             border-radius: 8px;
-            color: #166534;
-            background: #f0fdf4;
+            color: #d9f99d;
+            background: rgba(15, 118, 110, .16);
             font-size: 13px;
-            font-weight: 800;
+            font-weight: 900;
         }
+
         h1 {
-            max-width: 760px;
-            margin: 22px 0 18px;
-            font-size: clamp(42px, 7vw, 76px);
-            line-height: .96;
+            margin: 24px 0 18px;
+            max-width: 820px;
+            font-size: clamp(50px, 8vw, 92px);
+            line-height: .92;
             letter-spacing: 0;
         }
+
         .lead {
-            max-width: 660px;
-            color: #46566f;
+            max-width: 690px;
+            margin: 0;
+            color: #d7e0ec;
             font-size: 20px;
-            line-height: 1.65;
+            line-height: 1.7;
         }
+
         .hero-actions {
             display: flex;
             flex-wrap: wrap;
             gap: 12px;
-            margin-top: 30px;
+            margin-top: 32px;
         }
-        .stat-strip {
+
+        .hero-strip {
+            margin-top: 42px;
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 1px;
-            max-width: 680px;
-            margin-top: 34px;
+            max-width: 720px;
             overflow: hidden;
+            border: 1px solid rgba(219, 228, 239, .18);
+            border-radius: 8px;
+            background: rgba(219, 228, 239, .18);
+        }
+
+        .hero-stat {
+            min-height: 104px;
+            padding: 18px;
+            background: rgba(255, 255, 255, .08);
+            backdrop-filter: blur(12px);
+        }
+
+        .hero-stat strong { display: block; color: white; font-size: 26px; line-height: 1; }
+        .hero-stat span { display: block; margin-top: 8px; color: #c9d3e3; font-size: 13px; font-weight: 800; line-height: 1.4; }
+
+        .section {
+            padding: 78px 0;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .section.soft { background: var(--soft); }
+
+        .section-head {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 28px;
+            margin-bottom: 32px;
+        }
+
+        .section h2 {
+            max-width: 620px;
+            margin: 0;
+            font-size: clamp(32px, 4.6vw, 52px);
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .section-head p {
+            max-width: 520px;
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.7;
+        }
+
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .service {
+            min-height: 236px;
+            padding: 24px;
             border: 1px solid var(--line);
             border-radius: 8px;
-            background: var(--line);
+            background: white;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .07);
         }
-        .stat { min-height: 94px; padding: 18px; background: white; }
-        .stat strong { display: block; color: #0f172a; font-size: 26px; line-height: 1; }
-        .stat span {
-            display: block;
-            margin-top: 8px;
-            color: var(--muted);
-            font-size: 13px;
-            font-weight: 700;
-            line-height: 1.35;
-        }
-        .ops-panel {
-            border: 1px solid rgba(203, 213, 225, .92);
+
+        .service i,
+        .flow-step i {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 18px;
             border-radius: 8px;
-            background: rgba(255,255,255,.9);
-            box-shadow: 0 24px 70px rgba(15, 23, 42, .14);
-            overflow: hidden;
+            color: white;
+            background: var(--green);
         }
-        .panel-head {
+
+        .service:nth-child(2) i { background: var(--blue); }
+        .service:nth-child(3) i { color: #111827; background: var(--gold); }
+        .service:nth-child(4) i { background: #7c3aed; }
+        .service h3 { margin: 0 0 10px; font-size: 19px; }
+        .service p { margin: 0; color: var(--muted); line-height: 1.6; font-size: 14px; }
+
+        .ops-grid {
+            display: grid;
+            grid-template-columns: 1.15fr .85fr;
+            gap: 18px;
+            align-items: stretch;
+        }
+
+        .ops-board {
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 14px 34px rgba(15, 23, 42, .07);
+        }
+
+        .board-head {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 14px;
-            padding: 16px 18px;
+            gap: 16px;
+            padding: 17px 20px;
             border-bottom: 1px solid var(--line);
             background: #f8fafc;
+            font-weight: 900;
         }
-        .panel-head strong { font-size: 15px; }
-        .live-pill {
+
+        .live {
             display: inline-flex;
             align-items: center;
             gap: 7px;
-            padding: 6px 9px;
+            padding: 7px 10px;
             border-radius: 999px;
             color: #065f46;
             background: #d1fae5;
             font-size: 12px;
             font-weight: 900;
         }
-        .panel-body { padding: 18px; }
-        .route-row {
+
+        .ops-row {
             display: grid;
-            grid-template-columns: 38px 1fr auto;
-            gap: 12px;
+            grid-template-columns: 44px 1fr auto;
+            gap: 14px;
             align-items: center;
-            padding: 14px 0;
+            padding: 18px 20px;
             border-bottom: 1px solid #edf2f7;
         }
-        .route-row:last-child { border-bottom: 0; }
-        .icon-tile {
-            width: 38px;
-            height: 38px;
+
+        .ops-row:last-child { border-bottom: 0; }
+        .ops-row i { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 8px; color: white; background: var(--green); }
+        .ops-row:nth-child(3) i { background: var(--blue); }
+        .ops-row:nth-child(4) i { color: #111827; background: var(--gold); }
+        .ops-row strong { display: block; font-size: 15px; }
+        .ops-row span { display: block; margin-top: 4px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+        .status { color: var(--green); font-size: 12px; font-weight: 900; text-align: right; }
+
+        .flow {
             display: grid;
-            place-items: center;
-            border-radius: 8px;
-            color: white;
-            background: var(--teal);
+            gap: 12px;
         }
-        .route-row:nth-child(2) .icon-tile { background: var(--blue); }
-        .route-row:nth-child(3) .icon-tile { background: var(--amber-dark); }
-        .route-row strong { display: block; font-size: 14px; }
-        .route-row span {
-            display: block;
-            margin-top: 4px;
-            color: var(--muted);
-            font-size: 13px;
-        }
-        .status {
-            color: #0f766e;
-            font-size: 12px;
-            font-weight: 900;
-            text-align: right;
-        }
-        .section { padding: 74px 0; border-bottom: 1px solid var(--line); }
-        .section.soft { background: var(--soft); }
-        .section-head {
-            display: flex;
-            align-items: flex-end;
-            justify-content: space-between;
-            gap: 24px;
-            margin-bottom: 30px;
-        }
-        .section h2 {
-            margin: 0;
-            font-size: clamp(30px, 4vw, 46px);
-            line-height: 1.05;
-            letter-spacing: 0;
-        }
-        .section-head p {
-            max-width: 500px;
-            margin: 0;
-            color: var(--muted);
-            line-height: 1.65;
-        }
-        .service-grid {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 14px;
-        }
-        .service {
-            min-height: 220px;
-            padding: 22px;
+
+        .flow-step {
+            min-height: 120px;
+            padding: 20px;
             border: 1px solid var(--line);
             border-radius: 8px;
             background: white;
         }
-        .service i {
-            width: 42px;
-            height: 42px;
-            display: grid;
-            place-items: center;
-            margin-bottom: 18px;
-            border-radius: 8px;
+
+        .flow-step small { color: var(--green); font-weight: 900; }
+        .flow-step h3 { margin: 8px 0 7px; }
+        .flow-step p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 14px; }
+
+        .cta-band {
+            padding: 50px 0;
             color: white;
-            background: #1f2937;
+            background: #101724;
         }
-        .service h3 { margin: 0 0 10px; font-size: 18px; }
-        .service p { margin: 0; color: var(--muted); line-height: 1.55; font-size: 14px; }
-        .process { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
-        .step { padding: 24px; border-left: 4px solid var(--amber); background: white; }
-        .step span { color: var(--teal); font-weight: 900; font-size: 13px; }
-        .step h3 { margin: 10px 0 8px; font-size: 20px; }
-        .step p { margin: 0; color: var(--muted); line-height: 1.6; }
-        .cta-band { padding: 42px 0; color: white; background: #111827; }
+
         .cta-inner {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 22px;
+            gap: 24px;
         }
-        .cta-inner h2 { margin: 0; font-size: clamp(28px, 4vw, 42px); line-height: 1.05; }
-        .cta-inner p { margin: 10px 0 0; color: #cbd5e1; line-height: 1.55; }
-        footer { padding: 28px 0; color: #64748b; background: white; font-size: 14px; }
+
+        .cta-inner h2 {
+            margin: 0;
+            font-size: clamp(30px, 4vw, 46px);
+            line-height: 1.05;
+        }
+
+        .cta-inner p { margin: 10px 0 0; color: #c9d3e3; line-height: 1.6; }
+        footer { padding: 28px 0; color: #63728a; background: white; font-size: 14px; }
         .footer-inner { display: flex; justify-content: space-between; gap: 16px; }
-        @media (max-width: 960px) {
+
+        @media (max-width: 980px) {
             .nav-links { display: none; }
-            .hero {
-                min-height: auto;
-                background:
-                    linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,248,251,.86)),
-                    url("{{ asset('images/landing-logistics.svg') }}") center bottom / 680px auto no-repeat;
+            .hero { background:
+                linear-gradient(180deg, rgba(16, 23, 36, .96), rgba(16, 23, 36, .80)),
+                url("{{ asset('images/landing-logistics.svg') }}") center bottom / 720px auto no-repeat,
+                #101724;
                 padding-bottom: 260px;
             }
-            .hero-grid { grid-template-columns: 1fr; }
-            .ops-panel { max-width: 560px; }
             .service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-            .process { grid-template-columns: 1fr; }
             .section-head, .cta-inner, .footer-inner { align-items: flex-start; flex-direction: column; }
+            .ops-grid { grid-template-columns: 1fr; }
         }
+
         @media (max-width: 640px) {
-            .shell { width: min(100% - 28px, 1160px); }
-            .nav { min-height: 66px; }
-            .brand small, .btn-quiet { display: none; }
-            .hero { padding-top: 34px; padding-bottom: 220px; }
-            h1 { font-size: 42px; }
+            .shell { width: min(100% - 28px, 1180px); }
+            .brand small, .btn-quiet, .nav-actions .btn:first-child { display: none; }
+            .nav { min-height: 68px; }
+            .hero { min-height: auto; padding-top: 108px; padding-bottom: 220px; }
+            h1 { font-size: 48px; }
             .lead { font-size: 17px; }
-            .stat-strip, .service-grid { grid-template-columns: 1fr; }
-            .route-row { grid-template-columns: 38px 1fr; }
+            .hero-strip, .service-grid { grid-template-columns: 1fr; }
+            .ops-row { grid-template-columns: 44px 1fr; }
             .status { grid-column: 2; text-align: left; }
         }
     </style>
@@ -334,101 +400,53 @@
 
     <main>
         <section class="hero">
-            <div class="shell hero-grid">
-                <div>
-                    <span class="eyebrow"><i class="fas fa-location-dot"></i> Kathmandu logistics, connected</span>
-                    <h1>Storage, dispatch, pickup, and delivery in one control center.</h1>
-                    <p class="lead">KTM-WDC gives businesses, drivers, equipment owners, warehouse teams, and clients a shared place to manage requests, inventory, invoices, documents, and field movement.</p>
-                    <div class="hero-actions">
-                        <a class="btn btn-primary" href="{{ route('register') }}"><i class="fas fa-user-plus"></i> Create account</a>
-                        <a class="btn btn-quiet" href="{{ route('login') }}"><i class="fas fa-right-to-bracket"></i> Login to portal</a>
-                    </div>
-                    <div class="stat-strip" aria-label="Platform highlights">
-                        <div class="stat"><strong>24/7</strong><span>Request intake and operational visibility</span></div>
-                        <div class="stat"><strong>1</strong><span>Platform for warehouse, fleet, and billing</span></div>
-                        <div class="stat"><strong>Secure</strong><span>Private documents, sessions, and invoices</span></div>
-                    </div>
+            <div class="shell hero-copy">
+                <span class="eyebrow"><i class="fas fa-circle"></i> Phase 1 published on Render</span>
+                <h1>KTM-WDC</h1>
+                <p class="lead">Warehouse & Distribution Connect brings storage requests, dispatch, pickup, inventory, invoices, documents, reminders, and field teams into one polished logistics portal.</p>
+                <div class="hero-actions">
+                    <a class="btn btn-primary" href="{{ route('register') }}"><i class="fas fa-user-plus"></i> Create account</a>
+                    <a class="btn btn-quiet" href="{{ route('login') }}"><i class="fas fa-right-to-bracket"></i> Login to portal</a>
                 </div>
-
-                <aside class="ops-panel" id="operations" aria-label="Operations snapshot">
-                    <div class="panel-head">
-                        <strong>Operations Snapshot</strong>
-                        <span class="live-pill"><i class="fas fa-circle"></i> Phase 1 live</span>
-                    </div>
-                    <div class="panel-body">
-                        <div class="route-row">
-                            <span class="icon-tile"><i class="fas fa-boxes-stacked"></i></span>
-                            <div><strong>Warehouse Storage</strong><span>Stock, boxes, batch documents, and request status.</span></div>
-                            <span class="status">Tracked</span>
-                        </div>
-                        <div class="route-row">
-                            <span class="icon-tile"><i class="fas fa-truck-fast"></i></span>
-                            <div><strong>Dispatch & Pickup</strong><span>Pickup requests, stops, drivers, and movement updates.</span></div>
-                            <span class="status">Coordinated</span>
-                        </div>
-                        <div class="route-row">
-                            <span class="icon-tile"><i class="fas fa-file-invoice-dollar"></i></span>
-                            <div><strong>Billing & Payments</strong><span>Invoices, receipts, payment sessions, and verification flows.</span></div>
-                            <span class="status">Prepared</span>
-                        </div>
-                    </div>
-                </aside>
+                <div class="hero-strip" aria-label="Platform highlights">
+                    <div class="hero-stat"><strong>1</strong><span>Connected portal for warehouse, fleet, stock, and billing.</span></div>
+                    <div class="hero-stat"><strong>24/7</strong><span>Request intake, reminders, notifications, and visibility.</span></div>
+                    <div class="hero-stat"><strong>Secure</strong><span>Private documents, sessions, invoices, and role access.</span></div>
+                </div>
             </div>
         </section>
 
         <section class="section" id="services">
             <div class="shell">
                 <div class="section-head">
-                    <h2>Built for daily logistics work.</h2>
-                    <p>Every part of the platform is focused on repeated operational tasks: receiving requests, assigning work, protecting documents, and keeping teams aligned.</p>
+                    <h2>Built for real logistics workflows.</h2>
+                    <p>The public site now presents KTM-WDC like a company platform first, while the portal handles the actual daily work behind login.</p>
                 </div>
                 <div class="service-grid">
-                    <article class="service">
-                        <i class="fas fa-warehouse"></i>
-                        <h3>Warehouse requests</h3>
-                        <p>Clients can request storage, teams can manage warehouse records, and private documents stay controlled.</p>
-                    </article>
-                    <article class="service">
-                        <i class="fas fa-route"></i>
-                        <h3>Dispatch tracking</h3>
-                        <p>Pickup, delivery, stops, driver assignment, and route activity are organized in one operational flow.</p>
-                    </article>
-                    <article class="service">
-                        <i class="fas fa-hard-hat"></i>
-                        <h3>Equipment services</h3>
-                        <p>Equipment requests, owner workflows, job records, vehicle documents, and partner operations are connected.</p>
-                    </article>
-                    <article class="service">
-                        <i class="fas fa-shield-halved"></i>
-                        <h3>Secure operations</h3>
-                        <p>Role-based access, hardened sessions, invoice verification, and document privacy are part of the foundation.</p>
-                    </article>
+                    <article class="service"><i class="fas fa-warehouse"></i><h3>Warehouse requests</h3><p>Clients request storage, teams manage properties, and warehouse records stay organized.</p></article>
+                    <article class="service"><i class="fas fa-truck-fast"></i><h3>Dispatch & pickup</h3><p>Coordinate pickup jobs, delivery orders, stops, drivers, and live movement updates.</p></article>
+                    <article class="service"><i class="fas fa-boxes-stacked"></i><h3>Stock & documents</h3><p>Track boxes, goods, insurance files, vehicle records, and warehouse documentation.</p></article>
+                    <article class="service"><i class="fas fa-file-invoice-dollar"></i><h3>Invoices & reports</h3><p>Keep payment sessions, receipts, invoice verification, margins, and reports connected.</p></article>
                 </div>
             </div>
         </section>
 
-        <section class="section soft" id="process">
-            <div class="shell">
-                <div class="section-head">
-                    <h2>From request to resolution.</h2>
-                    <p>KTM-WDC is designed to help operations move cleanly from a customer request into accountable work, billing, and reporting.</p>
+        <section class="section soft" id="operations">
+            <div class="shell ops-grid">
+                <div class="ops-board">
+                    <div class="board-head">
+                        <span>Operations Snapshot</span>
+                        <span class="live"><i class="fas fa-circle"></i> Live preview</span>
+                    </div>
+                    <div class="ops-row"><i class="fas fa-clipboard-list"></i><div><strong>Requests enter the platform</strong><span>Clients, property owners, drivers, equipment partners, and agencies use role-aware flows.</span></div><span class="status">Received</span></div>
+                    <div class="ops-row"><i class="fas fa-route"></i><div><strong>Teams coordinate work</strong><span>Dispatch, pickup, stock, tracking, invoices, and notifications stay in one place.</span></div><span class="status">Coordinated</span></div>
+                    <div class="ops-row"><i class="fas fa-chart-line"></i><div><strong>Management gets visibility</strong><span>Approvals, reports, reminders, earnings, analytics, and partner records are surfaced.</span></div><span class="status">Visible</span></div>
                 </div>
-                <div class="process">
-                    <article class="step">
-                        <span>01 / Receive</span>
-                        <h3>Clients submit requests</h3>
-                        <p>Storage, pickup, equipment, and service requests enter the same managed system instead of scattered messages.</p>
-                    </article>
-                    <article class="step">
-                        <span>02 / Coordinate</span>
-                        <h3>Teams assign and track</h3>
-                        <p>Warehouse, dispatch, driver, agency, and admin roles get the tools they need to keep work visible.</p>
-                    </article>
-                    <article class="step">
-                        <span>03 / Close</span>
-                        <h3>Invoices and records stay linked</h3>
-                        <p>Documents, invoices, payment records, reminders, and reports remain tied to the operational work.</p>
-                    </article>
+
+                <div class="flow" id="process">
+                    <article class="flow-step"><small>01 / Receive</small><h3>Capture the request</h3><p>Customers and partners submit the information operations need to start work.</p></article>
+                    <article class="flow-step"><small>02 / Assign</small><h3>Move it through teams</h3><p>Admins, warehouse staff, drivers, security teams, and owners stay aligned by role.</p></article>
+                    <article class="flow-step"><small>03 / Close</small><h3>Keep the record</h3><p>Invoices, documents, reminders, and reporting remain tied to the operational activity.</p></article>
                 </div>
             </div>
         </section>
@@ -436,8 +454,8 @@
         <section class="cta-band">
             <div class="shell cta-inner">
                 <div>
-                    <h2>Ready to enter the portal?</h2>
-                    <p>Use your account to access requests, dispatch, warehouse records, invoices, and assigned work.</p>
+                    <h2>Enter the KTM-WDC portal.</h2>
+                    <p>Use your account to manage requests, warehouse records, dispatch, invoices, documents, and assigned work.</p>
                 </div>
                 <div class="hero-actions">
                     <a class="btn btn-primary" href="{{ route('register') }}"><i class="fas fa-user-plus"></i> Register</a>

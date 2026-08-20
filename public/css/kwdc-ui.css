@@ -259,6 +259,291 @@ table th {
     font-weight: 700;
 }
 
+/* Sitewide phase-one design refresh */
+:root {
+    --kwdc-night: #101724;
+    --kwdc-night-2: #172236;
+    --kwdc-rail: #0f172a;
+    --kwdc-gold: #f5a524;
+    --kwdc-gold-dark: #c77700;
+    --kwdc-green: #0f766e;
+    --kwdc-blue: #2563eb;
+    --kwdc-red: #dc2626;
+    --kwdc-text: #132033;
+    --kwdc-subtle: #66768d;
+    --kwdc-border: #dbe4ef;
+    --kwdc-bg: #f3f6fa;
+    --kwdc-panel: #ffffff;
+}
+
+.kwdc-app-shell {
+    background:
+        linear-gradient(180deg, rgba(242, 246, 251, 0.94), rgba(247, 249, 252, 0.98)),
+        var(--kwdc-bg);
+}
+
+.kwdc-app-shell .sidebar {
+    background:
+        linear-gradient(180deg, rgba(16, 23, 36, 0.96), rgba(12, 18, 31, 0.98)),
+        var(--kwdc-rail);
+    border-right: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 14px 0 44px rgba(15, 23, 42, 0.22);
+}
+
+.kwdc-app-shell .sidebar::-webkit-scrollbar { width: 7px; }
+.kwdc-app-shell .sidebar::-webkit-scrollbar-track { background: transparent; }
+.kwdc-app-shell .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(245, 165, 36, 0.55);
+    border-radius: 999px;
+}
+
+.kwdc-sidebar-brand {
+    border-bottom: 1px solid rgba(226, 232, 240, 0.12);
+    background: linear-gradient(135deg, rgba(245, 165, 36, 0.12), rgba(15, 118, 110, 0.08));
+}
+
+.kwdc-brand-icon,
+.kwdc-user-avatar {
+    border-radius: 8px;
+    color: #111827;
+    background: linear-gradient(135deg, var(--kwdc-gold), #ffd166);
+    box-shadow: 0 12px 24px rgba(245, 165, 36, 0.24);
+}
+
+.kwdc-sidebar-user {
+    border-bottom: 1px solid rgba(226, 232, 240, 0.12);
+}
+
+.kwdc-user-avatar {
+    color: #ffffff;
+    background: linear-gradient(135deg, #2563eb, #0f766e);
+}
+
+.kwdc-role-pill {
+    display: inline-flex;
+    margin-top: 4px;
+    padding: 3px 7px;
+    border-radius: 999px;
+    color: #ffd166;
+    background: rgba(245, 165, 36, 0.12);
+    font-weight: 800;
+}
+
+.kwdc-app-shell .sidebar-link {
+    border: 1px solid transparent;
+    border-radius: 8px !important;
+}
+
+.kwdc-app-shell .sidebar-link:hover {
+    transform: translateX(3px) !important;
+    border-color: rgba(245, 165, 36, 0.18);
+    background: rgba(245, 165, 36, 0.12) !important;
+}
+
+.kwdc-app-shell .sidebar-link.active {
+    color: #ffffff;
+    border-color: rgba(245, 165, 36, 0.24);
+    background: linear-gradient(135deg, rgba(245, 165, 36, 0.22), rgba(15, 118, 110, 0.14)) !important;
+    box-shadow: inset 3px 0 0 var(--kwdc-gold);
+}
+
+.kwdc-app-shell .section-header {
+    color: #8b98ad !important;
+    letter-spacing: .08em !important;
+}
+
+.kwdc-app-shell .main-content {
+    background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.08), transparent 360px),
+        linear-gradient(180deg, #f7f9fc 0%, #eef3f8 100%) !important;
+}
+
+.kwdc-app-shell .top-bar {
+    background: rgba(255, 255, 255, 0.9) !important;
+    border-bottom: 1px solid rgba(219, 228, 239, 0.86);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06) !important;
+    backdrop-filter: blur(18px);
+}
+
+.kwdc-app-shell .top-bar h2 {
+    color: var(--kwdc-text) !important;
+    font-size: clamp(22px, 2vw, 30px);
+    line-height: 1.08;
+}
+
+.kwdc-app-shell .page-content {
+    color: var(--kwdc-text);
+}
+
+.kwdc-app-shell .alert {
+    border: 1px solid transparent !important;
+    border-radius: 8px !important;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    font-weight: 700;
+}
+
+.kwdc-app-shell .alert-success { background: #ecfdf5 !important; color: #065f46 !important; border-color: #a7f3d0 !important; }
+.kwdc-app-shell .alert-danger { background: #fef2f2 !important; color: #991b1b !important; border-color: #fecaca !important; }
+.kwdc-app-shell .alert-warning { background: #fffbeb !important; color: #92400e !important; border-color: #fde68a !important; }
+.kwdc-app-shell .alert-info { background: #eff6ff !important; color: #1d4ed8 !important; border-color: #bfdbfe !important; }
+
+.kwdc-app-shell .card,
+.kwdc-app-shell .stat-card,
+.kwdc-app-shell .stats-card,
+.kwdc-app-shell .dashboard-card,
+.kwdc-app-shell .content-card,
+.kwdc-app-shell .bg-white.rounded-lg,
+.kwdc-app-shell .bg-white.rounded-xl,
+.kwdc-app-shell .bg-white.shadow,
+.kwdc-app-shell .bg-white.shadow-sm,
+.kwdc-app-shell .bg-white.shadow-md,
+.kwdc-app-shell .bg-white.shadow-lg {
+    border: 1px solid var(--kwdc-border) !important;
+    border-radius: 8px !important;
+    background: rgba(255, 255, 255, 0.96) !important;
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.08) !important;
+}
+
+.kwdc-app-shell .card-header,
+.kwdc-app-shell .card-footer {
+    background: #f8fafc !important;
+    border-color: var(--kwdc-border) !important;
+}
+
+.kwdc-app-shell .card-header h1,
+.kwdc-app-shell .card-header h2,
+.kwdc-app-shell .card-header h3,
+.kwdc-app-shell .card-header h4,
+.kwdc-app-shell .card-header h5,
+.kwdc-app-shell .card-header h6 {
+    color: var(--kwdc-text);
+    font-weight: 800;
+}
+
+.kwdc-app-shell .stats-card,
+.kwdc-app-shell .stat-card,
+.kwdc-app-shell .kwdc-stat-card {
+    overflow: hidden;
+    position: relative;
+}
+
+.kwdc-app-shell .stats-card::before,
+.kwdc-app-shell .stat-card::before,
+.kwdc-app-shell .kwdc-stat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--kwdc-gold), var(--kwdc-green));
+}
+
+.kwdc-app-shell .table-responsive,
+.kwdc-app-shell .overflow-x-auto {
+    border-radius: 8px;
+}
+
+.kwdc-app-shell table {
+    background: #ffffff;
+}
+
+.kwdc-app-shell table thead,
+.kwdc-app-shell .table thead {
+    background: #f8fafc !important;
+}
+
+.kwdc-app-shell table th,
+.kwdc-app-shell .table th {
+    color: #4b5f79 !important;
+    font-size: 12px;
+    font-weight: 900 !important;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    border-bottom-color: var(--kwdc-border) !important;
+}
+
+.kwdc-app-shell table td,
+.kwdc-app-shell .table td {
+    color: #25364d;
+    border-color: #e8eef5 !important;
+}
+
+.kwdc-app-shell tbody tr:hover {
+    background: rgba(245, 165, 36, 0.055) !important;
+}
+
+.kwdc-app-shell .btn,
+.kwdc-app-shell button,
+.kwdc-app-shell a[class*="bg-orange-500"],
+.kwdc-app-shell button[class*="bg-orange-500"] {
+    border-radius: 8px !important;
+}
+
+.kwdc-app-shell .btn-primary,
+.kwdc-app-shell .btn-orange,
+.kwdc-app-shell .bg-orange-500,
+.kwdc-app-shell .hover\:bg-orange-600:hover {
+    color: #111827 !important;
+    border-color: var(--kwdc-gold) !important;
+    background: var(--kwdc-gold) !important;
+}
+
+.kwdc-app-shell .btn-primary:hover,
+.kwdc-app-shell .btn-orange:hover,
+.kwdc-app-shell .bg-orange-500:hover {
+    border-color: var(--kwdc-gold-dark) !important;
+    background: var(--kwdc-gold-dark) !important;
+    color: #ffffff !important;
+}
+
+.kwdc-app-shell .btn-secondary,
+.kwdc-app-shell .bg-gray-50 {
+    border-color: var(--kwdc-border) !important;
+    background: #ffffff !important;
+}
+
+.kwdc-app-shell input,
+.kwdc-app-shell select,
+.kwdc-app-shell textarea,
+.kwdc-app-shell .form-control,
+.kwdc-app-shell .form-select {
+    min-height: 42px;
+    border: 1px solid #cfd9e6 !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+}
+
+.kwdc-app-shell input:focus,
+.kwdc-app-shell select:focus,
+.kwdc-app-shell textarea:focus,
+.kwdc-app-shell .form-control:focus,
+.kwdc-app-shell .form-select:focus {
+    border-color: var(--kwdc-gold) !important;
+    box-shadow: 0 0 0 4px rgba(245, 165, 36, 0.16) !important;
+}
+
+.kwdc-app-shell .badge,
+.kwdc-app-shell .status-badge {
+    border-radius: 999px !important;
+    font-weight: 900 !important;
+}
+
+.kwdc-app-shell .dropdown-menu {
+    border: 1px solid var(--kwdc-border);
+    border-radius: 8px;
+    box-shadow: 0 18px 46px rgba(15, 23, 42, 0.16);
+}
+
+@media (max-width: 768px) {
+    .kwdc-app-shell .top-bar {
+        align-items: flex-start;
+    }
+
+    .kwdc-app-shell .top-bar > div:last-child {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
 .pagination .active .page-link {
     background: var(--kwdc-accent);
     border-color: var(--kwdc-accent);

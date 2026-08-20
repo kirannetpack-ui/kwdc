@@ -26,135 +26,90 @@
     
     <style>
         * { font-family: 'Inter', sans-serif; }
-        
-        /* ===== SIDEBAR ===== */
+
         .sidebar {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 280px;
+            inset: 0 auto 0 0;
+            width: 286px;
             height: 100vh;
-            background: #111827;
             color: white;
             z-index: 50;
             overflow-y: auto;
             overflow-x: hidden;
             transition: transform 0.3s ease;
         }
-        
-        .sidebar::-webkit-scrollbar { width: 5px; }
-        .sidebar::-webkit-scrollbar-track { background: #374151; }
-        .sidebar::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
-        
-        /* ===== SIDEBAR LINKS ===== */
+
         .sidebar-link {
-            transition: all 0.3s ease;
             display: flex !important;
             align-items: center;
             gap: 12px;
-            padding: 10px 16px;
-            border-radius: 8px;
-            margin: 4px 8px;
-            color: #9ca3af;
+            margin: 4px 12px;
+            padding: 11px 14px;
+            color: #b8c2d6;
             text-decoration: none;
             cursor: pointer;
             font-size: 14px;
+            font-weight: 700;
             width: auto;
             max-width: 100%;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+            transition: color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
         }
-        
-        .sidebar-link:hover {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            transform: translateX(5px);
-        }
-        
+
+        .sidebar-link:hover,
         .sidebar-link.active {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
+            color: #ffffff;
+            background: rgba(245, 158, 11, 0.16);
         }
-        
-        .sidebar-link i { width: 20px; text-align: center; font-size: 16px; flex-shrink: 0; }
-        .sidebar-link .badge { background: #ef4444; color: white; font-size: 10px; padding: 2px 8px; border-radius: 10px; margin-left: auto; flex-shrink: 0; }
-        .section-header { font-size: 10px; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px 4px 16px; display: block !important; }
-        
-        /* ===== MAIN CONTENT ===== */
-        .main-content { margin-left: 280px; min-height: 100vh; background: #f3f4f6; }
-        .top-bar { background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 16px 24px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; }
-        .page-content { padding: 24px; max-width: 1400px; margin: 0 auto; }
-        .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 60; background: #f59e0b; color: white; padding: 10px 14px; border-radius: 8px; cursor: pointer; border: none; font-size: 18px; }
-        
-        /* ===== RESPONSIVE ===== */
+
+        .sidebar-link i { width: 20px; text-align: center; font-size: 15px; flex-shrink: 0; }
+        .sidebar-link .badge { background: #ef4444; color: white; font-size: 10px; padding: 2px 8px; border-radius: 999px; margin-left: auto; flex-shrink: 0; }
+        .section-header { font-size: 10px; font-weight: 800; color: #78869d; text-transform: uppercase; letter-spacing: 1px; padding: 16px 18px 5px; display: block !important; }
+
+        .main-content { margin-left: 286px; min-height: 100vh; }
+        .top-bar { padding: 18px 26px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+        .page-content { padding: 28px; max-width: 1460px; margin: 0 auto; }
+        .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 60; background: #f59e0b; color: #111827; padding: 10px 13px; border-radius: 8px; cursor: pointer; border: none; font-size: 18px; box-shadow: 0 14px 28px rgba(15, 23, 42, .18); }
+
         @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); width: 280px; }
+            .sidebar { transform: translateX(-100%); width: 286px; }
             .sidebar.mobile-open { transform: translateX(0); }
             .main-content { margin-left: 0; }
             .menu-toggle { display: block; }
-            .top-bar { padding: 12px 16px 12px 70px; flex-wrap: wrap; }
-            .top-bar h2 { font-size: 18px; }
-            .page-content { padding: 16px; }
+            .top-bar { padding: 14px 16px 14px 70px; flex-wrap: wrap; }
+            .top-bar h2 { font-size: 19px; }
+            .page-content { padding: 18px 14px; }
         }
-        
-        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 45; }
-        .sidebar-overlay.active { display: block; }
-        
-        .alert { padding: 12px 20px; border-radius: 8px; margin-bottom: 16px; border: none; }
-        .alert-success { background: #d1fae5; color: #065f46; }
-        .alert-danger { background: #fee2e2; color: #991b1b; }
-        .alert-warning { background: #fef3c7; color: #92400e; }
-        .alert-info { background: #dbeafe; color: #1e40af; }
 
-        /* ===== NOTIFICATION DROPDOWN ===== */
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.56); z-index: 45; }
+        .sidebar-overlay.active { display: block; }
+
         .notification-dropdown {
-            width: 380px;
-            max-height: 400px;
+            width: min(380px, calc(100vw - 28px));
+            max-height: 430px;
             overflow-y: auto;
             padding: 0;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            box-shadow: 0 18px 46px rgba(15, 23, 42, 0.18);
         }
-        .notification-dropdown .dropdown-header {
-            background: #f8fafc;
-            padding: 12px 16px;
-            border-bottom: 1px solid #e5e7eb;
-            font-weight: 600;
-            color: #1e293b;
-        }
-        .notification-dropdown .dropdown-item {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f1f5f9;
-            white-space: normal;
-            line-height: 1.4;
-        }
-        .notification-dropdown .dropdown-item:hover {
-            background: #f1f5f9;
-        }
-        .notification-dropdown .dropdown-item .notification-title {
-            font-weight: 600;
-            color: #0f172a;
-        }
-        .notification-dropdown .dropdown-item .notification-text {
-            font-size: 13px;
-            color: #64748b;
-            margin: 2px 0;
-        }
-        .notification-dropdown .dropdown-item .notification-time {
-            font-size: 11px;
-            color: #94a3b8;
-        }
+        .notification-dropdown .dropdown-header,
         .notification-dropdown .dropdown-footer {
-            padding: 10px;
-            text-align: center;
-            border-top: 1px solid #e5e7eb;
             background: #f8fafc;
+            border-color: #e5e7eb;
         }
+        .notification-dropdown .dropdown-header { padding: 12px 16px; font-weight: 800; color: #0f172a; }
+        .notification-dropdown .dropdown-item { padding: 12px 16px; border-bottom: 1px solid #eef2f7; white-space: normal; line-height: 1.4; }
+        .notification-dropdown .dropdown-item:hover { background: #f8fafc; }
+        .notification-title { font-weight: 800; color: #0f172a; }
+        .notification-text { font-size: 13px; color: #64748b; margin: 2px 0; }
+        .notification-time { font-size: 11px; color: #94a3b8; }
+        .notification-dropdown .dropdown-footer { padding: 10px; text-align: center; border-top: 1px solid #e5e7eb; }
     </style>
     @stack('styles')
 </head>
-<body>
+<body class="kwdc-app-shell">
 <div id="kwdc-page-progress" aria-hidden="true"></div>
 
 <!-- Mobile Menu Toggle -->
@@ -165,9 +120,9 @@
 <!-- SIDEBAR -->
 <!-- ============================================================ -->
 <div class="sidebar" id="sidebar">
-    <div class="p-6 border-b border-gray-800">
+    <div class="kwdc-sidebar-brand p-6">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
+            <div class="kwdc-brand-icon w-10 h-10 flex items-center justify-center">
                 <i class="fas fa-warehouse text-white text-xl"></i>
             </div>
             <div>
@@ -178,15 +133,15 @@
     </div>
     
     @auth
-    <div class="p-4 border-b border-gray-800">
+    <div class="kwdc-sidebar-user p-4">
         <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+            <div class="kwdc-user-avatar w-10 h-10 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-user text-white"></i>
             </div>
             <div class="min-w-0">
                 <p class="font-semibold text-sm truncate">{{ Auth::user()->name }}</p>
                 <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email }}</p>
-                <span class="text-xs text-orange-400">{{ ucfirst(Auth::user()->role ?? 'User') }}</span>
+                <span class="kwdc-role-pill text-xs">{{ ucfirst(Auth::user()->role ?? 'User') }}</span>
             </div>
         </div>
     </div>
@@ -434,9 +389,8 @@
             <h2 class="text-2xl font-semibold text-gray-800">@yield('header', 'Dashboard')</h2>
             @auth
             <div class="flex items-center mt-1">
-                <span class="text-xl mr-2">🙏</span>
                 <p class="text-gray-600">
-                    <span class="font-semibold">Namaste</span>, 
+                    <span class="font-semibold">Signed in as</span>
                     <span class="text-orange-600 font-semibold">{{ Auth::user()->name }}</span>
                     <span class="text-gray-500 text-sm ml-2">({{ ucfirst(Auth::user()->role ?? 'User') }})</span>
                 </p>
