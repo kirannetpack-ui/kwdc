@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build"
+    "build": "vite build && node scripts/build-phase-one-site.mjs"
   },
   "devDependencies": {
     "@popperjs/core": "^2.11.6",
