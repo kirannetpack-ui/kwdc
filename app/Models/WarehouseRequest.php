@@ -13,6 +13,7 @@ class WarehouseRequest extends Model
         'warehouse_id',
         'assigned_warehouse_id',
         'required_area',
+        'space_required',
         'duration_months',
         'purpose',
         'status',
@@ -23,6 +24,15 @@ class WarehouseRequest extends Model
         'packing_list_path',
         'insurance_path',
         'agreed_price',
+        'agreed_price_per_unit',
+        'monthly_rent',
+        'last_invoice_date',
+        'goods_auctioned',
+        'assigned_at',
+        'completed_at',
+        'cancelled_at',
+        'cancellation_notes',
+        'contract_end_date',
         'contract_signed_at',
         'contract_expires_at',
     ];
@@ -31,8 +41,17 @@ class WarehouseRequest extends Model
         'preferred_start_date' => 'date',
         'contract_signed_at' => 'datetime',
         'contract_expires_at' => 'date',
+        'contract_end_date' => 'date',
+        'last_invoice_date' => 'date',
+        'goods_auctioned' => 'boolean',
+        'assigned_at' => 'datetime',
+        'completed_at' => 'datetime',
+        'cancelled_at' => 'datetime',
         'agreed_price' => 'decimal:2',
+        'agreed_price_per_unit' => 'decimal:2',
+        'monthly_rent' => 'decimal:2',
         'required_area' => 'decimal:2',
+        'space_required' => 'decimal:2',
     ];
     
     // ==================== RELATIONSHIPS ====================
@@ -183,6 +202,43 @@ class WarehouseRequest extends Model
     public function getFormattedRequiredAreaAttribute()
     {
         return number_format($this->required_area) . ' sq ft';
+    }
+
+    public function getRequiredAreaAttribute($value)
+    {
+        return $value ?? $this->attributes['space_required'] ?? null;
+    }
+
+    public function getRequiredSpaceAttribute()
+    {
+        return $this->required_area;
+    }
+
+    public function getSpaceRequiredAttribute($value)
+    {
+        return $value ?? $this->attributes['required_area'] ?? null;
+    }
+
+    public function getContractEndDateAttribute($value)
+    {
+        return $value ?? $this->attributes['contract_expires_at'] ?? null;
+    }
+
+    public function getMonthlyRentAttribute($value)
+    {
+        if ($value !== null) {
+            return $value;
+        }
+
+        if ($this->agreed_price !== null) {
+            return $this->agreed_price;
+        }
+
+        if ($this->warehouse && $this->required_area) {
+            return $this->required_area * ($this->warehouse->price ?? 0);
+        }
+
+        return 0;
     }
     
     /**

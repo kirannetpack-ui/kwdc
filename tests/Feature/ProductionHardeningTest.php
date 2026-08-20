@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class ProductionHardeningTest extends TestCase
@@ -253,6 +254,31 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString("asset('storage/'.\$warehouseRequest->", $insuranceView);
         $this->assertStringContainsString("Storage::disk('private_uploads')->path", $insuranceMail);
         $this->assertStringNotContainsString("storage_path('app/public/'", $insuranceMail);
+    }
+
+    public function test_warehouse_request_schema_supports_live_operations(): void
+    {
+        $this->assertTrue(Schema::hasColumns('warehouse_requests', [
+            'required_area',
+            'space_required',
+            'duration_months',
+            'assigned_warehouse_id',
+            'invoice_path',
+            'packing_list_path',
+            'insurance_path',
+            'agreed_price',
+            'agreed_price_per_unit',
+            'monthly_rent',
+            'last_invoice_date',
+            'goods_auctioned',
+            'assigned_at',
+            'completed_at',
+            'cancelled_at',
+            'cancellation_notes',
+            'contract_end_date',
+            'contract_signed_at',
+            'contract_expires_at',
+        ]));
     }
 
     public function test_payment_provider_calls_have_timeout_retry_and_config_guards(): void

@@ -47,6 +47,7 @@ class ClientRequestHandler extends Controller
             'client_id' => auth()->id(),
             'warehouse_id' => $request->warehouse_id,
             'required_area' => $request->required_area,
+            'space_required' => $request->required_area,
             'duration_months' => $request->duration_months,
             'purpose' => $request->purpose,
             'preferred_start_date' => $request->preferred_start_date,

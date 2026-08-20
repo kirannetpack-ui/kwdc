@@ -116,6 +116,7 @@ class ClientLogisticsFlowTest extends TestCase
         $this->assertNotNull($request->invoice_path);
         $this->assertNotNull($request->packing_list_path);
         $this->assertNotNull($request->insurance_path);
+        $this->assertEquals(120.0, (float) $request->space_required);
         Storage::disk('private_uploads')->assertExists($request->invoice_path);
         Storage::disk('private_uploads')->assertExists($request->packing_list_path);
         Storage::disk('private_uploads')->assertExists($request->insurance_path);
