@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Invoice;
 use App\Models\DispatchOrder;
 use App\Models\PickupRequest;
+use App\Models\WarehouseRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Storage;
@@ -48,21 +49,27 @@ class InvoiceService
             ];
             
             $subtotal = $dispatch->total_price ?? 0;
+            $subtotal = $subtotal ?: ($dispatch->grand_total ?: $dispatch->base_price ?: 0);
             $taxAmount = $subtotal * 0.13; // 13% VAT
             $grandTotal = $subtotal + $taxAmount;
+            $warehouseRequest = $this->warehouseRequestFor($dispatch);
             
             $invoice = Invoice::create([
                 'invoice_number' => Invoice::generateInvoiceNumber(),
+                'user_id' => $dispatch->client_id,
                 'order_type' => 'dispatch',
                 'order_id' => $dispatch->id,
                 'client_id' => $dispatch->client_id,
-                'warehouse_id' => $dispatch->warehouse_id ?? null,
+                'warehouse_request_id' => $warehouseRequest->id,
+                'amount' => $grandTotal,
                 'subtotal' => $subtotal,
                 'discount' => 0,
                 'tax_rate' => 13,
                 'tax_amount' => $taxAmount,
                 'grand_total' => $grandTotal,
+                'status' => 'pending',
                 'payment_status' => 'unpaid',
+                'due_date' => now()->addDays(7),
                 'payment_due_date' => now()->addDays(7),
                 'billing_type' => $dispatch->bill_type ?? 'regular',
                 'pan_number' => $dispatch->pan_number ?? null,
@@ -118,19 +125,24 @@ class InvoiceService
             $subtotal = $pickup->total_price ?? 0;
             $taxAmount = $subtotal * 0.13;
             $grandTotal = $subtotal + $taxAmount;
+            $warehouseRequest = $this->warehouseRequestFor($pickup);
             
             $invoice = Invoice::create([
                 'invoice_number' => Invoice::generateInvoiceNumber(),
+                'user_id' => $pickup->client_id,
                 'order_type' => 'pickup',
                 'order_id' => $pickup->id,
                 'client_id' => $pickup->client_id,
-                'warehouse_id' => $pickup->warehouse_id ?? null,
+                'warehouse_request_id' => $warehouseRequest->id,
+                'amount' => $grandTotal,
                 'subtotal' => $subtotal,
                 'discount' => 0,
                 'tax_rate' => 13,
                 'tax_amount' => $taxAmount,
                 'grand_total' => $grandTotal,
+                'status' => 'pending',
                 'payment_status' => 'unpaid',
+                'due_date' => now()->addDays(7),
                 'payment_due_date' => now()->addDays(7),
                 'billing_type' => $pickup->bill_type ?? 'regular',
                 'pan_number' => $pickup->pan_number ?? null,
@@ -199,6 +211,32 @@ class InvoiceService
             Log::error('PDF generation failed: ' . $e->getMessage());
             return null;
         }
+    }
+
+    private function warehouseRequestFor(DispatchOrder|PickupRequest $order): WarehouseRequest
+    {
+        if ($order instanceof DispatchOrder && $order->warehouse_request_id) {
+            return WarehouseRequest::findOrFail($order->warehouse_request_id);
+        }
+
+        $warehouseId = $order->warehouse_id;
+
+        if (!$warehouseId) {
+            throw new \RuntimeException('Cannot generate invoice without a warehouse.');
+        }
+
+        return WarehouseRequest::firstOrCreate(
+            [
+                'client_id' => $order->client_id,
+                'warehouse_id' => $warehouseId,
+                'status' => 'approved',
+            ],
+            [
+                'space_required' => 0,
+                'purpose' => 'Generated for ' . class_basename($order) . ' invoice #' . $order->id,
+                'approved_at' => now(),
+            ]
+        );
     }
     
     // Get company details for invoice

@@ -63,10 +63,12 @@ class ProfessionalEmailService
             'user' => $user,
             'transaction' => $transaction,
             'receipt_no' => $transaction->receipt_no,
-        ], function ($message) use ($user, $pdf) {
+        ], function ($message) use ($user, $transaction, $pdf) {
             $message->to($user->email, $user->name)
                     ->subject('Payment Receipt from KTM-WDC')
-                    ->attachData($pdf->output(), 'receipt_' . $transaction->id . '.pdf');
+                    ->attachData($pdf->output(), 'receipt_' . $transaction->id . '.pdf', [
+                        'mime' => 'application/pdf',
+                    ]);
         });
     }
 
