@@ -159,4 +159,21 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('Storage::url($warehouse->tax_', $view);
         $this->assertStringNotContainsString('Storage::url($warehouse->fire_safety_', $view);
     }
+
+    public function test_box_document_surfaces_do_not_use_public_storage_urls(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/BoxController.php'));
+        $indexView = file_get_contents(resource_path('views/client/boxes/index.blade.php'));
+        $trackView = file_get_contents(resource_path('views/client/boxes/track.blade.php'));
+
+        $this->assertStringContainsString("'private_uploads'", $controller);
+        $this->assertStringContainsString("route('documents.private.show'", $trackView);
+
+        $this->assertStringNotContainsString("store('boxes/documents/invoices', 'public')", $controller);
+        $this->assertStringNotContainsString("store('boxes/documents/packing_lists', 'public')", $controller);
+        $this->assertStringNotContainsString("store('boxes/documents/insurance', 'public')", $controller);
+        $this->assertStringNotContainsString("store('boxes/documents/others', 'public')", $controller);
+        $this->assertStringNotContainsString('/storage/${data.', $indexView);
+        $this->assertStringNotContainsString('Storage::url($box->', $trackView);
+    }
 }

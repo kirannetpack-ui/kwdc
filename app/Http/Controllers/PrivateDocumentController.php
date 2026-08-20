@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\SecurityAgency;
 use App\Models\Warehouse;
+use App\Models\Box;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -46,7 +48,8 @@ class PrivateDocumentController extends Controller
                     ->orWhere('license_certificate_path', $path)
                     ->orWhere('pan_vat_certificate_path', $path);
             })
-            ->exists();
+            ->exists()
+            || $this->canAccessBoxDocument($user, $path);
     }
 
     private function documentExistsInRecords(string $path): bool
@@ -63,6 +66,41 @@ class PrivateDocumentController extends Controller
                     ->orWhere('license_certificate_path', $path)
                     ->orWhere('pan_vat_certificate_path', $path);
             })
+            ->exists()
+            || Box::where(function ($query) use ($path) {
+                $this->whereBoxDocumentPath($query, $path);
+            })
             ->exists();
+    }
+
+    private function canAccessBoxDocument($user, string $path): bool
+    {
+        return Box::where(function ($query) use ($path) {
+                $this->whereBoxDocumentPath($query, $path);
+            })
+            ->where(function ($query) use ($user) {
+                $query->where('client_id', $user->id)
+                    ->orWhereHas('warehouse', function ($warehouseQuery) use ($user) {
+                        $this->whereWarehouseOwner($warehouseQuery, $user->id);
+                    });
+            })
+            ->exists();
+    }
+
+    private function whereBoxDocumentPath($query, string $path): void
+    {
+        $query->where('invoice_document', $path)
+            ->orWhere('packing_list_document', $path)
+            ->orWhere('insurance_document', $path)
+            ->orWhereJsonContains('other_documents', $path);
+    }
+
+    private function whereWarehouseOwner($query, int $userId): void
+    {
+        $query->where('user_id', $userId);
+
+        if (Schema::hasColumn('warehouses', 'owner_id')) {
+            $query->orWhere('owner_id', $userId);
+        }
     }
 }

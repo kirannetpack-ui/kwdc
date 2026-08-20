@@ -570,19 +570,35 @@ return new class extends Migration
         if (!Schema::hasTable('boxes')) {
             Schema::create('boxes', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('stock_id')->constrained()->onDelete('cascade');
+                $table->string('batch_number')->nullable()->index();
                 $table->string('box_number');
                 $table->string('qr_code')->unique();
-                $table->text('qr_code_data');
-                $table->string('status')->default('active');
+                $table->text('qr_code_data')->nullable();
+                $table->string('barcode')->nullable()->index();
+                $table->date('entry_date')->nullable();
+                $table->string('invoice_number')->nullable();
+                $table->string('shipper_name')->nullable();
+                $table->foreignId('warehouse_id')->nullable()->constrained('warehouses')->nullOnDelete();
+                $table->integer('total_boxes')->default(1);
+                $table->string('status')->default('pending');
+                $table->foreignId('stock_id')->nullable()->constrained()->nullOnDelete();
                 $table->foreignId('dispatch_order_id')->nullable()->constrained();
                 $table->foreignId('client_id')->nullable()->constrained('users');
+                $table->text('notes')->nullable();
+                $table->string('received_by')->nullable();
+                $table->timestamp('received_at')->nullable();
                 $table->text('description')->nullable();
+                $table->string('invoice_document')->nullable();
+                $table->string('packing_list_document')->nullable();
+                $table->string('insurance_document')->nullable();
+                $table->json('other_documents')->nullable();
                 $table->json('documents')->nullable();
                 $table->timestamps();
                 
                 $table->index('qr_code');
                 $table->index('status');
+                $table->index('client_id');
+                $table->index('warehouse_id');
             });
         }
 

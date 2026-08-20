@@ -196,7 +196,7 @@
                                 <i class="fas fa-file-invoice text-orange-500 mr-2"></i>
                                 <span class="font-medium">Invoice Document</span>
                             </div>
-                            <a href="/storage/${data.invoice_document}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                            <a href="${data.invoice_document}" target="_blank" class="text-blue-500 hover:text-blue-700">
                                 <i class="fas fa-download mr-1"></i> View
                             </a>
                         </div>
@@ -210,7 +210,7 @@
                                 <i class="fas fa-boxes text-orange-500 mr-2"></i>
                                 <span class="font-medium">Packing List</span>
                             </div>
-                            <a href="/storage/${data.packing_list_document}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                            <a href="${data.packing_list_document}" target="_blank" class="text-blue-500 hover:text-blue-700">
                                 <i class="fas fa-download mr-1"></i> View
                             </a>
                         </div>
@@ -224,28 +224,22 @@
                                 <i class="fas fa-shield-alt text-orange-500 mr-2"></i>
                                 <span class="font-medium">Insurance Document</span>
                             </div>
-                            <a href="/storage/${data.insurance_document}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                            <a href="${data.insurance_document}" target="_blank" class="text-blue-500 hover:text-blue-700">
                                 <i class="fas fa-download mr-1"></i> View
                             </a>
                         </div>
                     `;
                 }
                 
-                if (data.other_documents) {
-                    let others = [];
-                    try {
-                        others = JSON.parse(data.other_documents);
-                    } catch(e) {
-                        others = [];
-                    }
-                    others.forEach(doc => {
+                if (Array.isArray(data.other_documents)) {
+                    data.other_documents.forEach(doc => {
                         html += `
                             <div class="border rounded-lg p-3 flex items-center justify-between">
                                 <div>
                                     <i class="fas fa-file-alt text-orange-500 mr-2"></i>
                                     <span class="font-medium">Other Document</span>
                                 </div>
-                                <a href="/storage/${doc}" target="_blank" class="text-blue-500 hover:text-blue-700">
+                                <a href="${doc}" target="_blank" class="text-blue-500 hover:text-blue-700">
                                     <i class="fas fa-download mr-1"></i> View
                                 </a>
                             </div>
