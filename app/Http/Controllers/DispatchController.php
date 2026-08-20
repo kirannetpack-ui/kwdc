@@ -408,22 +408,24 @@ class DispatchController extends Controller
         abort_unless($this->canViewDispatch($dispatch), 403);
 
         $dispatch->tracking_enabled = true;
-        $dispatch->tracking_token = Str::random(32);
+        $dispatch->tracking_token = $dispatch->tracking_token ?: Str::random(40);
         $dispatch->save();
 
         return response()->json([
             'success' => true,
             'tracking_token' => $dispatch->tracking_token,
-            'tracking_url' => route('dispatch.track', $dispatch->id),
+            'tracking_url' => $this->trackingUrl($dispatch),
         ]);
     }
 
-    public function track($id)
+    public function track(Request $request, $id)
     {
         $dispatch = DispatchOrder::with(['driver', 'deliveryStops'])
             ->where('id', $id)
             ->where('tracking_enabled', true)
             ->firstOrFail();
+
+        abort_unless($this->canTrackDispatch($dispatch, $request), 403);
 
         return view('dispatch.track', compact('dispatch'));
     }
@@ -504,5 +506,26 @@ class DispatchController extends Controller
         }
 
         return (int) ($request->input('client_id') ?: $user->id);
+    }
+
+    private function canTrackDispatch(DispatchOrder $dispatch, Request $request): bool
+    {
+        if ($this->canViewDispatch($dispatch)) {
+            return true;
+        }
+
+        $token = (string) $request->query('token', '');
+
+        return filled($dispatch->tracking_token)
+            && filled($token)
+            && hash_equals($dispatch->tracking_token, $token);
+    }
+
+    private function trackingUrl(DispatchOrder $dispatch): string
+    {
+        return route('dispatch.track', [
+            'id' => $dispatch->id,
+            'token' => $dispatch->tracking_token,
+        ]);
     }
 }

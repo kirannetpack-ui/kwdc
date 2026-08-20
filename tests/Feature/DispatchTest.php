@@ -143,6 +143,59 @@ class DispatchTest extends TestCase
         ]);
     }
 
+    public function test_dispatch_tracking_requires_participant_access_or_valid_token()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $driver = User::factory()->create(['role' => 'driver']);
+        $otherUser = User::factory()->create(['role' => 'client']);
+
+        $dispatch = DispatchOrder::factory()->create([
+            'client_id' => $client->id,
+            'driver_id' => $driver->id,
+            'tracking_enabled' => true,
+            'tracking_token' => 'secure-tracking-token',
+        ]);
+
+        $this->actingAs($client)
+            ->get(route('dispatch.track', $dispatch->id))
+            ->assertOk()
+            ->assertSee($dispatch->tracking_id);
+
+        $this->actingAs($otherUser)
+            ->get(route('dispatch.track', $dispatch->id))
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->get(route('dispatch.track', ['id' => $dispatch->id, 'token' => 'wrong-token']))
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->get(route('dispatch.track', ['id' => $dispatch->id, 'token' => 'secure-tracking-token']))
+            ->assertOk()
+            ->assertSee($dispatch->tracking_id);
+    }
+
+    public function test_enable_tracking_returns_tokenized_tracking_url()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $dispatch = DispatchOrder::factory()->create([
+            'client_id' => $client->id,
+            'tracking_enabled' => false,
+            'tracking_token' => null,
+        ]);
+
+        $response = $this->actingAs($client)
+            ->postJson(route('dispatch.enable-tracking', $dispatch->id))
+            ->assertOk()
+            ->assertJsonPath('success', true);
+
+        $dispatch->refresh();
+
+        $this->assertTrue((bool) $dispatch->tracking_enabled);
+        $this->assertNotEmpty($dispatch->tracking_token);
+        $this->assertStringContainsString('token=' . $dispatch->tracking_token, $response->json('tracking_url'));
+    }
+
     public function test_client_cannot_create_dispatch_for_another_client()
     {
         $client = User::factory()->create(['role' => 'client']);

@@ -255,10 +255,14 @@ class ProductionHardeningTest extends TestCase
     public function test_dispatch_actions_use_centralized_access_guards(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/DispatchController.php'));
+        $emailService = file_get_contents(app_path('Services/ProfessionalEmailService.php'));
 
         $this->assertStringContainsString('private function dispatchClientId', $controller);
         $this->assertStringContainsString('$clientId = $this->dispatchClientId($request);', $controller);
         $this->assertStringContainsString('return $user->id;', $controller);
+        $this->assertStringContainsString('private function canTrackDispatch', $controller);
+        $this->assertStringContainsString('hash_equals($dispatch->tracking_token, $token)', $controller);
+        $this->assertStringContainsString("'token' => \$dispatch->tracking_token", $controller);
         $this->assertStringContainsString('private function canViewDispatch', $controller);
         $this->assertStringContainsString('private function canManageDispatch', $controller);
         $this->assertStringContainsString('private function canRateDispatch', $controller);
@@ -266,6 +270,10 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString('abort_unless($this->canManageDispatch($dispatch), 403)', $controller);
         $this->assertStringContainsString('abort_unless($this->canRateDispatch($dispatch), 403)', $controller);
         $this->assertStringContainsString('abort_unless($this->canManageDispatch($stop->dispatchOrder), 403)', $controller);
+        $this->assertStringContainsString('ensureTrackingToken', $emailService);
+        $this->assertStringContainsString("'id' => \$dispatch->id", $emailService);
+        $this->assertStringContainsString("'token' => \$dispatch->tracking_token", $emailService);
+        $this->assertStringNotContainsString("route('dispatch.track', \$dispatch->tracking_id)", $emailService);
     }
 
     public function test_equipment_compliance_documents_are_private_uploads(): void
