@@ -61,7 +61,7 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return app(LoginController::class)->showLoginForm();
+    return view('welcome');
 })->name('landing');
 Route::get('/ping', fn() => 'pong');
 Route::get('/invoice/verify/{invoiceNumber}', [InvoiceController::class, 'verify'])->name('invoice.verify');
