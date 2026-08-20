@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class SecurityAgencyManagementTest extends TestCase
@@ -263,5 +264,60 @@ class SecurityAgencyManagementTest extends TestCase
             'shift' => 'day',
             'status' => 'active',
         ]);
+    }
+
+    public function test_security_incidents_index_is_scoped_and_dead_crud_routes_are_not_registered(): void
+    {
+        $user = User::factory()->create(['role' => 'security_agency']);
+        $agency = SecurityAgency::create([
+            'user_id' => $user->id,
+            'agency_name' => 'Foxtrot Guard',
+            'email' => $user->email,
+            'phone' => '9800000009',
+            'status' => 'approved',
+        ]);
+
+        $warehouse = Warehouse::create([
+            'user_id' => $user->id,
+            'name' => 'Incident Warehouse',
+            'location' => 'Kathmandu',
+            'address' => 'Watch Street 1',
+            'latitude' => 27.7172,
+            'longitude' => 85.3240,
+            'status' => 'approved',
+        ]);
+
+        $assignment = $agency->assignments()->create([
+            'warehouse_id' => $warehouse->id,
+            'start_date' => '2026-08-15',
+            'shift' => 'day',
+            'status' => 'active',
+        ]);
+
+        \App\Models\SecurityIncident::create([
+            'warehouse_id' => $warehouse->id,
+            'reported_by_user_id' => $user->id,
+            'assignment_id' => $assignment->id,
+            'incident_time' => '2026-08-20 09:00:00',
+            'category' => 'Gate breach',
+            'description' => 'Unauthorized entry attempt.',
+            'severity' => 'high',
+            'status' => 'reported',
+        ]);
+
+        $this->actingAs($user)
+            ->get('/security/incidents')
+            ->assertOk()
+            ->assertSee('Foxtrot Guard')
+            ->assertSee('Gate breach')
+            ->assertSee('Incident Warehouse');
+
+        $this->assertTrue(Route::has('security.incidents.index'));
+        $this->assertFalse(Route::has('security.incidents.create'));
+        $this->assertFalse(Route::has('security.incidents.store'));
+        $this->assertFalse(Route::has('security.incidents.show'));
+        $this->assertFalse(Route::has('security.incidents.edit'));
+        $this->assertFalse(Route::has('security.incidents.update'));
+        $this->assertFalse(Route::has('security.incidents.destroy'));
     }
 }

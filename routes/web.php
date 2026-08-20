@@ -532,15 +532,10 @@ Route::middleware(['auth'])->group(function () {
 
 // Incidents
 Route::resource('security/incidents', SecurityIncidentController::class)
+    ->only(['index'])
     ->middleware('role:security_agency')
     ->names([
-        'index'   => 'security.incidents.index',
-        'create'  => 'security.incidents.create',
-        'store'   => 'security.incidents.store',
-        'show'    => 'security.incidents.show',
-        'edit'    => 'security.incidents.edit',
-        'update'  => 'security.incidents.update',
-        'destroy' => 'security.incidents.destroy',
+        'index' => 'security.incidents.index',
     ]);
 
     // ==================== END OF AUTH GROUP ====================

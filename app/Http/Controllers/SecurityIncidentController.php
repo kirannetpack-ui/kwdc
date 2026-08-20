@@ -4,26 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\SecurityIncident;
 use App\Models\SecurityAgency;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SecurityIncidentController extends Controller
 {
-    protected function getAgency()
+    protected function getAgency(): SecurityAgency
     {
-        return Auth::user()->securityAgency;
+        $agency = Auth::user()->securityAgency;
+
+        if (!$agency) {
+            abort(403, 'Security agency profile not found. Please complete your agency profile first.');
+        }
+
+        return $agency;
     }
 
-    public function index()
+    public function index(?SecurityAgency $agency = null)
     {
-        $agency = $this->getAgency();
-        $incidents = $agency->incidents()->paginate(10);
-        return view('security.incidents.index', compact('incidents'));
+        $agency ??= $this->getAgency();
+
+        $incidents = $agency->incidents()
+            ->with(['warehouse', 'reportedBy', 'assignment'])
+            ->latest('incident_time')
+            ->paginate(10);
+
+        return view('security.incidents.index', compact('agency', 'incidents'));
     }
-
-public function incidents()
-{
-    return $this->hasMany(SecurityIncident::class, 'agency_id');
-}
-
 }
