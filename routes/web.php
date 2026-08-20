@@ -398,11 +398,11 @@ Route::middleware(['auth'])->group(function () {
     // ==================== PAYMENT ====================
     Route::prefix('payment')->name('payment.')->group(function () {
         Route::get('/', [PaymentController::class, 'index'])->name('index');
-        Route::post('/khalti/init', [PaymentController::class, 'khaltiInit'])->name('khalti.init');
-        Route::get('/khalti/verify', [PaymentController::class, 'khaltiVerify'])->name('khalti.verify');
-        Route::post('/esewa/init', [PaymentController::class, 'esewaInit'])->name('esewa.init');
-        Route::get('/esewa/success', [PaymentController::class, 'esewaSuccess'])->name('esewa.success');
-        Route::get('/esewa/failure', [PaymentController::class, 'esewaFailure'])->name('esewa.failure');
+        Route::post('/khalti/init', [PaymentController::class, 'khaltiInit'])->name('khalti.init')->middleware('throttle:10,1');
+        Route::get('/khalti/verify', [PaymentController::class, 'khaltiVerify'])->name('khalti.verify')->middleware('throttle:20,1');
+        Route::post('/esewa/init', [PaymentController::class, 'esewaInit'])->name('esewa.init')->middleware('throttle:10,1');
+        Route::get('/esewa/success', [PaymentController::class, 'esewaSuccess'])->name('esewa.success')->middleware('throttle:20,1');
+        Route::get('/esewa/failure', [PaymentController::class, 'esewaFailure'])->name('esewa.failure')->middleware('throttle:20,1');
         Route::get('/success', [PaymentController::class, 'success'])->name('success');
         Route::get('/failure', [PaymentController::class, 'failure'])->name('failure');
         Route::get('/history', [PaymentController::class, 'history'])->name('history');

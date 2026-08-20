@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Arr;
 use App\Models\Invoice;
 use App\Models\Transaction;
@@ -94,36 +93,56 @@ class PaymentController extends Controller
      */
     public function khaltiVerify(Request $request)
     {
-        $pidx = $request->pidx;
+        $pidx = trim((string) $request->input('pidx'));
 
         if (!$pidx) {
             return redirect()->route('payment.failure')
                 ->with('error', 'Invalid payment request.');
         }
 
+        $transaction = Transaction::where('transaction_id', $pidx)
+            ->where('user_id', auth()->id())
+            ->where('payment_method', 'khalti')
+            ->first();
+
+        if (!$transaction) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction was not found.');
+        }
+
+        if ($transaction->isCompleted()) {
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment already completed.');
+        }
+
+        if (!$transaction->isPending()) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction is no longer payable.');
+        }
+
         $result = $this->paymentService->verifyKhaltiPayment($pidx);
 
         if ($result['success'] && $result['status'] === 'Completed') {
-            // Update transaction
-            $transaction = Transaction::where('transaction_id', $pidx)
-                ->where('user_id', auth()->id())
-                ->where('payment_method', 'khalti')
+            $providerAmount = ((float) Arr::get($result, 'data.total_amount', 0)) / 100;
+            if ($providerAmount && round($providerAmount, 2) !== round((float) $transaction->amount, 2)) {
+                $transaction->markAsFailed('Provider amount did not match the invoice transaction amount.');
+
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment amount mismatch. Please contact support.');
+            }
+
+            $invoice = Invoice::where('id', $transaction->invoice_id)
+                ->where('payment_status', 'unpaid')
                 ->first();
 
-            if ($transaction) {
-                $providerAmount = ((float) Arr::get($result, 'data.total_amount', 0)) / 100;
-                if ($providerAmount && round($providerAmount, 2) !== round((float) $transaction->amount, 2)) {
-                    $transaction->markAsFailed('Provider amount did not match the invoice transaction amount.');
+            if (!$invoice) {
+                $transaction->markAsFailed('Invoice is missing or no longer payable.');
 
-                    return redirect()->route('payment.failure')
-                        ->with('error', 'Payment amount mismatch. Please contact support.');
-                }
-                
-                $invoice = Invoice::find($transaction->invoice_id);
-                if ($invoice) {
-                    $this->completeVerifiedTransaction($transaction, $invoice, 'khalti', $result['data']);
-                }
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment invoice is no longer payable.');
             }
+
+            $this->completeVerifiedTransaction($transaction, $invoice, 'khalti', $result['data']);
             
             return redirect()->route('payment.success')
                 ->with('success', 'Payment completed successfully!');
@@ -198,36 +217,62 @@ class PaymentController extends Controller
      */
     public function esewaSuccess(Request $request)
     {
-        $pid = $request->pid;
-        $refId = $request->refId;
+        $pid = trim((string) $request->input('pid'));
+        $refId = trim((string) $request->input('refId'));
+
+        if (!$pid || !$refId) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Invalid payment request.');
+        }
         
         $transaction = Transaction::where('transaction_id', $pid)
             ->where('user_id', auth()->id())
             ->where('payment_method', 'esewa')
             ->first();
         
-        if ($transaction) {
-            $verification = $this->paymentService->verifyEsewaPayment(
-                $pid,
-                $refId,
-                (float) $transaction->amount
-            );
+        if (!$transaction) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction was not found.');
+        }
 
-            if ($verification['success'] ?? false) {
-                $invoice = Invoice::find($transaction->invoice_id);
-                if ($invoice) {
-                    $this->completeVerifiedTransaction($transaction, $invoice, 'esewa', $verification['data'] ?? [
-                        'refId' => $refId,
-                        'pid' => $pid,
-                    ]);
-                }
+        if ($transaction->isCompleted()) {
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment already completed.');
+        }
 
-                return redirect()->route('payment.success')
-                    ->with('success', 'Payment completed successfully!');
+        if (!$transaction->isPending()) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction is no longer payable.');
+        }
+
+        $verification = $this->paymentService->verifyEsewaPayment(
+            $pid,
+            $refId,
+            (float) $transaction->amount
+        );
+
+        if ($verification['success'] ?? false) {
+            $invoice = Invoice::where('id', $transaction->invoice_id)
+                ->where('payment_status', 'unpaid')
+                ->first();
+
+            if (!$invoice) {
+                $transaction->markAsFailed('Invoice is missing or no longer payable.');
+
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment invoice is no longer payable.');
             }
 
-            $transaction->markAsFailed($verification['message'] ?? 'eSewa verification failed.');
+            $this->completeVerifiedTransaction($transaction, $invoice, 'esewa', $verification['data'] ?? [
+                'refId' => $refId,
+                'pid' => $pid,
+            ]);
+
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment completed successfully!');
         }
+
+        $transaction->markAsFailed($verification['message'] ?? 'eSewa verification failed.');
 
         return redirect()->route('payment.failure')
             ->with('error', 'Payment verification failed. Please contact support.');
