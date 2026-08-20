@@ -215,3 +215,19 @@ const html = `<!doctype html>
 </html>`;
 
 writeFileSync('dist/index.html', html);
+writeFileSync(
+  'dist/index.mjs',
+  `const html = ${JSON.stringify(html)};
+
+export default {
+  async fetch() {
+    return new Response(html, {
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'public, max-age=300',
+      },
+    });
+  },
+};
+`
+);
