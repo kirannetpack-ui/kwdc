@@ -19,7 +19,7 @@ class ActivationCodeMail extends Mailable
 
     public function build()
     {
-        return $this->subject('Activate your KTM-WDC account')
+        return $this->subject('Your KTM-WDC verification code')
             ->view('emails.activation-code');
     }
 }
