@@ -144,4 +144,19 @@ class ProductionHardeningTest extends TestCase
             $this->assertSame([], array_values($matches), 'Forbidden tracked files matched ' . $pattern);
         }
     }
+
+    public function test_admin_warehouse_review_links_sensitive_documents_through_private_route(): void
+    {
+        $view = file_get_contents(resource_path('views/admin/warehouses/show.blade.php'));
+
+        $this->assertStringContainsString('$warehouse->tax_document', $view);
+        $this->assertStringContainsString('$warehouse->fire_safety_document', $view);
+        $this->assertStringContainsString("route('documents.private.show', ['path' => \$warehouse->tax_document])", $view);
+        $this->assertStringContainsString("route('documents.private.show', ['path' => \$warehouse->fire_safety_document])", $view);
+
+        $this->assertStringNotContainsString('tax_clearance_document', $view);
+        $this->assertStringNotContainsString('fire_safety_certificate', $view);
+        $this->assertStringNotContainsString('Storage::url($warehouse->tax_', $view);
+        $this->assertStringNotContainsString('Storage::url($warehouse->fire_safety_', $view);
+    }
 }
