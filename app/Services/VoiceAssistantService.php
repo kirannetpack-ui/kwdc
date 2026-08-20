@@ -50,7 +50,14 @@ class VoiceAssistantService
                     'message' => $smartResponse['message'] ?? 'Opening page...',
                     'action' => 'open_page',
                     'url' => $smartResponse['url'],
+                    'intent' => $smartResponse['intent'] ?? null,
                     'data' => $smartResponse['data'] ?? [],
+                    'guidance' => $smartResponse['guidance'] ?? null,
+                    'recommendations' => $smartResponse['recommendations'] ?? [],
+                    'requires_confirmation' => $smartResponse['requires_confirmation'] ?? true,
+                    'missing_fields' => $smartResponse['missing_fields'] ?? [],
+                    'summary' => $smartResponse['summary'] ?? null,
+                    'confidence' => $smartResponse['confidence'] ?? null,
                     'done' => false,
                 ];
             }

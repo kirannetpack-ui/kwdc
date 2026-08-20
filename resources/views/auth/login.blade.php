@@ -10,8 +10,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { font-family: 'Inter', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        body {
+            background:
+                radial-gradient(circle at 18% 18%, rgba(245, 158, 11, .18), transparent 28%),
+                linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -21,18 +23,19 @@
         }
         .login-card {
             background: white;
-            border-radius: 20px;
-            padding: 48px;
+            border-radius: 8px;
+            padding: 42px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 24px 70px rgba(0,0,0,0.34);
+            border: 1px solid rgba(226, 232, 240, .86);
         }
         .login-header { text-align: center; margin-bottom: 32px; }
         .login-header .logo {
             width: 80px;
             height: 80px;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border-radius: 20px;
+            background: #f59e0b;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -53,8 +56,8 @@
         .form-group input {
             width: 100%;
             padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
+            border: 1px solid #cfd8e5;
+            border-radius: 8px;
             font-size: 15px;
             transition: all 0.3s ease;
             background: #f9fafb;
@@ -89,10 +92,10 @@
         .btn-login {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            background: #f59e0b;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 8px;
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
@@ -101,6 +104,7 @@
         .btn-login:hover {
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+            background: #d97706;
         }
         .register-link {
             text-align: center;
@@ -112,21 +116,16 @@
         .error-box {
             background: #fee2e2;
             border: 1px solid #fca5a5;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 12px 16px;
             margin-bottom: 20px;
             color: #dc2626;
             font-size: 14px;
         }
         .error-box ul { margin: 0; padding-left: 20px; }
-        .debug-info {
-            background: #f3f4f6;
-            border-radius: 8px;
-            padding: 10px;
-            margin-top: 15px;
-            font-size: 12px;
-            color: #6b7280;
-            display: none; /* Hide by default, show for debugging */
+        @media (max-width: 520px) {
+            .login-card { padding: 28px 22px; }
+            .form-options { align-items: flex-start; flex-direction: column; gap: 12px; }
         }
     </style>
 </head>
@@ -140,7 +139,7 @@
 
         @if($errors->any())
         <div class="error-box">
-            <strong>⚠️ Please fix:</strong>
+            <strong>Please fix:</strong>
             <ul class="mt-2">
                 @foreach($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -149,16 +148,15 @@
         </div>
         @endif
 
-        <!-- IMPORTANT: The form must be EXACTLY like this -->
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="form-group">
-                <label for="email">📧 Email Address</label>
+                <label for="email">Email Address</label>
                 <input type="email" name="email" id="email" value="{{ old('email') }}"
                        placeholder="Enter your email" required autofocus autocomplete="username">
             </div>
             <div class="form-group">
-                <label for="password">🔒 Password</label>
+                <label for="password">Password</label>
                 <input type="password" name="password" id="password"
                        placeholder="Enter your password" required autocomplete="current-password">
             </div>
@@ -176,14 +174,6 @@
 
         <div class="register-link">
             Don't have an account? <a href="{{ route('register') }}">Create Account</a>
-        </div>
-
-        <!-- Debug Information (remove after fixing) -->
-        <div class="debug-info">
-            <p><strong>Debug Info:</strong></p>
-            <p>Session ID: {{ session()->getId() }}</p>
-            <p>CSRF Token: {{ csrf_token() }}</p>
-            <p>Session Domain: {{ config('session.domain') }}</p>
         </div>
     </div>
 </body>

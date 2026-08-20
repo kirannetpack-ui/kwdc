@@ -70,6 +70,11 @@ PROMPT;
         $lower = strtolower($query);
         $data = $this->extractData($query);
 
+        $directAnswer = $this->planDirectAnswer($query, $data);
+        if ($directAnswer) {
+            return $directAnswer;
+        }
+
         if (preg_match('/\b(remind|reminder|calendar|schedule)\b/', $lower)) {
             $reminder = $this->extractReminderData($query);
 
@@ -105,7 +110,7 @@ PROMPT;
             ];
         }
 
-        if (preg_match('/\b(equipment|jcb|forklift|crane|loader|excavator|machine)\b/', $lower)) {
+        if (preg_match('/\b(equipment|jcb|forklift|crane|loader|excavator|dozer|bulldozer|machine|mover)\b/', $lower)) {
             return [
                 'intent' => 'equipment_rental',
                 'action' => 'open_page',
@@ -127,7 +132,7 @@ PROMPT;
             ];
         }
 
-        if (preg_match('/\b(warehouse|storage|godown|store space)\b/', $lower)) {
+        if (preg_match('/\b(warehouse|storage|godown|store space|cold storage|space)\b/', $lower)) {
             return [
                 'intent' => 'warehouse_rental',
                 'action' => 'open_page',
@@ -138,24 +143,27 @@ PROMPT;
             ];
         }
 
-        if (preg_match('/\b(dispatch|deliver|delivery|shipment|send|transport)\b/', $lower)) {
-            return [
-                'intent' => 'dispatch_request',
-                'action' => 'open_page',
-                'url' => '/dispatch/direct-create',
-                'data' => $data,
-                'message' => $this->routeMessage('dispatch', $data),
-                'confidence' => 0.82,
-            ];
-        }
+        $hasExplicitDispatch = preg_match('/\b(dispatch|create dispatch|send dispatch|shipment|transport)\b/', $lower);
+        $hasPickup = preg_match('/\b(pickup|pick up|collect|collection|fetch)\b/', $lower);
 
-        if (preg_match('/\b(pickup|pick up|collect|collection|fetch)\b/', $lower)) {
+        if ($hasPickup && !$hasExplicitDispatch) {
             return [
                 'intent' => 'pickup_request',
                 'action' => 'open_page',
                 'url' => '/pickup/direct-create',
                 'data' => $data,
                 'message' => $this->routeMessage('pickup', $data),
+                'confidence' => 0.82,
+            ];
+        }
+
+        if (preg_match('/\b(dispatch|deliver|delivery|shipment|send|transport|cargo|freight|move goods)\b/', $lower)) {
+            return [
+                'intent' => 'dispatch_request',
+                'action' => 'open_page',
+                'url' => '/dispatch/direct-create',
+                'data' => $data,
+                'message' => $this->routeMessage('dispatch', $data),
                 'confidence' => 0.82,
             ];
         }
@@ -167,15 +175,16 @@ PROMPT;
     {
         $data = [];
         $clean = trim(preg_replace('/\s+/', ' ', $query));
+        $clean = $this->normalizeCommonSpeech($clean);
 
-        if (preg_match('/(?:pickup\s+from|pick\s+up\s+from|from)\s+(.+?)\s+(?:to|drop(?:\s+to)?|deliver(?:\s+to)?)\s+(.+?)(?=\s+(?:with|for|at|tomorrow|today|on|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+        if (preg_match('/(?:pickup\s+from|pick\s+up\s+from|collect\s+from|from)\s+(.+?)\s+(?:to|drop(?:\s+to)?|deliver(?:\s+to)?|destination)\s+(.+?)(?=\s+(?:with|for|at|by|tomorrow|today|tonight|on|after|before|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
             $data['pickup_address'] = $this->cleanValue($matches[1]);
             $data['delivery_address'] = $this->cleanValue($matches[2]);
-        } elseif (preg_match('/(?:pickup|pick up|from)\s+(.+?)(?=\s+(?:with|for|at|tomorrow|today|on|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+        } elseif (preg_match('/(?:pickup|pick up|collect|from)\s+(.+?)(?=\s+(?:with|for|at|by|tomorrow|today|tonight|on|after|before|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
             $data['pickup_address'] = $this->cleanValue($matches[1]);
         }
 
-        if (!isset($data['delivery_address']) && preg_match('/(?:to|drop(?:\s+to)?|deliver(?:\s+to)?)\s+(.+?)(?=\s+(?:with|for|at|tomorrow|today|on|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+        if (!isset($data['delivery_address']) && preg_match('/(?:to|drop(?:\s+to)?|deliver(?:\s+to)?|destination)\s+(.+?)(?=\s+(?:with|for|at|by|tomorrow|today|tonight|on|after|before|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
             $data['delivery_address'] = $this->cleanValue($matches[1]);
         }
 
@@ -183,7 +192,7 @@ PROMPT;
             $data['total_distance'] = $matches[1];
         }
 
-        if (preg_match('/(?:rs|npr|रु|रू|amount|price|cost|total)\s*\.?\s*(\d+(?:,\d+)*(?:\.\d+)?)/i', $clean, $matches)) {
+        if (preg_match('/(?:rs|npr|रु|रू|amount|price|cost|total|budget)\s*\.?\s*(\d+(?:,\d+)*(?:\.\d+)?)/i', $clean, $matches)) {
             $data['total_price'] = str_replace(',', '', $matches[1]);
         }
 
@@ -191,15 +200,22 @@ PROMPT;
             $data['items_description'] = trim(($data['items_description'] ?? '') . ' Weight: ' . $matches[0]);
         }
 
-        if (preg_match('/(\d+)\s*(?:box|boxes|carton|cartons|package|packages)\b/i', $clean, $matches)) {
+        if (preg_match('/(\d+)\s*(?:box|boxes|carton|cartons|package|packages|bags|sacks)\b/i', $clean, $matches)) {
             $data['items_description'] = trim(($data['items_description'] ?? '') . ' Quantity: ' . $matches[0]);
         }
 
-        if (preg_match('/\b(mini truck|heavy truck|truck|van|bike|motorcycle|two-wheeler|refrigerated)\b/i', $clean, $matches)) {
+        if (preg_match('/(?:with|carrying|cargo|goods|item|items|package|packages)\s+(.+?)(?=\s+(?:from|to|for|at|by|tomorrow|today|tonight|on|after|before|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+            $description = $this->cleanValue($matches[1]);
+            if ($description && !preg_match('/^\d+\s*(km|rs|npr)$/i', $description)) {
+                $data['items_description'] = trim(($data['items_description'] ?? '') . ' ' . ucfirst($description));
+            }
+        }
+
+        if (preg_match('/\b(mini truck|heavy truck|large truck|small truck|truck|van|bike|motorcycle|two-wheeler|refrigerated|reefer|pickup truck)\b/i', $clean, $matches)) {
             $data['vehicle_type'] = ucwords(strtolower($matches[1]));
         }
 
-        if (preg_match('/(?:call|phone|contact)\s+([A-Za-z][A-Za-z\s.]+?)(?=\s+(?:at|on|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
+        if (preg_match('/(?:call|phone|contact)\s+([A-Za-z][A-Za-z\s.]+?)(?=\s+(?:at|on|with|,|\.|$)|,|\.|$)/i', $clean, $matches)) {
             $data['recipient_name'] = $this->cleanValue($matches[1]);
         }
 
@@ -218,7 +234,74 @@ PROMPT;
             $data['pickup_contact_phone'] = $matches[1];
         }
 
+        if ($scheduledAt = $this->extractDateTime($clean)) {
+            $data['scheduled_date'] = $scheduledAt->format('Y-m-d');
+            $data['scheduled_time'] = $scheduledAt->format('H:i');
+        }
+
         return array_filter($data, fn ($value) => $value !== null && $value !== '');
+    }
+
+    private function planDirectAnswer(string $query, array $data): ?array
+    {
+        $lower = strtolower($this->normalizeCommonSpeech($query));
+
+        if (preg_match('/\b(what can you do|help|features|services|capabilities|how can you help)\b/', $lower)) {
+            return [
+                'intent' => 'general_help',
+                'action' => 'answer',
+                'url' => '#',
+                'data' => [],
+                'message' => "I can open and prefill pickup, dispatch, reminder, invoice, warehouse, equipment, security, and tracking pages. Try: \"pickup from Boudha to Bhaktapur with 2 boxes\" or \"remind me to call the driver tomorrow at 5 PM.\"",
+                'confidence' => 0.9,
+            ];
+        }
+
+        if (preg_match('/\b(change|replace|switch)\s+(.+?)\s+(?:to|with|into)\s+(.+?)$/i', $this->normalizeCommonSpeech($query), $matches)) {
+            return [
+                'intent' => 'correction_update',
+                'action' => 'answer',
+                'url' => '#',
+                'data' => [
+                    'old_value' => $this->cleanValue($matches[2]),
+                    'new_value' => $this->cleanValue($matches[3]),
+                ],
+                'message' => 'I can make that correction on the open form. If it did not update automatically, click into the field and say: "set pickup address to ' . $this->cleanValue($matches[3]) . '".',
+                'confidence' => 0.7,
+            ];
+        }
+
+        if (preg_match('/\b(price|cost|estimate|quote|rate)\b/', $lower)) {
+            $distance = isset($data['total_distance']) ? (float) $data['total_distance'] : null;
+            $estimated = $distance ? max(300, round($distance * 45 * 1.25)) : null;
+
+            return [
+                'intent' => 'price_answer',
+                'action' => 'answer',
+                'url' => '#',
+                'data' => $data + array_filter([
+                    'estimated_price' => $estimated,
+                    'currency' => 'NPR',
+                ]),
+                'message' => $estimated
+                    ? "Rough estimate: NPR {$estimated} for about {$distance} km. Final price depends on vehicle, cargo, margin tier, and driver availability. I can open the dispatch form to calculate it properly."
+                    : 'I can estimate price if you give me distance, route, cargo type, and vehicle. Example: "estimate dispatch from Kathmandu to Pokhara, 200 km, truck."',
+                'confidence' => $estimated ? 0.78 : 0.6,
+            ];
+        }
+
+        if (preg_match('/\b(openai|gemini|ai key|api key|online ai|external ai)\b/', $lower)) {
+            return [
+                'intent' => 'ai_status',
+                'action' => 'answer',
+                'url' => '#',
+                'data' => [],
+                'message' => 'Right now I can work in free local mode: routing, form filling, tracking help, reminders, distance estimates, and service guidance. External AI can be enabled later with a fresh server-side key, never the exposed old key.',
+                'confidence' => 0.9,
+            ];
+        }
+
+        return null;
     }
 
     private function planDistanceAnswer(string $query): ?array
@@ -279,6 +362,7 @@ PROMPT;
 
     private function cleanPlaceName(string $value): string
     {
+        $value = $this->normalizeCommonSpeech($value);
         $value = preg_replace('/\b(distance|far|km|kilometer|kilometers|road|by\s+road|from|to|is|the)\b/i', ' ', $value);
 
         return ucwords($this->cleanValue($value));
@@ -303,6 +387,12 @@ PROMPT;
             'kalanki' => ['name' => 'Kalanki', 'lat' => 27.6932, 'lng' => 85.2816],
             'baneshwor' => ['name' => 'Baneshwor', 'lat' => 27.6889, 'lng' => 85.3358],
             'newbaneshwor' => ['name' => 'New Baneshwor', 'lat' => 27.6889, 'lng' => 85.3358],
+            'balaju' => ['name' => 'Balaju', 'lat' => 27.7353, 'lng' => 85.3001],
+            'maharajgunj' => ['name' => 'Maharajgunj', 'lat' => 27.7399, 'lng' => 85.3360],
+            'chabahil' => ['name' => 'Chabahil', 'lat' => 27.7167, 'lng' => 85.3462],
+            'satdobato' => ['name' => 'Satdobato', 'lat' => 27.6588, 'lng' => 85.3247],
+            'gwarko' => ['name' => 'Gwarko', 'lat' => 27.6666, 'lng' => 85.3331],
+            'lagankhel' => ['name' => 'Lagankhel', 'lat' => 27.6662, 'lng' => 85.3237],
             'patan' => ['name' => 'Patan', 'lat' => 27.6766, 'lng' => 85.3188],
             'lalitpur' => ['name' => 'Lalitpur', 'lat' => 27.6766, 'lng' => 85.3188],
             'kathmandu' => ['name' => 'Kathmandu', 'lat' => 27.7172, 'lng' => 85.3240],
@@ -376,13 +466,18 @@ PROMPT;
         $url = $plan['url'] ?? $this->urlForIntent($intent);
         $action = in_array($plan['action'] ?? null, ['open_page', 'guidance', 'answer'], true) ? $plan['action'] : 'guidance';
 
+        $data = is_array($plan['data'] ?? null) ? array_filter($plan['data']) : [];
+        $missingFields = $this->missingFieldsForIntent($intent, $data);
+
         return [
             'intent' => $intent,
             'action' => $action,
             'url' => $url,
-            'data' => is_array($plan['data'] ?? null) ? array_filter($plan['data']) : [],
+            'data' => $data,
             'message' => $plan['message'] ?? 'I prepared the next step for you.',
             'confidence' => (float) ($plan['confidence'] ?? 0.7),
+            'missing_fields' => $missingFields,
+            'summary' => $this->summaryForIntent($intent, $data),
         ];
     }
 
@@ -402,6 +497,9 @@ PROMPT;
             'equipment_rental',
             'security_booking',
             'distance_answer',
+            'price_answer',
+            'ai_status',
+            'correction_update',
             'general_help',
         ], true);
     }
@@ -424,15 +522,83 @@ PROMPT;
     private function routeMessage(string $type, array $data): string
     {
         if (!empty($data['pickup_address']) && !empty($data['delivery_address'])) {
-            return 'Opening the ' . $type . ' form with route ' . $data['pickup_address'] . ' to ' . $data['delivery_address'] . ' filled in.';
+            $message = 'Opening the ' . $type . ' form with route ' . $data['pickup_address'] . ' to ' . $data['delivery_address'] . ' filled in.';
+            if (!empty($data['items_description'])) {
+                $message .= ' I also captured the goods details.';
+            }
+            return $message;
         }
 
-        return 'Opening the ' . $type . ' form with the details I could understand.';
+        $missing = $this->missingFieldsForIntent($type . '_request', $data);
+
+        return $missing
+            ? 'Opening the ' . $type . ' form. I still need: ' . implode(', ', $missing) . '.'
+            : 'Opening the ' . $type . ' form with the details I could understand.';
     }
 
     private function cleanValue(?string $value): string
     {
         return trim((string) preg_replace('/\s+/', ' ', trim((string) $value, " \t\n\r\0\x0B,.:-")));
+    }
+
+    private function normalizeCommonSpeech(string $value): string
+    {
+        $replacements = [
+            '/\bchnage\b/i' => 'change',
+            '/\bchagne\b/i' => 'change',
+            '/\bchaneg\b/i' => 'change',
+            '/\breplce\b/i' => 'replace',
+            '/\bbhatapur\b/i' => 'Bhaktapur',
+            '/\bbhaktpur\b/i' => 'Bhaktapur',
+            '/\bateshor\b/i' => 'Koteshwor',
+            '/\bateshwar\b/i' => 'Koteshwor',
+            '/\bkoteswor\b/i' => 'Koteshwor',
+            '/\bgodam\b/i' => 'warehouse',
+            '/\bgodown\b/i' => 'warehouse',
+            '/\bsaman\b/i' => 'goods',
+            '/\bmaal\b/i' => 'goods',
+            '/\bgaadi\b/i' => 'vehicle',
+        ];
+
+        return preg_replace(array_keys($replacements), array_values($replacements), $value);
+    }
+
+    private function missingFieldsForIntent(string $intent, array $data): array
+    {
+        $required = match ($intent) {
+            'pickup_request', 'dispatch_request' => [
+                'pickup_address' => 'Pickup address',
+                'delivery_address' => 'Delivery address',
+                'items_description' => 'Goods details',
+                'pickup_contact_phone' => 'Contact phone',
+            ],
+            'reminder_create' => [
+                'title' => 'Reminder title',
+                'starts_at' => 'Reminder time',
+            ],
+            default => [],
+        };
+
+        return collect($required)
+            ->filter(fn ($label, $field) => empty($data[$field]))
+            ->values()
+            ->all();
+    }
+
+    private function summaryForIntent(string $intent, array $data): ?string
+    {
+        if (in_array($intent, ['pickup_request', 'dispatch_request'], true)) {
+            $parts = array_filter([
+                !empty($data['pickup_address']) ? 'from ' . $data['pickup_address'] : null,
+                !empty($data['delivery_address']) ? 'to ' . $data['delivery_address'] : null,
+                !empty($data['items_description']) ? 'goods: ' . $data['items_description'] : null,
+                !empty($data['vehicle_type']) ? 'vehicle: ' . $data['vehicle_type'] : null,
+            ]);
+
+            return $parts ? ucfirst(str_replace('_', ' ', $intent)) . ' ' . implode(', ', $parts) : null;
+        }
+
+        return null;
     }
 
     private function unknown(): array

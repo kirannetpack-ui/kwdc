@@ -141,6 +141,81 @@ class VoiceAssistantTest extends TestCase
         $this->assertSame('open_page', $data['action']);
     }
 
+    public function test_voice_assistant_returns_richer_guidance_for_prefilled_pickup(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'rich-guidance@example.com']);
+
+        $response = $this->actingAs($user)->postJson('/ai/voice-assistant', [
+            'message' => 'pickup from Boudha to Bhaktapur with 2 boxes 500 kg tomorrow at 10 AM',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertSame('open_page', $data['action']);
+        $this->assertSame('pickup_request', $data['intent']);
+        $this->assertArrayHasKey('guidance', $data);
+        $this->assertArrayHasKey('missing_fields', $data);
+        $this->assertArrayHasKey('summary', $data);
+        $this->assertStringContainsString('500 kg', $data['data']['items_description'] ?? '');
+        $this->assertSame(now()->addDay()->format('Y-m-d'), $data['data']['scheduled_date'] ?? null);
+    }
+
+    public function test_voice_assistant_answers_price_estimate_locally(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'price-ai@example.com']);
+
+        $response = $this->actingAs($user)->postJson('/ai/voice-assistant', [
+            'message' => 'estimate price for dispatch 20 km by truck',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertSame('answer', $data['action']);
+        $this->assertSame('price_answer', $data['intent']);
+        $this->assertSame(1125, $data['data']['estimated_price'] ?? null);
+        $this->assertStringContainsString('Rough estimate', $data['message']);
+    }
+
+    public function test_voice_assistant_explains_local_ai_mode(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'ai-status@example.com']);
+
+        $response = $this->actingAs($user)->postJson('/ai/voice-assistant', [
+            'message' => 'is the OpenAI API key connected or is this local ai',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertSame('answer', $data['action']);
+        $this->assertSame('ai_status', $data['intent']);
+        $this->assertStringContainsString('free local mode', $data['message']);
+    }
+
+    public function test_voice_assistant_understands_typo_correction_commands(): void
+    {
+        $user = User::factory()->create(['role' => 'client', 'email' => 'correction-ai@example.com']);
+
+        $response = $this->actingAs($user)->postJson('/ai/voice-assistant', [
+            'message' => 'chnage boudha to lalitpur',
+            'language' => 'en',
+        ]);
+
+        $response->assertOk();
+        $data = $response->json();
+
+        $this->assertSame('answer', $data['action']);
+        $this->assertSame('correction_update', $data['intent']);
+        $this->assertSame('boudha', $data['data']['old_value'] ?? null);
+        $this->assertSame('lalitpur', $data['data']['new_value'] ?? null);
+        $this->assertStringContainsString('correction', $data['message']);
+    }
+
     public function test_voice_assistant_widget_has_single_message_area_and_text_fallback(): void
     {
         $user = User::factory()->create(['role' => 'client', 'email' => 'voice-widget@example.com']);
@@ -159,5 +234,9 @@ class VoiceAssistantTest extends TestCase
         $this->assertStringContainsString('kwdc-assistant-panel', $html);
         $this->assertStringNotContainsString('id="ai-chat-btn"', $html);
         $this->assertStringNotContainsString('id="voice-btn"', $html);
+
+        $script = file_get_contents(public_path('js/voice-assistant.js'));
+        $this->assertStringContainsString('kwdcAssistantContext', $script);
+        $this->assertStringContainsString('chnage', $script);
     }
 }

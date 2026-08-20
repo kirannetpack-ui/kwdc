@@ -11,6 +11,7 @@
     --kwdc-danger: #dc2626;
     --kwdc-radius: 8px;
     --kwdc-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
+    --kwdc-shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.05);
 }
 
 html {
@@ -52,6 +53,10 @@ body {
     animation: kwdcPageIn 220ms ease both;
 }
 
+.page-content > * {
+    min-width: 0;
+}
+
 @keyframes kwdcPageIn {
     from {
         opacity: 0;
@@ -69,6 +74,13 @@ body {
     backdrop-filter: blur(10px);
 }
 
+.top-bar h2,
+.top-bar .h2 {
+    color: var(--kwdc-ink);
+    font-weight: 800;
+    letter-spacing: 0;
+}
+
 .sidebar {
     box-shadow: 8px 0 28px rgba(15, 23, 42, 0.16);
 }
@@ -79,6 +91,10 @@ body {
 
 .sidebar-link:hover {
     transform: translateX(3px) !important;
+}
+
+.section-header {
+    color: #98a2b3 !important;
 }
 
 .card,
@@ -95,6 +111,13 @@ body {
     box-shadow: var(--kwdc-shadow) !important;
 }
 
+.bg-white.rounded-lg:hover,
+.bg-white.rounded-xl:hover,
+.card:hover,
+.content-card:hover {
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.1) !important;
+}
+
 .card-header {
     background: #f8fafc !important;
     border-bottom: 1px solid var(--kwdc-line) !important;
@@ -108,6 +131,22 @@ textarea,
 .form-control,
 .form-select {
     border-radius: var(--kwdc-radius);
+}
+
+.btn,
+button[type="submit"],
+a.btn,
+.btn-primary,
+.btn-success,
+.btn-danger,
+.btn-warning,
+.btn-info {
+    font-weight: 700;
+}
+
+.btn-sm,
+.btn-group-sm > .btn {
+    min-height: 34px;
 }
 
 .form-control,
@@ -185,6 +224,113 @@ tbody tr:hover {
     background: rgba(245, 158, 11, 0.05);
 }
 
+.table,
+table {
+    vertical-align: middle;
+}
+
+table th {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 800 !important;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+}
+
+table td,
+table th {
+    border-color: #e5e7eb !important;
+}
+
+.badge,
+.status-badge,
+[class*="status-"] {
+    letter-spacing: 0;
+}
+
+.pagination {
+    gap: 6px;
+}
+
+.pagination .page-link {
+    border-radius: 8px;
+    border-color: #dfe5ee;
+    color: var(--kwdc-ink-soft);
+    font-weight: 700;
+}
+
+.pagination .active .page-link {
+    background: var(--kwdc-accent);
+    border-color: var(--kwdc-accent);
+}
+
+.modal-content {
+    border: 1px solid var(--kwdc-line);
+    border-radius: 8px;
+    box-shadow: 0 20px 60px rgba(15, 23, 42, 0.18);
+}
+
+.modal-header,
+.modal-footer {
+    border-color: var(--kwdc-line);
+}
+
+.nav-tabs {
+    border-color: var(--kwdc-line);
+    gap: 6px;
+}
+
+.nav-tabs .nav-link {
+    border-radius: 8px 8px 0 0;
+    color: var(--kwdc-muted);
+    font-weight: 700;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--kwdc-ink);
+    border-color: var(--kwdc-line) var(--kwdc-line) #ffffff;
+}
+
+.kwdc-empty-state,
+.text-center.text-gray-500,
+td[colspan] {
+    color: #64748b;
+}
+
+form label,
+.form-label {
+    color: #334155;
+    font-weight: 700;
+}
+
+.form-text {
+    color: #64748b;
+}
+
+.input-group-text {
+    background: #f8fafc;
+    border-color: #cfd8e5;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.overflow-x-auto,
+.table-responsive {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+.overflow-x-auto::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 999px;
+}
+
 .alert {
     border: 1px solid transparent !important;
     box-shadow: 0 8px 22px rgba(15, 23, 42, 0.07);
@@ -203,5 +349,38 @@ tbody tr:hover {
         animation-duration: 1ms !important;
         scroll-behavior: auto !important;
         transition-duration: 1ms !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-content {
+        padding: 14px !important;
+    }
+
+    .top-bar {
+        min-height: 64px;
+    }
+
+    .top-bar h2,
+    .top-bar .h2 {
+        max-width: calc(100vw - 150px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .card,
+    .bg-white.rounded-lg,
+    .bg-white.rounded-xl,
+    .content-card {
+        box-shadow: var(--kwdc-shadow-soft) !important;
+    }
+
+    table {
+        min-width: 680px;
+    }
+
+    .notification-dropdown {
+        width: calc(100vw - 24px) !important;
     }
 }

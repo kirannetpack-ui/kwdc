@@ -21,6 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastAssistantNotice = '';
     const historyKey = 'kwdcAssistantHistory';
     const openKey = 'kwdcAssistantOpen';
+    const contextKey = 'kwdcAssistantContext';
     const maxHistoryItems = 60;
 
     function readHistory() {
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearHistory() {
         try {
             localStorage.removeItem(historyKey);
+            localStorage.removeItem(contextKey);
         } catch (error) {
             console.warn('Assistant history could not be cleared.', error);
         }
@@ -67,6 +69,32 @@ document.addEventListener('DOMContentLoaded', function() {
             return sessionStorage.getItem(openKey) === '1';
         } catch (error) {
             return false;
+        }
+    }
+
+    function readAssistantContext() {
+        try {
+            return JSON.parse(sessionStorage.getItem(contextKey) || '{}');
+        } catch (error) {
+            console.warn('Assistant context could not be read.', error);
+            return {};
+        }
+    }
+
+    function writeAssistantContext(nextContext) {
+        try {
+            const current = readAssistantContext();
+            sessionStorage.setItem(contextKey, JSON.stringify({
+                ...current,
+                ...nextContext,
+                data: {
+                    ...(current.data || {}),
+                    ...(nextContext.data || {}),
+                },
+                updatedAt: new Date().toISOString(),
+            }));
+        } catch (error) {
+            console.warn('Assistant context could not be saved.', error);
         }
     }
 
@@ -202,6 +230,43 @@ document.addEventListener('DOMContentLoaded', function() {
         addMessage(text, 'assistant');
     }
 
+    function formatAssistantResponse(data) {
+        const parts = [];
+        if (data.message) {
+            parts.push(data.message);
+        }
+
+        if (data.summary) {
+            parts.push(`Summary: ${data.summary}`);
+        }
+
+        if (Array.isArray(data.missing_fields) && data.missing_fields.length) {
+            parts.push(`Still needed: ${data.missing_fields.join(', ')}`);
+        }
+
+        const fields = data.guidance?.fields_guidance;
+        if (fields && typeof fields === 'object') {
+            const importantFields = Object.values(fields)
+                .filter(field => field?.required && !field?.value)
+                .slice(0, 4)
+                .map(field => `${field.label}: ${field.hint}`);
+
+            if (importantFields.length) {
+                parts.push(`What to fill next:\n${importantFields.map(item => `- ${item}`).join('\n')}`);
+            }
+        }
+
+        const recommendations = data.recommendations;
+        if (recommendations?.suggested_vehicle) {
+            parts.push(`Suggested vehicle: ${recommendations.suggested_vehicle}`);
+        }
+        if (recommendations?.estimated_time) {
+            parts.push(`Estimated time: ${recommendations.estimated_time}`);
+        }
+
+        return parts.filter(Boolean).join('\n\n') || 'I prepared the next step for you.';
+    }
+
     function makeCssSafe(value) {
         if (window.CSS?.escape) {
             return CSS.escape(value);
@@ -238,6 +303,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function normalizeFieldText(value) {
         return String(value || '')
             .toLowerCase()
+            .replace(/\bchnage\b/g, 'change')
+            .replace(/\bchagne\b/g, 'change')
+            .replace(/\bchaneg\b/g, 'change')
+            .replace(/\breplce\b/g, 'replace')
+            .replace(/\bbhatapur\b/g, 'bhaktapur')
+            .replace(/\bateshor\b/g, 'koteshwor')
+            .replace(/\bkoteswor\b/g, 'koteshwor')
             .replace(/[_-]+/g, ' ')
             .replace(/[^a-z0-9\s]/g, ' ')
             .replace(/\b(the|a|an|field|input|box|please|current|this|page|request|form|value)\b/g, ' ')
@@ -417,8 +489,19 @@ document.addEventListener('DOMContentLoaded', function() {
         fillAssistantField(field, nextValue);
     }
 
+    function normalizeAssistantCommand(text) {
+        return String(text || '')
+            .trim()
+            .replace(/\s+/g, ' ')
+            .replace(/\bchnage\b/ig, 'change')
+            .replace(/\bchagne\b/ig, 'change')
+            .replace(/\bchaneg\b/ig, 'change')
+            .replace(/\breplce\b/ig, 'replace')
+            .replace(/\bswtich\b/ig, 'switch');
+    }
+
     function parseCurrentPageReplacement(text) {
-        const clean = text.trim().replace(/\s+/g, ' ');
+        const clean = normalizeAssistantCommand(text);
         const patterns = [
             /^(?:please\s+)?instead\s+of\s+(.+?)\s+(?:put|use|make\s+it|set\s+it\s+to)\s+(.+?)$/i,
             /^(?:please\s+)?replace\s+(.+?)\s+with\s+(.+?)$/i,
@@ -439,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function parseCurrentPageFill(text) {
-        const clean = text.trim().replace(/\s+/g, ' ');
+        const clean = normalizeAssistantCommand(text);
         const patterns = [
             /^(?:please\s+)?(?:put|set|change|fill|add|make)\s+(?:the\s+)?(.+?)\s+(?:as|to|=)\s+(.+?)(?=\s+(?:on|for|in|at)\s+.+$|$)/i,
             /^(?:please\s+)?(?:enter|type)\s+(.+?)\s+(?:in|into|for)\s+(?:the\s+)?(.+?)$/i,
@@ -459,7 +542,80 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
+    function replaceInAssistantContext(oldValue, newValue) {
+        const context = readAssistantContext();
+        const data = context.data || {};
+        const oldNeedle = normalizeFieldText(oldValue);
+        if (!oldNeedle) return false;
+
+        let replaced = false;
+        const nextData = {};
+        Object.entries(data).forEach(([key, value]) => {
+            if (typeof value !== 'string') {
+                nextData[key] = value;
+                return;
+            }
+
+            if (normalizeFieldText(value).includes(oldNeedle)) {
+                const escapedOldValue = String(oldValue).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                nextData[key] = value.match(new RegExp(escapedOldValue, 'i'))
+                    ? value.replace(new RegExp(escapedOldValue, 'ig'), newValue)
+                    : newValue;
+                replaced = true;
+            } else {
+                nextData[key] = value;
+            }
+        });
+
+        if (!replaced) return false;
+
+        writeAssistantContext({ data: nextData });
+        applyDataToCurrentPage(nextData);
+
+        const params = new URLSearchParams(nextData);
+        if (params.toString() && context.url && window.location.pathname === context.url) {
+            window.history.replaceState({}, '', `${context.url}?${params.toString()}`);
+        }
+
+        return true;
+    }
+
+    function clickPageCommand(text) {
+        const clean = normalizeAssistantCommand(text).toLowerCase();
+        const commands = [
+            {
+                matches: ['calculate', 'price', 'estimate'],
+                selectors: ['#calculateBtn', '[onclick*="calculate"]'],
+                label: 'calculate price',
+            },
+            {
+                matches: ['find driver', 'recommend driver', 'ai recommend', 'driver'],
+                selectors: ['#findDriversBtn'],
+                label: 'find drivers',
+            },
+        ];
+
+        const command = commands.find(item => item.matches.some(match => clean.includes(match)));
+        if (!command) return false;
+
+        const button = command.selectors
+            .map(selector => document.querySelector(selector))
+            .find(Boolean);
+        if (!button) return false;
+
+        addMessage(text, 'user');
+        lastAssistantNotice = '';
+        button.click();
+        addAssistantNotice(`Done. I started ${command.label} on this page.`);
+        statusEl.textContent = 'Action started';
+        return true;
+    }
+
     function tryCurrentPageFill(text) {
+        if (clickPageCommand(text)) {
+            return true;
+        }
+
         const replacement = parseCurrentPageReplacement(text);
         if (replacement) {
             const replacementField = findVisibleFieldByValue(replacement.oldValue);
@@ -469,6 +625,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 replaceAssistantFieldValue(replacementField, replacement.oldValue, replacement.newValue);
                 addAssistantNotice(`Done. I replaced ${replacement.oldValue} with ${replacement.newValue} in ${displayFieldName(replacementField)}. Review it before saving.`);
                 statusEl.textContent = 'Updated current page';
+                return true;
+            }
+
+            if (replaceInAssistantContext(replacement.oldValue, replacement.newValue)) {
+                addMessage(text, 'user');
+                lastAssistantNotice = '';
+                addAssistantNotice(`Done. I changed ${replacement.oldValue} to ${replacement.newValue} in the assistant-filled details. Review the form before saving.`);
+                statusEl.textContent = 'Updated assistant details';
                 return true;
             }
         }
@@ -497,10 +661,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const fieldAliases = {
+            pickup_address: ['pickup_address'],
+            delivery_address: ['delivery_address', 'delivery_stops[1][address]', 'delivery_stops[0][address]'],
             pickup_contact_person: ['pickup_contact_person', 'contact_person', 'contact_name'],
             pickup_contact_phone: ['pickup_contact_phone', 'contact_phone', 'phone'],
             recipient_name: ['recipient_name', 'delivery_stops[0][recipient_name]'],
             recipient_phone: ['recipient_phone', 'delivery_stops[0][recipient_phone]'],
+            items_description: ['items_description', 'delivery_stops[0][notes]'],
+            total_distance: ['total_distance'],
+            total_price: ['total_price'],
+            vehicle_type: ['vehicle_type'],
+            scheduled_date: ['scheduled_date', 'date'],
+            scheduled_time: ['scheduled_time', 'time'],
         };
 
         let filled = false;
@@ -535,6 +707,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const target = new URL(targetUrl, window.location.origin);
 
         setAssistantOpen(true);
+        writeAssistantContext({
+            intent: data.intent,
+            action: data.action,
+            url: target.pathname,
+            data: data.data || {},
+            summary: data.summary,
+        });
 
         if (target.pathname === window.location.pathname) {
             if (params.toString()) {
@@ -585,7 +764,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return res.json();
         })
         .then(data => {
-            const responseMessage = data.message || 'I didn\'t understand that.';
+            const responseMessage = formatAssistantResponse(data);
             addMessage(responseMessage, 'assistant');
             statusEl.textContent = 'Ready';
 
