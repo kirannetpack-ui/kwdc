@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class PaymentService
 {
@@ -24,7 +25,7 @@ class PaymentService
         $payload = [
             'return_url' => route('payment.khalti.verify'),
             'website_url' => config('app.url'),
-            'amount' => $amount * 100, // Khalti expects amount in paisa
+            'amount' => (int) round($amount * 100), // Khalti expects amount in paisa
             'purchase_order_id' => $invoiceNumber,
             'purchase_order_name' => 'Payment for Invoice #' . $invoiceNumber,
             'customer_info' => [
@@ -41,9 +42,24 @@ class PaymentService
             ])->post(rtrim(config('payment.khalti.base_url'), '/') . '/epayment/initiate/', $payload);
 
             if ($response->successful()) {
+                $data = $response->json();
+
+                if (blank($data['pidx'] ?? null) || blank($data['payment_url'] ?? null)) {
+                    Log::error('Khalti payment initiation returned an incomplete response', [
+                        'invoice_number' => $invoiceNumber,
+                        'invoice_id' => $invoiceId,
+                        'user_id' => $userId,
+                    ]);
+
+                    return [
+                        'success' => false,
+                        'message' => 'Payment initiation failed. Please try again.',
+                    ];
+                }
+
                 return [
                     'success' => true,
-                    'data' => $response->json(),
+                    'data' => $data,
                 ];
             }
 
@@ -127,7 +143,7 @@ class PaymentService
             ];
         }
 
-        $pid = uniqid() . '-' . time();
+        $pid = (string) Str::uuid();
         
         $url = config('payment.esewa.payment_url') . '?' . http_build_query([
             'amt' => $amount,

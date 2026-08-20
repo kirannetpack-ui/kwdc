@@ -157,11 +157,11 @@ document.addEventListener('DOMContentLoaded', function() {
     window.Pusher = Pusher;
     window.Echo = new Echo({
         broadcaster: 'reverb',
-        key: '{{ env('REVERB_APP_KEY') }}',
-        wsHost: '{{ env('REVERB_HOST', 'localhost') }}',
-        wsPort: {{ env('REVERB_PORT', 8080) }},
-        forceTLS: false,
-        encrypted: false,
+        key: @json(config('broadcasting.connections.reverb.key')),
+        wsHost: @json(config('broadcasting.connections.reverb.options.host', 'localhost')),
+        wsPort: @json((int) config('broadcasting.connections.reverb.options.port', 8080)),
+        forceTLS: @json((bool) config('broadcasting.connections.reverb.options.useTLS', false)),
+        encrypted: @json((bool) config('broadcasting.connections.reverb.options.useTLS', false)),
         enabledTransports: ['ws', 'wss'],
     });
 

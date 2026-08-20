@@ -281,6 +281,28 @@ class ProductionHardeningTest extends TestCase
         ]));
     }
 
+    public function test_public_realtime_views_use_cached_config_not_raw_env(): void
+    {
+        $layout = file_get_contents(resource_path('views/layouts/app.blade.php'));
+        $dispatchShow = file_get_contents(resource_path('views/dispatch/show.blade.php'));
+
+        $this->assertStringContainsString("config('broadcasting.connections.reverb.key')", $layout);
+        $this->assertStringContainsString("config('broadcasting.connections.reverb.options.host'", $layout);
+        $this->assertStringContainsString("config('broadcasting.connections.reverb.key')", $dispatchShow);
+        $this->assertStringNotContainsString("env('REVERB_", $layout);
+        $this->assertStringNotContainsString("env('REVERB_", $dispatchShow);
+    }
+
+    public function test_payment_provider_sessions_fail_closed_on_malformed_provider_payloads(): void
+    {
+        $service = file_get_contents(app_path('Services/PaymentService.php'));
+
+        $this->assertStringContainsString('(int) round($amount * 100)', $service);
+        $this->assertStringContainsString("blank(\$data['pidx'] ?? null)", $service);
+        $this->assertStringContainsString("blank(\$data['payment_url'] ?? null)", $service);
+        $this->assertStringContainsString('Str::uuid()', $service);
+    }
+
     public function test_payment_provider_calls_have_timeout_retry_and_config_guards(): void
     {
         $service = file_get_contents(app_path('Services/PaymentService.php'));

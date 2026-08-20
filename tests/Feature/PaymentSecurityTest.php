@@ -247,6 +247,66 @@ class PaymentSecurityTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_khalti_initiation_requires_complete_provider_response_before_creating_transaction(): void
+    {
+        Http::fake([
+            'a.khalti.com/*' => Http::response([
+                'pidx' => 'missing-payment-url',
+            ], 200),
+        ]);
+
+        Config::set('payment.khalti.secret_key', 'test-secret');
+
+        $user = User::factory()->create(['role' => 'client']);
+        $invoice = $this->invoiceFor($user, 1500);
+
+        $this->actingAs($user)
+            ->postJson(route('payment.khalti.init'), [
+                'invoice_id' => $invoice->id,
+                'amount' => 1500,
+            ])
+            ->assertStatus(500)
+            ->assertJsonPath('success', false);
+
+        $this->assertDatabaseMissing('transactions', [
+            'invoice_id' => $invoice->id,
+            'transaction_id' => 'missing-payment-url',
+        ]);
+    }
+
+    public function test_khalti_initiation_sends_integer_paisa_amount(): void
+    {
+        Http::fake([
+            'a.khalti.com/*' => Http::response([
+                'pidx' => 'pidx-amount-check',
+                'payment_url' => 'https://payments.example/pidx-amount-check',
+            ], 200),
+        ]);
+
+        Config::set('payment.khalti.secret_key', 'test-secret');
+
+        $user = User::factory()->create(['role' => 'client']);
+        $this->actingAs($user);
+
+        $result = app(PaymentService::class)->initiateKhaltiPayment(1500.75, 'INV-AMOUNT', $user->id, 123);
+
+        $this->assertTrue($result['success']);
+        Http::assertSent(fn ($request) => $request['amount'] === 150075);
+    }
+
+    public function test_esewa_payment_session_uses_uuid_transaction_id(): void
+    {
+        Config::set('payment.esewa.merchant_code', 'merchant-code');
+
+        $result = app(PaymentService::class)->initiateEsewaPayment(1500, 'INV-ESEWA', 123);
+
+        $this->assertTrue($result['success']);
+        $this->assertMatchesRegularExpression(
+            '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i',
+            $result['pid']
+        );
+    }
+
     public function test_payment_service_does_not_call_esewa_without_merchant_code(): void
     {
         Http::fake();
