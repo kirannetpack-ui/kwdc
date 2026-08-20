@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\DispatchOrder;
+use App\Models\DeliveryStop;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -36,5 +37,107 @@ class DispatchTest extends TestCase
 
         $dispatch = DispatchOrder::first();
         $this->assertNotNull($dispatch->tracking_id);
+    }
+
+    public function test_unrelated_authenticated_users_cannot_view_or_mutate_dispatches()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $driver = User::factory()->create(['role' => 'driver']);
+        $otherUser = User::factory()->create(['role' => 'client']);
+
+        $dispatch = DispatchOrder::factory()->create([
+            'client_id' => $client->id,
+            'driver_id' => $driver->id,
+            'status' => 'pending',
+            'client_rating' => null,
+        ]);
+
+        $stop = DeliveryStop::create([
+            'dispatch_order_id' => $dispatch->id,
+            'stop_number' => 1,
+            'recipient_name' => 'Receiver',
+            'recipient_phone' => '9800000012',
+            'address' => 'Delivery Point',
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($otherUser)
+            ->get(route('dispatch.show', $dispatch->id))
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->postJson(route('dispatch.update-status', $dispatch->id), ['status' => 'delivered'])
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->postJson(route('dispatch.rate', $dispatch->id), ['rating' => 5])
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->postJson(route('dispatch.enable-tracking', $dispatch->id))
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->postJson(route('dispatch.stop-status', $stop->id), ['status' => 'delivered'])
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('dispatch_orders', [
+            'id' => $dispatch->id,
+            'status' => 'pending',
+            'client_rating' => null,
+        ]);
+
+        $this->assertDatabaseHas('delivery_stops', [
+            'id' => $stop->id,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_client_and_assigned_driver_keep_expected_dispatch_access()
+    {
+        $client = User::factory()->create(['role' => 'client']);
+        $driver = User::factory()->create(['role' => 'driver']);
+
+        $dispatch = DispatchOrder::factory()->create([
+            'client_id' => $client->id,
+            'driver_id' => $driver->id,
+            'status' => 'pending',
+        ]);
+
+        $stop = DeliveryStop::create([
+            'dispatch_order_id' => $dispatch->id,
+            'stop_number' => 1,
+            'recipient_name' => 'Receiver',
+            'recipient_phone' => '9800000013',
+            'address' => 'Delivery Point',
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($client)
+            ->get(route('dispatch.show', $dispatch->id))
+            ->assertOk();
+
+        $this->actingAs($client)
+            ->postJson(route('dispatch.rate', $dispatch->id), ['rating' => 4])
+            ->assertOk();
+
+        $this->actingAs($driver)
+            ->postJson(route('dispatch.update-status', $dispatch->id), ['status' => 'delivered'])
+            ->assertOk();
+
+        $this->actingAs($driver)
+            ->postJson(route('dispatch.stop-status', $stop->id), ['status' => 'delivered'])
+            ->assertOk();
+
+        $this->assertDatabaseHas('dispatch_orders', [
+            'id' => $dispatch->id,
+            'status' => 'delivered',
+            'client_rating' => 4,
+        ]);
+
+        $this->assertDatabaseHas('delivery_stops', [
+            'id' => $stop->id,
+            'status' => 'delivered',
+        ]);
     }
 }

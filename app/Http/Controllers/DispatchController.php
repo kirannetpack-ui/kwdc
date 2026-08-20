@@ -198,12 +198,18 @@ class DispatchController extends Controller
     {
         $dispatch = DispatchOrder::with(['client', 'driver', 'deliveryStops', 'vehicle'])
             ->findOrFail($id);
+
+        abort_unless($this->canViewDispatch($dispatch), 403);
+
         return view('dispatch.show', compact('dispatch'));
     }
 
     public function edit($id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
+
         $clients = User::where('role', 'client')->get();
         $drivers = User::where('role', 'driver')->get();
         $vehicles = Vehicle::all();
@@ -213,6 +219,8 @@ class DispatchController extends Controller
     public function update(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
 
         $validator = Validator::make($request->all(), [
             'pickup_address' => 'required|string|max:500',
@@ -236,6 +244,9 @@ class DispatchController extends Controller
     public function destroy($id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
+
         $dispatch->delete();
         return redirect()->route('dispatch.index')->with('success', 'Dispatch deleted!');
     }
@@ -319,6 +330,9 @@ class DispatchController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
+
         $oldStatus = $dispatch->status;
         $status = $request->status;
 
@@ -382,6 +396,9 @@ class DispatchController extends Controller
     public function enableTracking(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canViewDispatch($dispatch), 403);
+
         $dispatch->tracking_enabled = true;
         $dispatch->tracking_token = Str::random(32);
         $dispatch->save();
@@ -406,6 +423,9 @@ class DispatchController extends Controller
     public function rate(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canRateDispatch($dispatch), 403);
+
         $request->validate([
             'rating' => 'required|integer|between:1,5',
             'feedback' => 'nullable|string|max:500',
@@ -420,10 +440,50 @@ class DispatchController extends Controller
 
     public function updateStopStatus(Request $request, $stopId)
     {
-        $stop = DeliveryStop::findOrFail($stopId);
+        $stop = DeliveryStop::with('dispatchOrder')->findOrFail($stopId);
+
+        abort_unless($this->canManageDispatch($stop->dispatchOrder), 403);
+
         $stop->status = $request->status;
         $stop->save();
 
         return response()->json(['success' => true]);
+    }
+
+    private function canViewDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->isAdmin()
+            || $dispatch->client_id === $user->id
+            || $dispatch->driver_id === $user->id;
+    }
+
+    private function canManageDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->isAdmin()
+            || $dispatch->driver_id === $user->id;
+    }
+
+    private function canRateDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->isAdmin()
+            || $dispatch->client_id === $user->id;
     }
 }

@@ -252,6 +252,19 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString("Storage::disk('public')->download(\$path)", $controller);
     }
 
+    public function test_dispatch_actions_use_centralized_access_guards(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/DispatchController.php'));
+
+        $this->assertStringContainsString('private function canViewDispatch', $controller);
+        $this->assertStringContainsString('private function canManageDispatch', $controller);
+        $this->assertStringContainsString('private function canRateDispatch', $controller);
+        $this->assertStringContainsString('abort_unless($this->canViewDispatch($dispatch), 403)', $controller);
+        $this->assertStringContainsString('abort_unless($this->canManageDispatch($dispatch), 403)', $controller);
+        $this->assertStringContainsString('abort_unless($this->canRateDispatch($dispatch), 403)', $controller);
+        $this->assertStringContainsString('abort_unless($this->canManageDispatch($stop->dispatchOrder), 403)', $controller);
+    }
+
     public function test_equipment_compliance_documents_are_private_uploads(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/EquipmentController.php'));
