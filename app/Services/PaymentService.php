@@ -29,7 +29,7 @@ class PaymentService
             $response = Http::withHeaders([
                 'Authorization' => 'Key ' . config('payment.khalti.secret_key'),
                 'Content-Type' => 'application/json',
-            ])->post('https://a.khalti.com/api/v2/epayment/initiate/', $payload);
+            ])->post(rtrim(config('payment.khalti.base_url'), '/') . '/epayment/initiate/', $payload);
 
             if ($response->successful()) {
                 return [
@@ -66,7 +66,7 @@ class PaymentService
             $response = Http::withHeaders([
                 'Authorization' => 'Key ' . config('payment.khalti.secret_key'),
                 'Content-Type' => 'application/json',
-            ])->post('https://a.khalti.com/api/v2/epayment/lookup/', [
+            ])->post(config('payment.khalti.verification_url'), [
                 'pidx' => $pidx,
             ]);
 
@@ -100,7 +100,7 @@ class PaymentService
     {
         $pid = uniqid() . '-' . time();
         
-        $url = 'https://rc.esewa.com.np/epay/main?' . http_build_query([
+        $url = config('payment.esewa.payment_url') . '?' . http_build_query([
             'amt' => $amount,
             'pdc' => 0,
             'psc' => 0,
@@ -122,26 +122,32 @@ class PaymentService
     /**
      * Verify eSewa Payment
      */
-    public function verifyEsewaPayment($pid, $refId)
+    public function verifyEsewaPayment($pid, $refId, float $amount)
     {
         try {
-            // eSewa verification URL
-            $url = 'https://esewa.com.np/epay/transrec';
-            
+            $amount = round($amount, 2);
+            $url = config('payment.esewa.verification_url');
+
             $response = Http::asForm()->post($url, [
-                'amt' => 0,
+                'amt' => $amount,
                 'pdc' => 0,
                 'psc' => 0,
                 'txAmt' => 0,
-                'tAmt' => 0,
+                'tAmt' => $amount,
                 'pid' => $pid,
+                'rid' => $refId,
                 'scd' => config('payment.esewa.merchant_code'),
             ]);
 
-            if ($response->successful()) {
+            if ($response->successful() && stripos($response->body(), 'Success') !== false) {
                 return [
                     'success' => true,
-                    'data' => $response->json(),
+                    'data' => [
+                        'pid' => $pid,
+                        'refId' => $refId,
+                        'amount' => $amount,
+                        'provider_response' => $response->body(),
+                    ],
                 ];
             }
 
