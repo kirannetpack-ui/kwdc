@@ -11,14 +11,18 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-    $middleware->alias([
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
-        'driver' => \App\Http\Middleware\DriverMiddleware::class,
-        'equipment.owner' => \App\Http\Middleware\EquipmentOwnerMiddleware::class,
-        'role' => \App\Http\Middleware\RoleMiddleware::class,
+        $middleware->append([
+            \App\Http\Middleware\ForceHttps::class,
+            \App\Http\Middleware\SecurityHeaders::class,
+        ]);
 
-    ]);
-})
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'driver' => \App\Http\Middleware\DriverMiddleware::class,
+            'equipment.owner' => \App\Http\Middleware\EquipmentOwnerMiddleware::class,
+            'role' => \App\Http\Middleware\RoleMiddleware::class,
+        ]);
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })

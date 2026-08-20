@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Config;
 use Tests\TestCase;
 
 class ProductionHardeningTest extends TestCase
@@ -53,5 +54,63 @@ class ProductionHardeningTest extends TestCase
         foreach ($paths as $path) {
             $this->assertStringNotContainsString('console.log', file_get_contents($path), $path);
         }
+    }
+
+    public function test_security_headers_are_applied_to_https_responses(): void
+    {
+        $response = $this->withServerVariables(['HTTPS' => 'on'])->get('/ping');
+
+        $response->assertOk();
+        $response->assertHeader('X-Frame-Options', 'DENY');
+        $response->assertHeader('X-Content-Type-Options', 'nosniff');
+        $response->assertHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+        $response->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+        $this->assertStringContainsString("frame-ancestors 'none'", $response->headers->get('Content-Security-Policy'));
+        $this->assertStringContainsString('microphone=(self)', $response->headers->get('Permissions-Policy'));
+    }
+
+    public function test_production_requests_are_forced_to_https(): void
+    {
+        Config::set('app.env', 'production');
+
+        $this->get('http://localhost/ping')
+            ->assertRedirect('https://localhost/ping');
+    }
+
+    public function test_production_environment_template_documents_secure_defaults(): void
+    {
+        $template = file_get_contents(base_path('.env.production.example'));
+
+        $this->assertStringContainsString('APP_ENV=production', $template);
+        $this->assertStringContainsString('APP_DEBUG=false', $template);
+        $this->assertStringContainsString('SESSION_ENCRYPT=true', $template);
+        $this->assertStringContainsString('SESSION_SECURE_COOKIE=true', $template);
+        $this->assertStringContainsString('MAIL_MAILER=smtp', $template);
+        $this->assertStringContainsString('KHALTI_SECRET_KEY=', $template);
+        $this->assertStringContainsString('ESEWA_VERIFICATION_URL=https://esewa.com.np/epay/transrec', $template);
+    }
+
+    public function test_deployment_config_does_not_generate_app_key_at_build_time(): void
+    {
+        $nixpacks = file_get_contents(base_path('nixpacks.toml'));
+        $startScript = file_get_contents(base_path('scripts/deploy/start-production.sh'));
+        $procfile = file_get_contents(base_path('Procfile'));
+
+        $this->assertStringNotContainsString('key:generate', $nixpacks);
+        $this->assertStringContainsString('npm run build', $nixpacks);
+        $this->assertStringContainsString('APP_KEY must be configured', $startScript);
+        $this->assertStringContainsString('php artisan migrate --force', $startScript);
+        $this->assertStringContainsString('worker: php artisan queue:work', $procfile);
+        $this->assertStringContainsString('scheduler: php artisan schedule:work', $procfile);
+    }
+
+    public function test_apache_deployments_serve_laravel_public_directory(): void
+    {
+        $dockerfile = file_get_contents(base_path('dockerfile'));
+        $htaccess = file_get_contents(public_path('.htaccess'));
+
+        $this->assertStringContainsString('APACHE_DOCUMENT_ROOT=/var/www/html/public', $dockerfile);
+        $this->assertStringContainsString('a2enmod rewrite headers', $dockerfile);
+        $this->assertStringContainsString('RewriteRule ^ index.php [L]', $htaccess);
     }
 }

@@ -1,29 +1,29 @@
-FROM php:8.2-cli
+FROM php:8.2-apache
 
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    unzip \
-    git \
-    curl \
-    && docker-php-ext-install pdo_pgsql
+ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        git \
+        libpq-dev \
+        npm \
+        unzip \
+    && docker-php-ext-install pdo_mysql pdo_pgsql \
+    && a2enmod rewrite headers \
+    && sed -ri -e "s!/var/www/html!${APACHE_DOCUMENT_ROOT}!g" /etc/apache2/sites-available/*.conf \
+    && sed -ri -e "s!/var/www/!${APACHE_DOCUMENT_ROOT}/../!g" /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy everything
+WORKDIR /var/www/html
+
 COPY . .
 
-# Debug: List all files to verify artisan is there
-RUN ls -la
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev \
+    && npm ci \
+    && npm run build \
+    && mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache
 
-# Debug: Check artisan specifically
-RUN test -f artisan && echo "artisan found!" || echo "artisan missing!"
-
-RUN composer install --no-interaction --optimize-autoloader --no-dev
-RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache
-RUN chmod -R 775 storage bootstrap/cache
-
-EXPOSE 10000
-
-CMD sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=10000"
+EXPOSE 80
