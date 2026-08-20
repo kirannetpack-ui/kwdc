@@ -116,11 +116,15 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString('php artisan app:production-preflight', $startScript);
         $this->assertStringContainsString('php artisan migrate --force', $startScript);
         $this->assertLessThan(
+            strpos($startScript, 'php artisan optimize:clear'),
+            strpos($startScript, 'php artisan migrate --force')
+        );
+        $this->assertLessThan(
             strpos($startScript, 'php artisan app:production-preflight'),
             strpos($startScript, 'php artisan optimize:clear')
         );
         $this->assertLessThan(
-            strpos($startScript, 'php artisan migrate --force'),
+            strpos($startScript, 'php artisan config:cache'),
             strpos($startScript, 'php artisan app:production-preflight')
         );
         $this->assertStringContainsString('worker: php artisan queue:work', $procfile);
