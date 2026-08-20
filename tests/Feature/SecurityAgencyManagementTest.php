@@ -5,7 +5,9 @@ namespace Tests\Feature;
 use App\Models\Notification;
 use App\Models\SecurityAgency;
 use App\Models\User;
+use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class SecurityAgencyManagementTest extends TestCase
@@ -130,5 +132,136 @@ class SecurityAgencyManagementTest extends TestCase
         $assignmentResponse->assertRedirect('/security/assignments');
         $this->assertDatabaseHas('security_assignments', ['warehouse_id' => $warehouse->id, 'agency_id' => $agency->id]);
         $this->assertDatabaseHas('notifications', ['user_id' => $user->id, 'type' => 'security_assignment_created']);
+    }
+
+    public function test_security_agencies_cannot_modify_another_agencys_resources(): void
+    {
+        Mail::fake();
+
+        $ownerUser = User::factory()->create(['role' => 'security_agency']);
+        $otherUser = User::factory()->create(['role' => 'security_agency']);
+
+        $ownerAgency = SecurityAgency::create([
+            'user_id' => $ownerUser->id,
+            'agency_name' => 'Delta Guard',
+            'email' => $ownerUser->email,
+            'phone' => '9800000005',
+            'status' => 'approved',
+        ]);
+
+        $otherAgency = SecurityAgency::create([
+            'user_id' => $otherUser->id,
+            'agency_name' => 'Echo Guard',
+            'email' => $otherUser->email,
+            'phone' => '9800000006',
+            'status' => 'approved',
+        ]);
+
+        $ownerPersonnel = $ownerAgency->personnel()->create([
+            'name' => 'Protected Guard',
+            'phone' => '9800000007',
+            'email' => 'protected@example.com',
+            'position' => 'Guard',
+            'status' => 'active',
+        ]);
+
+        $otherPersonnel = $otherAgency->personnel()->create([
+            'name' => 'Other Guard',
+            'phone' => '9800000008',
+            'position' => 'Guard',
+            'status' => 'active',
+        ]);
+
+        $ownerGood = $ownerAgency->goods()->create([
+            'item_name' => 'Protected Radio',
+            'category' => 'Equipment',
+            'quantity_available' => 5,
+            'unit_price' => 250,
+            'status' => 'available',
+        ]);
+
+        $warehouse = Warehouse::create([
+            'user_id' => $ownerUser->id,
+            'name' => 'Protected Warehouse',
+            'location' => 'Kathmandu',
+            'address' => 'Secure Street 1',
+            'latitude' => 27.7172,
+            'longitude' => 85.3240,
+            'status' => 'approved',
+        ]);
+
+        $ownerAssignment = $ownerAgency->assignments()->create([
+            'warehouse_id' => $warehouse->id,
+            'personnel_id' => $ownerPersonnel->id,
+            'start_date' => '2026-08-15',
+            'shift' => 'day',
+            'status' => 'active',
+            'total_cost' => 500,
+        ]);
+
+        $this->actingAs($otherUser)
+            ->put('/security/personnel/' . $ownerPersonnel->id, [
+                'name' => 'Hijacked Guard',
+                'phone' => '9800000007',
+                'email' => 'hijacked@example.com',
+                'position' => 'Supervisor',
+                'status' => 'inactive',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->delete('/security/personnel/' . $ownerPersonnel->id)
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->put('/security/goods/' . $ownerGood->id, [
+                'item_name' => 'Hijacked Radio',
+                'category' => 'Equipment',
+                'quantity_available' => 1,
+                'unit_price' => 1,
+                'status' => 'maintenance',
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->delete('/security/goods/' . $ownerGood->id)
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->put('/security/assignments/' . $ownerAssignment->id, [
+                'warehouse_id' => $warehouse->id,
+                'personnel_id' => $otherPersonnel->id,
+                'start_date' => '2026-08-20',
+                'shift' => 'night',
+                'status' => 'cancelled',
+                'total_cost' => 1,
+            ])
+            ->assertForbidden();
+
+        $this->actingAs($otherUser)
+            ->delete('/security/assignments/' . $ownerAssignment->id)
+            ->assertForbidden();
+
+        $this->assertDatabaseHas('security_personnels', [
+            'id' => $ownerPersonnel->id,
+            'agency_id' => $ownerAgency->id,
+            'name' => 'Protected Guard',
+            'status' => 'active',
+        ]);
+
+        $this->assertDatabaseHas('security_goods', [
+            'id' => $ownerGood->id,
+            'agency_id' => $ownerAgency->id,
+            'item_name' => 'Protected Radio',
+            'quantity_available' => 5,
+        ]);
+
+        $this->assertDatabaseHas('security_assignments', [
+            'id' => $ownerAssignment->id,
+            'agency_id' => $ownerAgency->id,
+            'personnel_id' => $ownerPersonnel->id,
+            'shift' => 'day',
+            'status' => 'active',
+        ]);
     }
 }

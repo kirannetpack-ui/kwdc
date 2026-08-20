@@ -51,6 +51,15 @@ class SecurityGoodController extends Controller
         }
     }
 
+    protected function ensureAgencyOwnsGood(SecurityGood $good): SecurityAgency
+    {
+        $agency = $this->getAgency();
+
+        abort_unless($good->agency_id === $agency->id, 403);
+
+        return $agency;
+    }
+
     public function index()
     {
         $agency = $this->getAgency();
@@ -97,21 +106,21 @@ class SecurityGoodController extends Controller
 
     public function show(SecurityGood $good)
     {
-        $this->authorize('view', $good);
+        $this->ensureAgencyOwnsGood($good);
 
         return view('security.goods.show', compact('good'));
     }
 
     public function edit(SecurityGood $good)
     {
-        $this->authorize('update', $good);
+        $this->ensureAgencyOwnsGood($good);
 
         return view('security.goods.edit', compact('good'));
     }
 
     public function update(Request $request, SecurityGood $good)
     {
-        $this->authorize('update', $good);
+        $agency = $this->ensureAgencyOwnsGood($good);
 
         $validated = $request->validate([
             'item_name'         => 'required|string|max:255',
@@ -130,7 +139,7 @@ class SecurityGoodController extends Controller
         $good->update($validated);
 
         $this->notifyAgency(
-            $this->getAgency(),
+            $agency,
             'security_good_updated',
             'Security good updated',
             "Good '{$good->item_name}' was updated successfully.",
@@ -143,9 +152,7 @@ class SecurityGoodController extends Controller
 
     public function destroy(SecurityGood $good)
     {
-        $this->authorize('delete', $good);
-
-        $agency = $this->getAgency();
+        $agency = $this->ensureAgencyOwnsGood($good);
         $goodName = $good->item_name;
         $good->delete();
 
