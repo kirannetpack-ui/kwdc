@@ -8,9 +8,12 @@ class ForceHttps
 {
     public function handle($request, Closure $next)
     {
-        if (!$request->secure() && config('app.env') === 'production') {
+        $forwardedProto = $request->headers->get('X-Forwarded-Proto');
+
+        if (!$request->secure() && $forwardedProto !== 'https' && config('app.env') === 'production') {
             return redirect()->secure($request->getRequestUri());
         }
+
         return $next($request);
     }
 }
