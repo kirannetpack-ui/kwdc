@@ -56,10 +56,10 @@ class EquipmentController extends Controller
 
     // Handle document uploads
     if ($request->hasFile('registration_doc')) {
-        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'public');
+        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'private_uploads');
     }
     if ($request->hasFile('insurance_doc')) {
-        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'public');
+        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'private_uploads');
     }
 
     // Remove any null values
@@ -155,10 +155,10 @@ public function update(Request $request, $id)
 
     // Handle document uploads
     if ($request->hasFile('registration_doc')) {
-        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'public');
+        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'private_uploads');
     }
     if ($request->hasFile('insurance_doc')) {
-        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'public');
+        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'private_uploads');
     }
 
     $data = array_filter($data, function($value) {

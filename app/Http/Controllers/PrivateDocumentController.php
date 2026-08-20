@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SecurityAgency;
 use App\Models\Warehouse;
 use App\Models\Box;
+use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -42,6 +43,19 @@ class PrivateDocumentController extends Controller
             return true;
         }
 
+        $ownsEquipmentDocument = Equipment::where(function ($query) use ($path) {
+                $this->whereEquipmentDocumentPath($query, $path);
+            })
+            ->where(function ($query) use ($user) {
+                $query->where('owner_id', $user->id)
+                    ->orWhere('user_id', $user->id);
+            })
+            ->exists();
+
+        if ($ownsEquipmentDocument) {
+            return true;
+        }
+
         return SecurityAgency::where('user_id', $user->id)
             ->where(function ($query) use ($path) {
                 $query->where('registration_certificate_path', $path)
@@ -70,6 +84,10 @@ class PrivateDocumentController extends Controller
             || Box::where(function ($query) use ($path) {
                 $this->whereBoxDocumentPath($query, $path);
             })
+            ->exists()
+            || Equipment::where(function ($query) use ($path) {
+                $this->whereEquipmentDocumentPath($query, $path);
+            })
             ->exists();
     }
 
@@ -93,6 +111,12 @@ class PrivateDocumentController extends Controller
             ->orWhere('packing_list_document', $path)
             ->orWhere('insurance_document', $path)
             ->orWhereJsonContains('other_documents', $path);
+    }
+
+    private function whereEquipmentDocumentPath($query, string $path): void
+    {
+        $query->where('registration_doc', $path)
+            ->orWhere('insurance_doc', $path);
     }
 
     private function whereWarehouseOwner($query, int $userId): void

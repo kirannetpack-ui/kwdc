@@ -227,6 +227,17 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('Storage::url($box->', $trackView);
     }
 
+    public function test_equipment_compliance_documents_are_private_uploads(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/EquipmentController.php'));
+        $privateDocumentController = file_get_contents(app_path('Http/Controllers/PrivateDocumentController.php'));
+
+        $this->assertStringContainsString("store('equipment/documents', 'private_uploads')", $controller);
+        $this->assertStringNotContainsString("store('equipment/documents', 'public')", $controller);
+        $this->assertStringContainsString('whereEquipmentDocumentPath', $privateDocumentController);
+        $this->assertStringContainsString("->orWhere('insurance_doc', \$path)", $privateDocumentController);
+    }
+
     public function test_payment_provider_calls_have_timeout_retry_and_config_guards(): void
     {
         $service = file_get_contents(app_path('Services/PaymentService.php'));
