@@ -33,6 +33,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\ActivationController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -86,7 +87,7 @@ Route::post('/reset-password', [NewPasswordController::class, 'store'])->middlew
 Route::get('/confirm-password', [ConfirmablePasswordController::class, 'show'])->middleware('auth')->name('password.confirm');
 Route::post('/confirm-password', [ConfirmablePasswordController::class, 'store'])->middleware('auth');
 Route::put('/password', [PasswordController::class, 'update'])->middleware('auth')->name('password.update');
-Route::get('/verify-email', fn() => view('auth.verify-email'))->middleware('auth')->name('verification.notice');
+Route::get('/verify-email', EmailVerificationPromptController::class)->middleware('auth')->name('verification.notice');
 Route::get('/verify-email/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['auth', 'signed', 'throttle:6,1'])
     ->name('verification.verify');

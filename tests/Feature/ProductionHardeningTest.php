@@ -165,7 +165,6 @@ class ProductionHardeningTest extends TestCase
     {
         $mailConfig = file_get_contents(config_path('mail.php'));
         $adminEmailService = file_get_contents(app_path('Services/AdminEmailService.php'));
-        $registeredUserController = file_get_contents(app_path('Http/Controllers/Auth/RegisteredUserController.php'));
 
         $this->assertStringContainsString("'host' => env('MAIL_HOST'", $mailConfig);
         $this->assertStringContainsString("'username' => env('MAIL_USERNAME')", $mailConfig);
@@ -175,7 +174,25 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('kiran.kwdc@gmail.com', $mailConfig);
         $this->assertStringNotContainsString('nuzpnwuaavxynsdg', $mailConfig);
         $this->assertStringNotContainsString('kiran.kwdc@gmail.com', $adminEmailService);
-        $this->assertStringNotContainsString('kiran.kwdc@gmail.com', $registeredUserController);
+    }
+
+    public function test_inactive_auth_scaffolding_is_not_tracked(): void
+    {
+        exec('git ls-files', $trackedFiles, $exitCode);
+
+        $this->assertSame(0, $exitCode);
+
+        $forbiddenPatterns = [
+            '#^routes/auth\.php$#',
+            '#^app/Http/Controllers/Auth/(AuthenticatedSessionController|RegisteredUserController|ForgotPasswordController|ResetPasswordController|ConfirmPasswordController)\.php$#',
+            '#^resources/views/auth/passwords/#',
+        ];
+
+        foreach ($forbiddenPatterns as $pattern) {
+            $matches = preg_grep($pattern, $trackedFiles);
+
+            $this->assertSame([], array_values($matches), 'Forbidden tracked files matched ' . $pattern);
+        }
     }
 
     public function test_admin_warehouse_review_links_sensitive_documents_through_private_route(): void
