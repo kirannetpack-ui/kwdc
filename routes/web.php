@@ -51,6 +51,7 @@ use App\Http\Controllers\SecurityAssignmentController;
 use App\Http\Controllers\SecurityGoodController;          // Agency’s own controller
 use App\Http\Controllers\SecurityDashboardController;
 use App\Http\Controllers\ReminderController;
+use App\Http\Controllers\PrivateDocumentController;
 
 // ================================================================
 // 1. PUBLIC ROUTES
@@ -111,6 +112,10 @@ Route::middleware(['auth'])->group(function () {
 
     // ==================== VOICE ASSISTANT ====================
     Route::post('/ai/voice-assistant', [AiVoiceController::class, 'voiceAssistant'])->name('ai.voice.assistant');
+
+    Route::get('/private-documents/{path}', [PrivateDocumentController::class, 'show'])
+        ->where('path', '.*')
+        ->name('documents.private.show');
 
     // ==================== SECURITY AGENCY DASHBOARD (Agency’s own) ====================
     Route::middleware('role:security_agency')->group(function () {

@@ -24,6 +24,7 @@ This checklist tracks what must be true before KTM-WDC is safe to launch for rea
 - Set up a queue worker for notifications, reminders, invoices, and any background jobs. The `Procfile` includes a `worker` process for platforms that support multiple process types.
 - Set up a scheduler/cron entry for Laravel scheduled tasks. The `Procfile` includes a `scheduler` process; on VPS hosting, use cron to run `php artisan schedule:run` every minute.
 - Configure storage for uploaded warehouse documents, proofs, images, and QR assets. Use durable object storage if deploying to ephemeral servers.
+- Keep sensitive verification documents private. Warehouse ownership/tax/fire/building documents and security-agency certificates are stored on `private_uploads` and served only through the authenticated `documents.private.show` route.
 - Add monitoring for errors, failed jobs, uptime, and disk/storage usage.
 - Confirm role access for every user type: admin, client, driver, equipment owner, property owner, and security agency.
 
@@ -32,6 +33,7 @@ This checklist tracks what must be true before KTM-WDC is safe to launch for rea
 - Confirm no secrets are committed to git or visible in screenshots.
 - Confirm debug/test routes remain disabled in production.
 - Confirm uploaded files are validated, stored outside public code paths, and served only when authorized.
+- Confirm generated artifacts are not tracked or deployed from archive folders, especially SQL backups, cookies, login captures, and archived `node_modules`.
 - Confirm admin-only routes require admin middleware.
 - Confirm payment callbacks verify provider signatures or lookup responses before marking invoices paid.
 - Confirm password reset, activation, and registration emails are sent through a trusted mail provider.

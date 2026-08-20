@@ -56,7 +56,7 @@
                     <div class="border rounded p-3 h-100">
                         <h6>Registration Certificate</h6>
                         @if($agency->registration_certificate_path)
-                            <a href="{{ Storage::disk('public')->url($agency->registration_certificate_path) }}" target="_blank" class="btn btn-sm btn-primary">View Document</a>
+                            <a href="{{ route('documents.private.show', ['path' => $agency->registration_certificate_path]) }}" target="_blank" class="btn btn-sm btn-primary">View Document</a>
                         @else
                             <p class="text-muted mb-0">Not uploaded</p>
                         @endif
@@ -66,7 +66,7 @@
                     <div class="border rounded p-3 h-100">
                         <h6>License Certificate</h6>
                         @if($agency->license_certificate_path)
-                            <a href="{{ Storage::disk('public')->url($agency->license_certificate_path) }}" target="_blank" class="btn btn-sm btn-primary">View Document</a>
+                            <a href="{{ route('documents.private.show', ['path' => $agency->license_certificate_path]) }}" target="_blank" class="btn btn-sm btn-primary">View Document</a>
                         @else
                             <p class="text-muted mb-0">Not uploaded</p>
                         @endif
@@ -76,7 +76,7 @@
                     <div class="border rounded p-3 h-100">
                         <h6>PAN / VAT Certificate</h6>
                         @if($agency->pan_vat_certificate_path)
-                            <a href="{{ Storage::disk('public')->url($agency->pan_vat_certificate_path) }}" target="_blank" class="btn btn-sm btn-primary">View Document</a>
+                            <a href="{{ route('documents.private.show', ['path' => $agency->pan_vat_certificate_path]) }}" target="_blank" class="btn btn-sm btn-primary">View Document</a>
                         @else
                             <p class="text-muted mb-0">Not uploaded</p>
                         @endif

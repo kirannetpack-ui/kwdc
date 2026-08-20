@@ -772,7 +772,7 @@
                                     <div class="current-file mb-2">
                                         <i class="fas fa-file-pdf text-danger me-2"></i>
                                         Current: {{ basename($warehouse->ownership_document) }}
-                                        <a href="{{ asset('storage/' . $warehouse->ownership_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
+                                        <a href="{{ route('documents.private.show', ['path' => $warehouse->ownership_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
                                     </div>
                                 @endif
                                 <input type="file" name="ownership_document" 
@@ -787,7 +787,7 @@
                                     <div class="current-file mb-2">
                                         <i class="fas fa-file-pdf text-danger me-2"></i>
                                         Current: {{ basename($warehouse->tax_document) }}
-                                        <a href="{{ asset('storage/' . $warehouse->tax_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
+                                        <a href="{{ route('documents.private.show', ['path' => $warehouse->tax_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
                                     </div>
                                 @endif
                                 <input type="file" name="tax_document" 
@@ -801,7 +801,7 @@
                                     <div class="current-file mb-2">
                                         <i class="fas fa-file-pdf text-danger me-2"></i>
                                         Current: {{ basename($warehouse->fire_safety_document) }}
-                                        <a href="{{ asset('storage/' . $warehouse->fire_safety_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
+                                        <a href="{{ route('documents.private.show', ['path' => $warehouse->fire_safety_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
                                     </div>
                                 @endif
                                 <input type="file" name="fire_safety_document" 
@@ -815,7 +815,7 @@
                                     <div class="current-file mb-2">
                                         <i class="fas fa-file-pdf text-danger me-2"></i>
                                         Current: {{ basename($warehouse->building_approval_document) }}
-                                        <a href="{{ asset('storage/' . $warehouse->building_approval_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
+                                        <a href="{{ route('documents.private.show', ['path' => $warehouse->building_approval_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a>
                                     </div>
                                 @endif
                                 <input type="file" name="building_approval_document" 

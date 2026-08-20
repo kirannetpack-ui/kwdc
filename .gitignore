@@ -21,7 +21,11 @@ Thumbs.db
 /public/storage
 /public/hot
 /public/vendor
-public/.htaccess
 bootstrap/cache/
 /backups/
+/database/backups/
+/archive/**/node_modules/
+/archive/root-junk/cookies.txt
+/archive/root-junk/login.html
+/archive/root-junk/*.bak
 /tools/composer.phar

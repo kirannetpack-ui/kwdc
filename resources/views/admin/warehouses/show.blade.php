@@ -324,7 +324,7 @@
                 @if($warehouse->ownership_document)
                 <div>
                     <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                    <a href="{{ Storage::url($warehouse->ownership_document) }}" target="_blank" class="text-blue-500 hover:underline">Ownership Document</a>
+                    <a href="{{ route('documents.private.show', ['path' => $warehouse->ownership_document]) }}" target="_blank" class="text-blue-500 hover:underline">Ownership Document</a>
                 </div>
                 @endif
                 @if($warehouse->tax_clearance_document)
@@ -342,7 +342,7 @@
                 @if($warehouse->building_approval_document)
                 <div>
                     <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                    <a href="{{ Storage::url($warehouse->building_approval_document) }}" target="_blank" class="text-blue-500 hover:underline">Building Approval Document</a>
+                    <a href="{{ route('documents.private.show', ['path' => $warehouse->building_approval_document]) }}" target="_blank" class="text-blue-500 hover:underline">Building Approval Document</a>
                 </div>
                 @endif
             </div>

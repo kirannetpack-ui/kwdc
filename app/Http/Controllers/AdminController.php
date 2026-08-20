@@ -33,7 +33,7 @@ class AdminController extends Controller
         $propertyOwners = User::where('role', 'property_owner')
             ->orderBy('name')
             ->get();
-        
+
         return view('admin.warehouses.create', compact('propertyOwners'));
     }
 
@@ -52,20 +52,20 @@ class AdminController extends Controller
             'owner_id' => 'required|exists:users,id',
             'owner_name' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:20',
-            
+
             // Warehouse Details
             'area_sqft' => 'nullable|numeric|min:0',
             'area_sqm' => 'nullable|numeric|min:0',
             'price_per_sqft' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
-            
+
             // Security Features
             'cctv_count' => 'nullable|integer|min:0',
             'guards_count' => 'nullable|integer|min:0',
             'fire_extinguishers' => 'nullable|integer|min:0',
             'cctv_stream_urls' => 'nullable|array',
             'cctv_stream_urls.*' => 'nullable|url',
-            
+
             // Nearby Facilities
             'nearby_police' => 'nullable|string|max:500',
             'nearby_fire' => 'nullable|string|max:500',
@@ -73,13 +73,13 @@ class AdminController extends Controller
             'nearby_bank' => 'nullable|string|max:500',
             'nearby_fuel' => 'nullable|string|max:500',
             'nearby_market' => 'nullable|string|max:500',
-            
+
             // Cold Storage
             'cold_storage' => 'nullable|boolean',
             'temperature_min' => 'nullable|numeric',
             'temperature_max' => 'nullable|numeric',
             'humidity_control' => 'nullable|boolean',
-            
+
             // Files
             'front_image' => 'nullable|image|max:5120',
             'interior_image' => 'nullable|image|max:5120',
@@ -88,7 +88,7 @@ class AdminController extends Controller
             'tax_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'fire_safety_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'building_approval_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
-            
+
             // Facilities
             'facilities' => 'nullable|array',
             'facilities.*' => 'nullable|string',
@@ -102,32 +102,32 @@ class AdminController extends Controller
 
         try {
             // Handle file uploads
-            $frontImage = $request->hasFile('front_image') 
-                ? $request->file('front_image')->store('warehouses/front', 'public') 
+            $frontImage = $request->hasFile('front_image')
+                ? $request->file('front_image')->store('warehouses/front', 'public')
                 : null;
-            
-            $interiorImage = $request->hasFile('interior_image') 
-                ? $request->file('interior_image')->store('warehouses/interior', 'public') 
+
+            $interiorImage = $request->hasFile('interior_image')
+                ? $request->file('interior_image')->store('warehouses/interior', 'public')
                 : null;
-            
-            $exteriorImage = $request->hasFile('exterior_image') 
-                ? $request->file('exterior_image')->store('warehouses/exterior', 'public') 
+
+            $exteriorImage = $request->hasFile('exterior_image')
+                ? $request->file('exterior_image')->store('warehouses/exterior', 'public')
                 : null;
-            
-            $ownershipDoc = $request->hasFile('ownership_document') 
-                ? $request->file('ownership_document')->store('warehouses/documents', 'public') 
+
+            $ownershipDoc = $request->hasFile('ownership_document')
+                ? $request->file('ownership_document')->store('warehouses/documents', 'private_uploads')
                 : null;
-            
-            $taxDoc = $request->hasFile('tax_document') 
-                ? $request->file('tax_document')->store('warehouses/documents', 'public') 
+
+            $taxDoc = $request->hasFile('tax_document')
+                ? $request->file('tax_document')->store('warehouses/documents', 'private_uploads')
                 : null;
-            
-            $fireSafetyDoc = $request->hasFile('fire_safety_document') 
-                ? $request->file('fire_safety_document')->store('warehouses/documents', 'public') 
+
+            $fireSafetyDoc = $request->hasFile('fire_safety_document')
+                ? $request->file('fire_safety_document')->store('warehouses/documents', 'private_uploads')
                 : null;
-            
-            $buildingApprovalDoc = $request->hasFile('building_approval_document') 
-                ? $request->file('building_approval_document')->store('warehouses/documents', 'public') 
+
+            $buildingApprovalDoc = $request->hasFile('building_approval_document')
+                ? $request->file('building_approval_document')->store('warehouses/documents', 'private_uploads')
                 : null;
 
             // Create warehouse
@@ -171,10 +171,10 @@ class AdminController extends Controller
 
             return redirect()->route('admin.all-warehouses')
                 ->with('success', 'Warehouse created successfully! Awaiting approval.');
-                
+
         } catch (\Exception $e) {
             Log::error('Warehouse creation failed: ' . $e->getMessage());
-            
+
             return redirect()->back()
                 ->with('error', 'Failed to create warehouse: ' . $e->getMessage())
                 ->withInput();
@@ -211,7 +211,7 @@ class AdminController extends Controller
     public function updateWarehouse(Request $request, $id)
     {
         $warehouse = Warehouse::findOrFail($id);
-        
+
         $validator = Validator::make($request->all(), [
             // Basic Information
             'name' => 'required|string|max:255',
@@ -222,20 +222,20 @@ class AdminController extends Controller
             'owner_id' => 'required|exists:users,id',
             'owner_name' => 'nullable|string|max:255',
             'contact_number' => 'nullable|string|max:20',
-            
+
             // Warehouse Details
             'area_sqft' => 'nullable|numeric|min:0',
             'area_sqm' => 'nullable|numeric|min:0',
             'price_per_sqft' => 'nullable|numeric|min:0',
             'description' => 'nullable|string',
-            
+
             // Security Features
             'cctv_count' => 'nullable|integer|min:0',
             'guards_count' => 'nullable|integer|min:0',
             'fire_extinguishers' => 'nullable|integer|min:0',
             'cctv_stream_urls' => 'nullable|array',
             'cctv_stream_urls.*' => 'nullable|url',
-            
+
             // Nearby Facilities
             'nearby_police' => 'nullable|string|max:500',
             'nearby_fire' => 'nullable|string|max:500',
@@ -243,13 +243,13 @@ class AdminController extends Controller
             'nearby_bank' => 'nullable|string|max:500',
             'nearby_fuel' => 'nullable|string|max:500',
             'nearby_market' => 'nullable|string|max:500',
-            
+
             // Cold Storage
             'cold_storage' => 'nullable|boolean',
             'temperature_min' => 'nullable|numeric',
             'temperature_max' => 'nullable|numeric',
             'humidity_control' => 'nullable|boolean',
-            
+
             // Files (Images & Docs)
             'front_image' => 'nullable|image|max:5120',
             'interior_image' => 'nullable|image|max:5120',
@@ -258,7 +258,7 @@ class AdminController extends Controller
             'tax_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'fire_safety_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
             'building_approval_document' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
-            
+
             // Facilities
             'facilities' => 'nullable|array',
             'facilities.*' => 'nullable|string',
@@ -275,10 +275,16 @@ class AdminController extends Controller
             $handleFile = function($field, $path) use ($request, $warehouse) {
                 if ($request->hasFile($field)) {
                     // Delete old file if it exists
-                    if ($warehouse->$field && \Storage::disk('public')->exists($warehouse->$field)) {
+                    $disk = in_array($field, ['ownership_document', 'tax_document', 'fire_safety_document', 'building_approval_document'], true)
+                        ? 'private_uploads'
+                        : 'public';
+
+                    if ($warehouse->$field && \Storage::disk($disk)->exists($warehouse->$field)) {
+                        \Storage::disk($disk)->delete($warehouse->$field);
+                    } elseif ($warehouse->$field && $disk !== 'public' && \Storage::disk('public')->exists($warehouse->$field)) {
                         \Storage::disk('public')->delete($warehouse->$field);
                     }
-                    return $request->file($field)->store($path, 'public');
+                    return $request->file($field)->store($path, $disk);
                 }
                 return $warehouse->$field; // Keep the old file if no new one provided
             };
@@ -331,10 +337,10 @@ class AdminController extends Controller
 
             return redirect()->route('admin.warehouses.show', $warehouse->id)
                 ->with('success', 'Warehouse updated successfully!');
-                
+
         } catch (\Exception $e) {
             Log::error('Warehouse update failed: ' . $e->getMessage());
-            
+
             return redirect()->back()
                 ->with('error', 'Failed to update warehouse: ' . $e->getMessage())
                 ->withInput();
@@ -359,7 +365,7 @@ class AdminController extends Controller
             ->with('owner')
             ->latest()
             ->paginate(10);
-        
+
         return view('admin.pending', compact('pendingWarehouses'));
     }
 
@@ -370,9 +376,9 @@ class AdminController extends Controller
     {
         $warehouse = Warehouse::findOrFail($id);
         $warehouse->update(['status' => 'approved']);
-        
+
         NotificationService::notifyWarehouseApproved($warehouse);
-        
+
         return back()->with('success', 'Warehouse approved successfully');
     }
 
@@ -485,7 +491,7 @@ class AdminController extends Controller
         $equipment = Equipment::with(['owner', 'equipmentJobs'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.equipment-list', compact('equipment'));
     }
 
@@ -540,7 +546,7 @@ class AdminController extends Controller
         $drivers = User::where('role', 'driver')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
-        
+
         return view('admin.drivers.index', compact('drivers'));
     }
 
@@ -611,7 +617,7 @@ class AdminController extends Controller
     {
         // Fetch all earnings with the partner (user) relationship
         $earnings = \App\Models\PartnerEarning::with('partner')->latest()->get();
-        
+
         // Calculate Total Earnings (Assuming status 'paid' is actual earnings, or sum all)
         $totalEarnings = $earnings->where('status', 'paid')->sum('amount') ?? 0;
         $pendingEarnings = $earnings->where('status', 'pending')->sum('amount') ?? 0;
@@ -622,11 +628,11 @@ class AdminController extends Controller
         $equipmentOrders = $earnings->where('order_type', 'equipment');
 
         return view('admin.partner-earnings', compact(
-            'earnings', 
-            'totalEarnings', 
-            'pendingEarnings', 
-            'dispatchOrders', 
-            'pickupOrders', 
+            'earnings',
+            'totalEarnings',
+            'pendingEarnings',
+            'dispatchOrders',
+            'pickupOrders',
             'equipmentOrders'
         ));
     }
@@ -656,7 +662,7 @@ class AdminController extends Controller
             'min_distance' => 'nullable|numeric|min:0',
             'max_distance' => 'nullable|numeric|gt:min_distance',
         ]);
-        
+
         MarginTier::create([
             'name' => $request->name,
             'service_type' => $request->service_type,
@@ -666,7 +672,7 @@ class AdminController extends Controller
             'max_distance' => $request->max_distance,
             'is_active' => true,
         ]);
-        
+
         return redirect()->route('admin.margin-tiers')
             ->with('success', 'Margin tier created successfully');
     }
@@ -685,10 +691,10 @@ class AdminController extends Controller
             'min_distance' => 'nullable|numeric|min:0',
             'max_distance' => 'nullable|numeric|gt:min_distance',
         ]);
-        
+
         $tier = MarginTier::findOrFail($id);
         $tier->update($request->all());
-        
+
         return redirect()->route('admin.margin-tiers')
             ->with('success', 'Margin tier updated successfully');
     }
@@ -700,7 +706,7 @@ class AdminController extends Controller
     {
         $tier = MarginTier::findOrFail($id);
         $tier->delete();
-        
+
         return redirect()->route('admin.margin-tiers')
             ->with('success', 'Margin tier deleted successfully');
     }
@@ -730,7 +736,7 @@ class AdminController extends Controller
             ->orderBy('month', 'desc')
             ->limit(6)
             ->get();
-        
+
         return view('admin.reports', compact('monthlyStats'));
     }
 
@@ -757,7 +763,7 @@ class AdminController extends Controller
         foreach ($warehouses as $w) {
             $areaSqft = $w->area_sqft ?? 0;
             $occupied = $w->warehouseRequests->sum('space_required') ?? 0;
-            
+
             if ($occupied == 0 && $areaSqft > 0) {
                 $occupied = $areaSqft * (rand(10, 80) / 100);
             }
@@ -810,11 +816,11 @@ class AdminController extends Controller
         $utilizationPercent = $totalCapacity > 0 ? round(($totalOccupied / $totalCapacity) * 100, 1) : 0;
 
         return view('admin.analytics.predictive', compact(
-            'predictions', 
+            'predictions',
             'stats',
-            'chartLabels', 
-            'chartCapacity', 
-            'chartOccupied', 
+            'chartLabels',
+            'chartCapacity',
+            'chartOccupied',
             'totalCapacity',
             'totalOccupied',
             'totalAvailable',
@@ -832,14 +838,14 @@ class AdminController extends Controller
         $client = User::with(['warehouseRequests' => function($query) {
             $query->orderBy('created_at', 'desc');
         }])->findOrFail($id);
-        
+
         // Add assigned warehouses to each request
         foreach ($client->warehouseRequests as $request) {
             $request->assignedWarehouses = Warehouse::whereHas('warehouseRequests', function($q) use ($request) {
                 $q->where('id', $request->id);
             })->get();
         }
-        
+
         $stats = [
             'total_requests' => $client->warehouseRequests->count(),
             'approved_requests' => $client->warehouseRequests->where('status', 'approved')->count(),
@@ -849,7 +855,7 @@ class AdminController extends Controller
                 ->where('status', 'delivered')
                 ->sum('base_price') ?? 0,
         ];
-        
+
         return view('admin.clients.show', compact('client', 'stats'));
     }
 
@@ -861,12 +867,12 @@ class AdminController extends Controller
         // 1. Monthly Revenue (Last 12 Months)
         $months = collect();
         $revenues = collect();
-        
+
         for ($i = 11; $i >= 0; $i--) {
             $date = now()->subMonths($i);
             $monthStart = $date->copy()->startOfMonth();
             $monthEnd = $date->copy()->endOfMonth();
-            
+
             $revenue = \App\Models\DispatchOrder::where('status', 'delivered')
                 ->whereBetween('created_at', [$monthStart, $monthEnd])
                 ->sum('base_price');
@@ -881,7 +887,7 @@ class AdminController extends Controller
             $date = now()->subMonths($i);
             $monthStart = $date->copy()->startOfMonth();
             $monthEnd = $date->copy()->endOfMonth();
-            
+
             $count = \App\Models\DispatchOrder::whereBetween('created_at', [$monthStart, $monthEnd])->count();
             $dispatchCounts->push($count);
         }

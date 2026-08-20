@@ -113,4 +113,25 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString('a2enmod rewrite headers', $dockerfile);
         $this->assertStringContainsString('RewriteRule ^ index.php [L]', $htaccess);
     }
+
+    public function test_generated_private_artifacts_are_not_tracked(): void
+    {
+        exec('git ls-files', $trackedFiles, $exitCode);
+
+        $this->assertSame(0, $exitCode);
+
+        $forbiddenPatterns = [
+            '#^archive/frontend-backup/node_modules/#',
+            '#^database/backups/#',
+            '#^archive/root-junk/cookies\.txt$#',
+            '#^archive/root-junk/login\.html$#',
+            '#^archive/root-junk/.+\.bak$#',
+        ];
+
+        foreach ($forbiddenPatterns as $pattern) {
+            $matches = preg_grep($pattern, $trackedFiles);
+
+            $this->assertSame([], array_values($matches), 'Forbidden tracked files matched ' . $pattern);
+        }
+    }
 }

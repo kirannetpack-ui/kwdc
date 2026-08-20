@@ -134,7 +134,7 @@ class SecurityAgencyProfileTest extends TestCase
         $this->assertNotNull($agency->registration_certificate_path);
         $this->assertNotNull($agency->license_certificate_path);
         $this->assertNotNull($agency->pan_vat_certificate_path);
-        Storage::disk('public')->assertExists($agency->registration_certificate_path);
-        Storage::disk('public')->assertExists($agency->license_certificate_path);
+        Storage::disk('private_uploads')->assertExists($agency->registration_certificate_path);
+        Storage::disk('private_uploads')->assertExists($agency->license_certificate_path);
     }
 }

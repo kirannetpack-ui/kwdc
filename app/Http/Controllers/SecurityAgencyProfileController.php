@@ -48,27 +48,39 @@ class SecurityAgencyProfileController extends Controller
 
         if ($request->hasFile('registration_certificate')) {
             if ($agency->registration_certificate_path) {
-                Storage::disk('public')->delete($agency->registration_certificate_path);
+                $this->deleteExistingDocument($agency->registration_certificate_path);
             }
-            $validated['registration_certificate_path'] = $request->file('registration_certificate')->store('security-documents', 'public');
+            $validated['registration_certificate_path'] = $request->file('registration_certificate')->store('security-documents', 'private_uploads');
         }
 
         if ($request->hasFile('license_certificate')) {
             if ($agency->license_certificate_path) {
-                Storage::disk('public')->delete($agency->license_certificate_path);
+                $this->deleteExistingDocument($agency->license_certificate_path);
             }
-            $validated['license_certificate_path'] = $request->file('license_certificate')->store('security-documents', 'public');
+            $validated['license_certificate_path'] = $request->file('license_certificate')->store('security-documents', 'private_uploads');
         }
 
         if ($request->hasFile('pan_vat_certificate')) {
             if ($agency->pan_vat_certificate_path) {
-                Storage::disk('public')->delete($agency->pan_vat_certificate_path);
+                $this->deleteExistingDocument($agency->pan_vat_certificate_path);
             }
-            $validated['pan_vat_certificate_path'] = $request->file('pan_vat_certificate')->store('security-documents', 'public');
+            $validated['pan_vat_certificate_path'] = $request->file('pan_vat_certificate')->store('security-documents', 'private_uploads');
         }
 
         $agency->update($validated);
 
         return redirect()->route('security.profile')->with('success', 'Agency profile updated successfully.');
+    }
+
+    private function deleteExistingDocument(string $path): void
+    {
+        if (Storage::disk('private_uploads')->exists($path)) {
+            Storage::disk('private_uploads')->delete($path);
+            return;
+        }
+
+        if (Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->delete($path);
+        }
     }
 }
