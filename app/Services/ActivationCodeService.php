@@ -26,12 +26,24 @@ class ActivationCodeService
     {
         $code = $this->generateFor($user);
 
+        if ($this->phaseOneDemo()) {
+            Log::info('Activation email skipped in phase-one demo mode; showing demo code instead.', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
+            session()->flash('activation_demo_code', $code);
+            session()->flash('status', 'Email delivery is not connected on this demo environment. Use the demo activation code shown below.');
+
+            return false;
+        }
+
         try {
             Mail::to($user->email, $user->name)->send(new ActivationCodeMail($user, $code));
 
             return true;
         } catch (\Throwable $e) {
-            if (! filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN)) {
+            if (! $this->phaseOneDemo()) {
                 throw $e;
             }
 
@@ -46,6 +58,11 @@ class ActivationCodeService
 
             return false;
         }
+    }
+
+    private function phaseOneDemo(): bool
+    {
+        return filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     public function verify(User $user, string $code): bool

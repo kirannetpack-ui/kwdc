@@ -95,8 +95,11 @@ class RegisterController extends Controller
         }
 
         $this->activationCodeService->send($user);
-        $this->sendWelcomeEmail($user);
-        $this->sendAdminRegistrationNotice($user);
+
+        if (! $this->phaseOneDemo()) {
+            $this->sendWelcomeEmail($user);
+            $this->sendAdminRegistrationNotice($user);
+        }
 
         return $user;
     }
@@ -155,6 +158,11 @@ class RegisterController extends Controller
                 'user_id' => $user->id,
             ]);
         }
+    }
+
+    private function phaseOneDemo(): bool
+    {
+        return filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
