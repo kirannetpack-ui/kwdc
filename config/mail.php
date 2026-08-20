@@ -4,15 +4,15 @@ return [
     'default' => env('MAIL_MAILER', 'smtp'),
     
     'mailers' => [
-    'smtp' => [
-        'transport' => 'smtp',
-        'host' => 'smtp.gmail.com',
-        'port' => 587,
-        'encryption' => 'tls',
-        'username' => 'kiran.kwdc@gmail.com',
-        'password' => 'nuzpnwuaavxynsdg',
-        'timeout' => null,
-         'local_domain' => env('MAIL_EHLO_DOMAIN', 'localhost'),
+        'smtp' => [
+            'transport' => 'smtp',
+            'host' => env('MAIL_HOST', '127.0.0.1'),
+            'port' => env('MAIL_PORT', 2525),
+            'encryption' => env('MAIL_ENCRYPTION'),
+            'username' => env('MAIL_USERNAME'),
+            'password' => env('MAIL_PASSWORD'),
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', 'localhost'),
         ],
         'ses' => [
             'transport' => 'ses',
@@ -51,9 +51,9 @@ return [
     ],
     
     'from' => [
-    'address' => 'kiran.kwdc@gmail.com',
-    'name' => 'KTM-WDC : kKTM - Warehouse & Distribution Center',
-],
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
+        'name' => env('MAIL_FROM_NAME', 'KTM-WDC'),
+    ],
     
     'markdown' => [
         'theme' => 'default',

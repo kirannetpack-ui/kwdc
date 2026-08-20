@@ -148,6 +148,10 @@ class ProductionHardeningTest extends TestCase
             '#^archive/root-junk/cookies\.txt$#',
             '#^archive/root-junk/login\.html$#',
             '#^archive/root-junk/.+\.bak$#',
+            '#^app/Http/Controllers/.+\.txt$#',
+            '#^scripts/maintenance/test-login\.bat$#',
+            '#^resources/views/auth/simple-login\.blade\.php$#',
+            '#^resources/views/warehouses/(simple|simple-create|test)\.blade\.php$#',
         ];
 
         foreach ($forbiddenPatterns as $pattern) {
@@ -155,6 +159,23 @@ class ProductionHardeningTest extends TestCase
 
             $this->assertSame([], array_values($matches), 'Forbidden tracked files matched ' . $pattern);
         }
+    }
+
+    public function test_mail_configuration_does_not_commit_smtp_credentials(): void
+    {
+        $mailConfig = file_get_contents(config_path('mail.php'));
+        $adminEmailService = file_get_contents(app_path('Services/AdminEmailService.php'));
+        $registeredUserController = file_get_contents(app_path('Http/Controllers/Auth/RegisteredUserController.php'));
+
+        $this->assertStringContainsString("'host' => env('MAIL_HOST'", $mailConfig);
+        $this->assertStringContainsString("'username' => env('MAIL_USERNAME')", $mailConfig);
+        $this->assertStringContainsString("'password' => env('MAIL_PASSWORD')", $mailConfig);
+        $this->assertStringContainsString("'address' => env('MAIL_FROM_ADDRESS'", $mailConfig);
+        $this->assertStringNotContainsString('smtp.gmail.com', $mailConfig);
+        $this->assertStringNotContainsString('kiran.kwdc@gmail.com', $mailConfig);
+        $this->assertStringNotContainsString('nuzpnwuaavxynsdg', $mailConfig);
+        $this->assertStringNotContainsString('kiran.kwdc@gmail.com', $adminEmailService);
+        $this->assertStringNotContainsString('kiran.kwdc@gmail.com', $registeredUserController);
     }
 
     public function test_admin_warehouse_review_links_sensitive_documents_through_private_route(): void

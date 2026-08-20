@@ -94,7 +94,7 @@ if ($request->role === 'security_agency') {
     Mail::to($user->email)->send(new AgencyWelcomeMail($agency));
     
     // Send notification to admin
-    $adminEmail = config('app.admin_email', 'kiran.kwdc@gmail.com');
+    $adminEmail = config('app.admin_email', 'admin@ktmwdc.com');
     Mail::to($adminEmail)->send(new AdminAgencyNotification($agency));
 
     return redirect()->route('login')->with('status', 
