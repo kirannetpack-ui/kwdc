@@ -24,10 +24,10 @@ WORKDIR /var/www/html
 
 COPY . .
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev \
+RUN mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev \
     && npm ci \
-    && npm run build \
-    && mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && npm run build
 
 EXPOSE 80
