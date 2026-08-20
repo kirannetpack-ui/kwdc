@@ -239,6 +239,19 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('Storage::url($stop->invoice_document)', $dispatchShowView);
     }
 
+    public function test_stock_documents_are_private_uploads(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/StockController.php'));
+
+        $this->assertStringContainsString("store('stock-documents/invoices', 'private_uploads')", $controller);
+        $this->assertStringContainsString("store('stock-documents/grns', 'private_uploads')", $controller);
+        $this->assertStringContainsString("store('stock-documents/quality-certificates', 'private_uploads')", $controller);
+        $this->assertStringContainsString("store('stock-documents/others', 'private_uploads')", $controller);
+        $this->assertStringContainsString("Storage::disk('private_uploads')->download", $controller);
+        $this->assertStringNotContainsString("stock_documents/invoices', 'public'", $controller);
+        $this->assertStringNotContainsString("Storage::disk('public')->download(\$path)", $controller);
+    }
+
     public function test_equipment_compliance_documents_are_private_uploads(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/EquipmentController.php'));

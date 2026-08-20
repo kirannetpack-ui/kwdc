@@ -41,6 +41,9 @@ class StockController extends Controller
             'purchase_price' => 'nullable|numeric|min:0',
             'selling_price' => 'nullable|numeric|min:0',
             'invoice_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'grn_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'quality_certificate' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'other_documents' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
 
         $client = auth()->user();
@@ -49,13 +52,18 @@ class StockController extends Controller
         $batchId = Stock::generateBatchId($client->user_code);
         $sku = Stock::generateSKU();
         
-        // Handle file upload
-        $invoicePath = null;
-        if ($request->hasFile('invoice_file')) {
-            $invoiceFile = $request->file('invoice_file');
-            $invoiceFileName = time() . '_' . uniqid() . '.' . $invoiceFile->getClientOriginalExtension();
-            $invoicePath = $invoiceFile->storeAs('stock_documents/invoices', $invoiceFileName, 'public');
-        }
+        $invoicePath = $request->hasFile('invoice_file')
+            ? $request->file('invoice_file')->store('stock-documents/invoices', 'private_uploads')
+            : null;
+        $grnPath = $request->hasFile('grn_file')
+            ? $request->file('grn_file')->store('stock-documents/grns', 'private_uploads')
+            : null;
+        $qualityCertificatePath = $request->hasFile('quality_certificate')
+            ? $request->file('quality_certificate')->store('stock-documents/quality-certificates', 'private_uploads')
+            : null;
+        $otherDocumentPath = $request->hasFile('other_documents')
+            ? $request->file('other_documents')->store('stock-documents/others', 'private_uploads')
+            : null;
         
         $warehouseName = null;
         if ($request->warehouse_id) {
@@ -100,6 +108,7 @@ class StockController extends Controller
         // Create stock record
         $stock = Stock::create([
             'product_name' => $request->product_name,
+            'user_id' => $client->id,
             'description' => $request->description,
             'unit' => $request->unit,
             'number_of_boxes' => $request->number_of_boxes,
@@ -109,6 +118,9 @@ class StockController extends Controller
             'sku' => $sku,
             'invoice_number' => $request->invoice_number,
             'invoice_file_path' => $invoicePath,
+            'grn_file_path' => $grnPath,
+            'quality_certificate_path' => $qualityCertificatePath,
+            'other_documents_path' => $otherDocumentPath,
             'warehouse_id' => $request->warehouse_id,
             'warehouse_name' => $warehouseName,
             'client_code' => $client->user_code,
@@ -177,10 +189,16 @@ class StockController extends Controller
         $path = null;
         if ($type === 'invoice') {
             $path = $stock->invoice_file_path;
+        } elseif ($type === 'grn') {
+            $path = $stock->grn_file_path;
+        } elseif ($type === 'certificate') {
+            $path = $stock->quality_certificate_path;
+        } elseif ($type === 'other') {
+            $path = $stock->other_documents_path;
         }
         
-        if ($path && Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->download($path);
+        if ($path && Storage::disk('private_uploads')->exists($path)) {
+            return Storage::disk('private_uploads')->download($path);
         }
         
         return redirect()->back()->with('error', 'Document not found.');
