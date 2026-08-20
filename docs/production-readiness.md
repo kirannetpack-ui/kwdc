@@ -60,5 +60,6 @@ This checklist tracks what must be true before KTM-WDC is safe to launch for rea
 - Local app mode is `local` with debug enabled.
 - Local database is SQLite.
 - Tests pass locally.
-- `npm audit` reports a Vite/esbuild development-server advisory. The suggested automatic fix requires a breaking Vite upgrade, so handle it deliberately during dependency upgrade work.
-- Composer is not currently available on this machine's PATH, so PHP dependency audit could not be run here.
+- `npm audit --audit-level=moderate` passes after upgrading Vite, the Laravel Vite plugin, and Sass.
+- `php tools/composer.phar audit` reports only the remaining Laravel framework advisories. The smaller package advisories for Dompdf, Guzzle, and League CommonMark were cleared by dependency updates.
+- Clearing the remaining Laravel advisories requires a deliberate Laravel 12 upgrade. A dry-run shows the current `nunomaduro/collision` dev dependency blocks `laravel/framework:^12.67`, and Collision has no stable Laravel 12-compatible release in the current package index.
