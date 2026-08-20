@@ -77,7 +77,9 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::get('/activate', [ActivationController::class, 'show'])->name('activation.notice');
-Route::post('/activate', [ActivationController::class, 'activate'])->name('activation.verify');
+Route::post('/activate', [ActivationController::class, 'activate'])
+    ->name('activation.verify')
+    ->middleware('throttle:5,1');
 Route::post('/activate/resend', [ActivationController::class, 'resend'])->name('activation.resend')->middleware('throttle:3,1');
 
 Route::get('/forgot-password', [PasswordResetLinkController::class, 'create'])->middleware('guest')->name('password.request.breeze');

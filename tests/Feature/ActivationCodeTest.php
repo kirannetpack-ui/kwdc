@@ -48,4 +48,30 @@ class ActivationCodeTest extends TestCase
         $this->assertStringContainsString('Open activation page', $html);
         $this->assertStringContainsString('KTM-WDC will never ask for your password or payment details', $html);
     }
+
+    public function test_activation_code_attempts_are_rate_limited(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'activation-limit@example.com',
+            'is_active' => true,
+        ]);
+
+        app(ActivationCodeService::class)->generateFor($user);
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.42'])
+                ->from(route('activation.notice'))
+                ->post(route('activation.verify'), [
+                    'email' => $user->email,
+                    'activation_code' => '000000',
+                ])->assertRedirect(route('activation.notice', absolute: false));
+        }
+
+        $this->withServerVariables(['REMOTE_ADDR' => '203.0.113.42'])
+            ->from(route('activation.notice'))
+            ->post(route('activation.verify'), [
+                'email' => $user->email,
+                'activation_code' => '000000',
+            ])->assertTooManyRequests();
+    }
 }

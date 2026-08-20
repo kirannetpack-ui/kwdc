@@ -22,10 +22,7 @@ class LoginController extends Controller
 
     public function showLoginForm()
     {
-        Log::info('Login form displayed', [
-            'session_id' => session()->getId(),
-            'session_token' => session()->token()
-        ]);
+        Log::info('Login form displayed');
         
         return view('auth.login');
     }
@@ -33,10 +30,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         Log::info('Login attempt started', [
-            'email' => $request->email,
-            'session_id' => session()->getId(),
             'ip' => $request->ip(),
-            'has_token' => $request->has('_token'),
         ]);
 
         $this->validateLogin($request);
@@ -49,14 +43,14 @@ class LoginController extends Controller
 
         if ($this->attemptLogin($request)) {
             Log::info('Login successful', [
-                'email' => $request->email,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
+                'ip' => $request->ip(),
             ]);
             return $this->sendLoginResponse($request);
         }
 
         $this->incrementLoginAttempts($request);
-        Log::warning('Login failed', ['email' => $request->email]);
+        Log::warning('Login failed', ['ip' => $request->ip()]);
 
         return $this->sendFailedLoginResponse($request);
     }
@@ -85,7 +79,7 @@ class LoginController extends Controller
 
     protected function sendFailedLoginResponse(Request $request)
     {
-        Log::error('Login failed response sent', ['email' => $request->email]);
+        Log::notice('Login failed response sent', ['ip' => $request->ip()]);
         return redirect()->back()
             ->withInput($request->only('email', 'remember'))
             ->withErrors([

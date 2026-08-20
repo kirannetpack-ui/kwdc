@@ -56,6 +56,16 @@ class ProductionHardeningTest extends TestCase
         }
     }
 
+    public function test_authentication_logs_do_not_include_session_tokens_or_raw_login_email(): void
+    {
+        $loginController = file_get_contents(app_path('Http/Controllers/Auth/LoginController.php'));
+
+        $this->assertStringNotContainsString('session()->token()', $loginController);
+        $this->assertStringNotContainsString('session_token', $loginController);
+        $this->assertStringNotContainsString("'email' => \$request->email", $loginController);
+        $this->assertStringNotContainsString('"email" => $request->email', $loginController);
+    }
+
     public function test_security_headers_are_applied_to_https_responses(): void
     {
         $response = $this->withServerVariables(['HTTPS' => 'on'])->get('/ping');
