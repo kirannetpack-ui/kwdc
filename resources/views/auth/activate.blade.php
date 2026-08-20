@@ -1,33 +1,148 @@
 <x-guest-layout>
-<div class="max-w-md mx-auto bg-white rounded-lg shadow p-6">
-    <h1 class="text-2xl font-bold mb-2">Activate your account</h1>
-    <p class="text-gray-600 mb-6">Enter the 6-digit code sent to your email address.</p>
+    <style>
+        .activation-head {
+            margin-bottom: 28px;
+        }
+
+        .activation-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: #0f766e;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .activation-head h1 {
+            margin: 0 0 12px;
+            font-size: clamp(32px, 4vw, 44px);
+        }
+
+        .activation-head p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .notice {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 22px;
+            padding: 14px 15px;
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            color: #1d4ed8;
+            background: #eff6ff;
+            line-height: 1.5;
+            font-weight: 700;
+        }
+
+        .activation-form {
+            display: grid;
+            gap: 18px;
+        }
+
+        .field-help {
+            margin-top: 7px;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        .code-input {
+            font-size: 22px !important;
+            font-weight: 900 !important;
+            letter-spacing: .28em;
+            text-align: center;
+        }
+
+        .error-text {
+            margin: 7px 0 0;
+            color: #dc2626;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .activation-actions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .activate-button,
+        .resend-button {
+            width: 100%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .resend-button {
+            color: #0f766e !important;
+            border: 1px solid #cfe7e3 !important;
+            background: #f0fdfa !important;
+            box-shadow: none !important;
+        }
+
+        .activation-footer {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid #dbe4ef;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.55;
+        }
+    </style>
+
+    <div class="activation-head">
+        <span class="activation-kicker"><i class="fas fa-shield-check"></i> Account verification</span>
+        <h1>Activate your account</h1>
+        <p>Enter the 6-digit code sent to your email address. Codes expire after 30 minutes.</p>
+    </div>
 
     @if(session('status'))
-        <div class="mb-4 p-3 rounded bg-blue-50 text-blue-700">{{ session('status') }}</div>
+        <div class="notice">
+            <i class="fas fa-circle-info"></i>
+            <span>{{ session('status') }}</span>
+        </div>
     @endif
 
-    <form method="POST" action="{{ route('activation.verify') }}" class="space-y-4">
+    <form method="POST" action="{{ route('activation.verify') }}" class="activation-form">
         @csrf
         <div>
-            <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-            <input id="email" name="email" type="email" value="{{ old('email', $email) }}" required class="mt-1 block w-full rounded border-gray-300">
-            @error('email') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+            <label for="email">Email address</label>
+            <input id="email" name="email" type="email" value="{{ old('email', $email) }}" required autocomplete="email">
+            @error('email') <p class="error-text">{{ $message }}</p> @enderror
         </div>
 
         <div>
-            <label for="activation_code" class="block text-sm font-medium text-gray-700">Activation code</label>
-            <input id="activation_code" name="activation_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required class="mt-1 block w-full rounded border-gray-300 tracking-widest">
-            @error('activation_code') <p class="text-sm text-red-600 mt-1">{{ $message }}</p> @enderror
+            <label for="activation_code">Activation code</label>
+            <input id="activation_code" class="code-input" name="activation_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000">
+            <p class="field-help">Check inbox and spam. Gmail may group the welcome and activation messages together.</p>
+            @error('activation_code') <p class="error-text">{{ $message }}</p> @enderror
         </div>
 
-        <button type="submit" class="w-full bg-orange-500 text-white rounded px-4 py-2 font-semibold">Activate account</button>
+        <div class="activation-actions">
+            <button type="submit" class="activate-button">
+                <i class="fas fa-check-circle"></i> Activate account
+            </button>
+        </div>
     </form>
 
-    <form method="POST" action="{{ route('activation.resend') }}" class="mt-4">
+    <form method="POST" action="{{ route('activation.resend') }}" class="activation-actions" style="margin-top: 12px;">
         @csrf
         <input type="hidden" name="email" value="{{ old('email', $email) }}">
-        <button type="submit" class="text-sm text-orange-600 font-semibold">Send a new code</button>
+        <button type="submit" class="resend-button">
+            <i class="fas fa-paper-plane"></i> Send a new code
+        </button>
     </form>
-</div>
+
+    <div class="activation-footer">
+        Use the newest code if you requested more than one. For security, KTM-WDC will never ask for your password to verify email.
+    </div>
 </x-guest-layout>

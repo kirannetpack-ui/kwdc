@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\SecurityAgency;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Services\AdminEmailService;
@@ -93,9 +94,9 @@ class RegisterController extends Controller
             ]);
         }
 
-        $this->adminEmailService->notifyNewUser($user);
-        $this->sendWelcomeEmail($user);
         $this->activationCodeService->send($user);
+        $this->sendWelcomeEmail($user);
+        $this->sendAdminRegistrationNotice($user);
 
         return $user;
     }
@@ -142,6 +143,17 @@ class RegisterController extends Controller
             });
         } catch (\Exception $e) {
             \Log::error('Welcome email failed: ' . $e->getMessage());
+        }
+    }
+
+    private function sendAdminRegistrationNotice($user): void
+    {
+        try {
+            $this->adminEmailService->notifyNewUser($user);
+        } catch (\Throwable $e) {
+            Log::warning('Admin registration notice skipped: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+            ]);
         }
     }
 
