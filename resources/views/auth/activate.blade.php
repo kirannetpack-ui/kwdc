@@ -39,6 +39,32 @@
             font-weight: 700;
         }
 
+        .demo-code-box {
+            margin-bottom: 22px;
+            padding: 18px;
+            border: 1px solid #f5d38a;
+            border-radius: 12px;
+            background: #fffbeb;
+        }
+
+        .demo-code-box span {
+            display: block;
+            color: #92400e;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+        }
+
+        .demo-code-box strong {
+            display: block;
+            margin-top: 8px;
+            color: #101724;
+            font-size: 34px;
+            line-height: 1;
+            letter-spacing: .18em;
+        }
+
         .activation-form {
             display: grid;
             gap: 18px;
@@ -109,6 +135,13 @@
         <div class="notice">
             <i class="fas fa-circle-info"></i>
             <span>{{ session('status') }}</span>
+        </div>
+    @endif
+
+    @if(session('activation_demo_code'))
+        <div class="demo-code-box">
+            <span>Demo activation code</span>
+            <strong>{{ session('activation_demo_code') }}</strong>
         </div>
     @endif
 

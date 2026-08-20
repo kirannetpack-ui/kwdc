@@ -164,6 +164,6 @@ class RegisterController extends Controller
     {
         return redirect()
             ->route('activation.notice', ['email' => $user->email])
-            ->with('status', 'We sent an activation code to your email.');
+            ->with('status', session('status', 'We sent an activation code to your email.'));
     }
 }

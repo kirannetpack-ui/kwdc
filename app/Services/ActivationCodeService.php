@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Mail\ActivationCodeMail;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ActivationCodeService
@@ -21,11 +22,30 @@ class ActivationCodeService
         return $code;
     }
 
-    public function send(User $user): void
+    public function send(User $user): bool
     {
         $code = $this->generateFor($user);
 
-        Mail::to($user->email, $user->name)->send(new ActivationCodeMail($user, $code));
+        try {
+            Mail::to($user->email, $user->name)->send(new ActivationCodeMail($user, $code));
+
+            return true;
+        } catch (\Throwable $e) {
+            if (! filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN)) {
+                throw $e;
+            }
+
+            Log::warning('Activation email unavailable; showing demo code instead.', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->flash('activation_demo_code', $code);
+            session()->flash('status', 'Email delivery is unavailable on this demo environment. Use the demo activation code shown below.');
+
+            return false;
+        }
     }
 
     public function verify(User $user, string $code): bool
