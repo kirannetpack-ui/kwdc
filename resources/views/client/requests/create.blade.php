@@ -107,7 +107,7 @@
         <!-- Request Form -->
         <div class="bg-white rounded-xl shadow-md p-6">
             <h3 class="text-lg font-bold text-gray-800 mb-4">3. Request Details</h3>
-            <form method="POST" action="{{ route('my-requests.store') }}" id="request_form">
+            <form method="POST" action="{{ route('my-requests.store') }}" id="request_form" enctype="multipart/form-data">
                 @csrf
                 <input type="hidden" name="warehouse_id" id="selected_warehouse_id">
                 
@@ -149,6 +149,24 @@
                     <div class="mb-4">
                         <label class="block text-gray-700 font-semibold mb-2">Contact Phone</label>
                         <input type="text" name="contact_phone" value="{{ old('contact_phone', Auth::user()->phone) }}" class="w-full px-4 py-2 border rounded-lg">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Invoice Document</label>
+                        <input type="file" name="invoice" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-4 py-2 border rounded-lg bg-white">
+                        @error('invoice') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Packing List</label>
+                        <input type="file" name="packing_list" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-4 py-2 border rounded-lg bg-white">
+                        @error('packing_list') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Insurance Document</label>
+                        <input type="file" name="insurance" accept=".pdf,.jpg,.jpeg,.png" class="w-full px-4 py-2 border rounded-lg bg-white">
+                        @error('insurance') <p class="text-red-500 text-sm mt-1">{{ $message }}</p> @enderror
                     </div>
                 </div>
                 

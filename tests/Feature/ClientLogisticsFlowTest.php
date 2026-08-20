@@ -4,7 +4,10 @@ namespace Tests\Feature;
 
 use App\Models\DispatchOrder;
 use App\Models\User;
+use App\Models\Warehouse;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ClientLogisticsFlowTest extends TestCase
@@ -80,5 +83,42 @@ class ClientLogisticsFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Asan Bazaar')
             ->assertSee('Awaiting assignment');
+    }
+
+    public function test_client_warehouse_request_documents_are_stored_privately(): void
+    {
+        Storage::fake('private_uploads');
+
+        $client = User::factory()->create([
+            'role' => 'client',
+            'is_client' => true,
+            'phone' => '9800000000',
+        ]);
+        $warehouse = Warehouse::factory()->create([
+            'status' => 'approved',
+        ]);
+
+        $response = $this->actingAs($client)->post(route('my-requests.store'), [
+            'warehouse_id' => $warehouse->id,
+            'required_area' => 120,
+            'duration_months' => 3,
+            'purpose' => 'Store electronics inventory',
+            'contact_person' => 'Sita Shrestha',
+            'contact_phone' => '9811111111',
+            'invoice' => UploadedFile::fake()->create('invoice.pdf', 12, 'application/pdf'),
+            'packing_list' => UploadedFile::fake()->create('packing-list.pdf', 12, 'application/pdf'),
+            'insurance' => UploadedFile::fake()->create('insurance.pdf', 12, 'application/pdf'),
+        ]);
+
+        $request = \App\Models\WarehouseRequest::first();
+
+        $response->assertRedirect(route('my-requests.index'));
+        $this->assertNotNull($request->invoice_path);
+        $this->assertNotNull($request->packing_list_path);
+        $this->assertNotNull($request->insurance_path);
+        Storage::disk('private_uploads')->assertExists($request->invoice_path);
+        Storage::disk('private_uploads')->assertExists($request->packing_list_path);
+        Storage::disk('private_uploads')->assertExists($request->insurance_path);
+        Storage::disk('public')->assertMissing($request->invoice_path);
     }
 }

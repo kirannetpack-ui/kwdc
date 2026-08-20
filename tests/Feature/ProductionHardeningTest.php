@@ -238,6 +238,23 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString("->orWhere('insurance_doc', \$path)", $privateDocumentController);
     }
 
+    public function test_warehouse_request_insurance_documents_are_private_uploads(): void
+    {
+        $clientRequestController = file_get_contents(app_path('Http/Controllers/ClientRequestHandler.php'));
+        $privateDocumentController = file_get_contents(app_path('Http/Controllers/PrivateDocumentController.php'));
+        $insuranceView = file_get_contents(resource_path('views/admin/insurance/show.blade.php'));
+        $insuranceMail = file_get_contents(app_path('Mail/InsuranceNotification.php'));
+
+        $this->assertStringContainsString("store('warehouse-requests/documents/invoices', 'private_uploads')", $clientRequestController);
+        $this->assertStringContainsString("store('warehouse-requests/documents/packing-lists', 'private_uploads')", $clientRequestController);
+        $this->assertStringContainsString("store('warehouse-requests/documents/insurance', 'private_uploads')", $clientRequestController);
+        $this->assertStringContainsString('whereWarehouseRequestDocumentPath', $privateDocumentController);
+        $this->assertStringContainsString("route('documents.private.show', ['path' => \$warehouseRequest->invoice_path])", $insuranceView);
+        $this->assertStringNotContainsString("asset('storage/'.\$warehouseRequest->", $insuranceView);
+        $this->assertStringContainsString("Storage::disk('private_uploads')->path", $insuranceMail);
+        $this->assertStringNotContainsString("storage_path('app/public/'", $insuranceMail);
+    }
+
     public function test_payment_provider_calls_have_timeout_retry_and_config_guards(): void
     {
         $service = file_get_contents(app_path('Services/PaymentService.php'));

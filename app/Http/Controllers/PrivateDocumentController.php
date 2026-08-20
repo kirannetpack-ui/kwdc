@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SecurityAgency;
 use App\Models\Warehouse;
+use App\Models\WarehouseRequest;
 use App\Models\Box;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
@@ -56,6 +57,21 @@ class PrivateDocumentController extends Controller
             return true;
         }
 
+        $canAccessWarehouseRequestDocument = WarehouseRequest::where(function ($query) use ($path) {
+                $this->whereWarehouseRequestDocumentPath($query, $path);
+            })
+            ->where(function ($query) use ($user) {
+                $query->where('client_id', $user->id)
+                    ->orWhereHas('warehouse', function ($warehouseQuery) use ($user) {
+                        $this->whereWarehouseOwner($warehouseQuery, $user->id);
+                    });
+            })
+            ->exists();
+
+        if ($canAccessWarehouseRequestDocument) {
+            return true;
+        }
+
         return SecurityAgency::where('user_id', $user->id)
             ->where(function ($query) use ($path) {
                 $query->where('registration_certificate_path', $path)
@@ -88,6 +104,10 @@ class PrivateDocumentController extends Controller
             || Equipment::where(function ($query) use ($path) {
                 $this->whereEquipmentDocumentPath($query, $path);
             })
+            ->exists()
+            || WarehouseRequest::where(function ($query) use ($path) {
+                $this->whereWarehouseRequestDocumentPath($query, $path);
+            })
             ->exists();
     }
 
@@ -117,6 +137,13 @@ class PrivateDocumentController extends Controller
     {
         $query->where('registration_doc', $path)
             ->orWhere('insurance_doc', $path);
+    }
+
+    private function whereWarehouseRequestDocumentPath($query, string $path): void
+    {
+        $query->where('invoice_path', $path)
+            ->orWhere('packing_list_path', $path)
+            ->orWhere('insurance_path', $path);
     }
 
     private function whereWarehouseOwner($query, int $userId): void

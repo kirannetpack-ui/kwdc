@@ -70,7 +70,7 @@
                         <dt class="font-bold">Invoice:</dt>
                         <dd>
                             @if($warehouseRequest->invoice_path)
-                                <a href="{{ asset('storage/'.$warehouseRequest->invoice_path) }}" target="_blank" class="text-blue-600">Download</a>
+                                <a href="{{ route('documents.private.show', ['path' => $warehouseRequest->invoice_path]) }}" target="_blank" class="text-blue-600">Download</a>
                             @else
                                 Not uploaded
                             @endif
@@ -80,7 +80,7 @@
                         <dt class="font-bold">Packing List:</dt>
                         <dd>
                             @if($warehouseRequest->packing_list_path)
-                                <a href="{{ asset('storage/'.$warehouseRequest->packing_list_path) }}" target="_blank" class="text-blue-600">Download</a>
+                                <a href="{{ route('documents.private.show', ['path' => $warehouseRequest->packing_list_path]) }}" target="_blank" class="text-blue-600">Download</a>
                             @else
                                 Not uploaded
                             @endif
@@ -90,7 +90,7 @@
                         <dt class="font-bold">Insurance Document:</dt>
                         <dd>
                             @if($warehouseRequest->insurance_path)
-                                <a href="{{ asset('storage/'.$warehouseRequest->insurance_path) }}" target="_blank" class="text-blue-600">Download</a>
+                                <a href="{{ route('documents.private.show', ['path' => $warehouseRequest->insurance_path]) }}" target="_blank" class="text-blue-600">Download</a>
                             @else
                                 Not uploaded
                             @endif

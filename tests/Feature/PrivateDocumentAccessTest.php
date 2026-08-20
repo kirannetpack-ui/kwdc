@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\SecurityAgency;
 use App\Models\User;
 use App\Models\Warehouse;
+use App\Models\WarehouseRequest;
 use App\Models\Box;
 use App\Models\Equipment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -194,6 +195,55 @@ class PrivateDocumentAccessTest extends TestCase
             'type' => 'loader',
             'location' => 'Lalitpur',
             'insurance_doc' => $path,
+        ]);
+
+        $this->actingAs($otherUser)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertForbidden();
+    }
+
+    public function test_client_can_download_their_warehouse_request_private_document(): void
+    {
+        Storage::fake('private_uploads');
+
+        $client = User::factory()->create(['role' => 'client']);
+        $warehouse = Warehouse::factory()->create();
+        $path = 'warehouse-requests/documents/invoices/request-invoice.pdf';
+        Storage::disk('private_uploads')->put($path, 'private warehouse request invoice');
+
+        WarehouseRequest::create([
+            'client_id' => $client->id,
+            'warehouse_id' => $warehouse->id,
+            'required_area' => 100,
+            'duration_months' => 2,
+            'purpose' => 'Consumer goods',
+            'invoice_path' => $path,
+            'status' => 'pending',
+        ]);
+
+        $this->actingAs($client)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertOk();
+    }
+
+    public function test_other_users_cannot_download_warehouse_request_private_documents(): void
+    {
+        Storage::fake('private_uploads');
+
+        $client = User::factory()->create(['role' => 'client']);
+        $otherUser = User::factory()->create(['role' => 'client']);
+        $warehouse = Warehouse::factory()->create();
+        $path = 'warehouse-requests/documents/packing-lists/request-packing-list.pdf';
+        Storage::disk('private_uploads')->put($path, 'private warehouse request packing list');
+
+        WarehouseRequest::create([
+            'client_id' => $client->id,
+            'warehouse_id' => $warehouse->id,
+            'required_area' => 100,
+            'duration_months' => 2,
+            'purpose' => 'Consumer goods',
+            'packing_list_path' => $path,
+            'status' => 'pending',
         ]);
 
         $this->actingAs($otherUser)
