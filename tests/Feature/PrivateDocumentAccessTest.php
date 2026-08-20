@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Warehouse;
 use App\Models\WarehouseRequest;
 use App\Models\Box;
+use App\Models\DeliveryStop;
+use App\Models\DispatchOrder;
 use App\Models\Equipment;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
@@ -277,6 +279,80 @@ class PrivateDocumentAccessTest extends TestCase
 
         $this->actingAs($otherUser)
             ->getJson(route('boxes.documents', $box->id))
+            ->assertForbidden();
+    }
+
+    public function test_dispatch_client_driver_and_admin_can_download_delivery_stop_invoice_document(): void
+    {
+        Storage::fake('private_uploads');
+
+        $client = User::factory()->create(['role' => 'client']);
+        $driver = User::factory()->create(['role' => 'driver']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $path = 'dispatch-stops/documents/invoices/stop-invoice.pdf';
+        Storage::disk('private_uploads')->put($path, 'private dispatch invoice');
+
+        $dispatch = DispatchOrder::create([
+            'client_id' => $client->id,
+            'driver_id' => $driver->id,
+            'tracking_id' => 'STOP-DOC-001',
+            'pickup_address' => 'Pickup Point',
+            'delivery_address' => 'Delivery Point',
+            'status' => 'pending',
+        ]);
+
+        DeliveryStop::create([
+            'dispatch_order_id' => $dispatch->id,
+            'stop_number' => 1,
+            'recipient_name' => 'Receiver',
+            'recipient_phone' => '9800000010',
+            'address' => 'Delivery Point',
+            'status' => 'pending',
+            'invoice_document' => $path,
+        ]);
+
+        $this->actingAs($client)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertOk();
+
+        $this->actingAs($driver)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertOk();
+    }
+
+    public function test_other_users_cannot_download_delivery_stop_invoice_documents(): void
+    {
+        Storage::fake('private_uploads');
+
+        $client = User::factory()->create(['role' => 'client']);
+        $otherUser = User::factory()->create(['role' => 'client']);
+        $path = 'dispatch-stops/documents/invoices/private-stop-invoice.pdf';
+        Storage::disk('private_uploads')->put($path, 'private dispatch invoice');
+
+        $dispatch = DispatchOrder::create([
+            'client_id' => $client->id,
+            'tracking_id' => 'STOP-DOC-002',
+            'pickup_address' => 'Pickup Point',
+            'delivery_address' => 'Delivery Point',
+            'status' => 'pending',
+        ]);
+
+        DeliveryStop::create([
+            'dispatch_order_id' => $dispatch->id,
+            'stop_number' => 1,
+            'recipient_name' => 'Receiver',
+            'recipient_phone' => '9800000011',
+            'address' => 'Delivery Point',
+            'status' => 'pending',
+            'invoice_document' => $path,
+        ]);
+
+        $this->actingAs($otherUser)
+            ->get(route('documents.private.show', ['path' => $path]))
             ->assertForbidden();
     }
 }

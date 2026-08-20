@@ -228,6 +228,17 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('Storage::url($box->', $trackView);
     }
 
+    public function test_dispatch_stop_invoice_documents_use_private_route(): void
+    {
+        $privateDocumentController = file_get_contents(app_path('Http/Controllers/PrivateDocumentController.php'));
+        $dispatchShowView = file_get_contents(resource_path('views/dispatch/show.blade.php'));
+
+        $this->assertStringContainsString('canAccessDeliveryStopDocument', $privateDocumentController);
+        $this->assertStringContainsString("DeliveryStop::where('invoice_document', \$path)", $privateDocumentController);
+        $this->assertStringContainsString("route('documents.private.show', ['path' => \$stop->invoice_document])", $dispatchShowView);
+        $this->assertStringNotContainsString('Storage::url($stop->invoice_document)', $dispatchShowView);
+    }
+
     public function test_equipment_compliance_documents_are_private_uploads(): void
     {
         $controller = file_get_contents(app_path('Http/Controllers/EquipmentController.php'));

@@ -59,7 +59,7 @@
                 <p class="text-sm text-gray-600">Boxes: {{ $stop->boxes_count }}</p>
                 @if($stop->invoice_document)
                 <div class="mt-2">
-                    <a href="{{ Storage::url($stop->invoice_document) }}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
+                    <a href="{{ route('documents.private.show', ['path' => $stop->invoice_document]) }}" target="_blank" class="text-blue-500 hover:text-blue-700 text-sm">
                         <i class="fas fa-file-invoice mr-1"></i> View Invoice
                     </a>
                 </div>

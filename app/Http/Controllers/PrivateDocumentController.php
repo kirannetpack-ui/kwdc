@@ -6,6 +6,7 @@ use App\Models\SecurityAgency;
 use App\Models\Warehouse;
 use App\Models\WarehouseRequest;
 use App\Models\Box;
+use App\Models\DeliveryStop;
 use App\Models\Equipment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
@@ -79,7 +80,8 @@ class PrivateDocumentController extends Controller
                     ->orWhere('pan_vat_certificate_path', $path);
             })
             ->exists()
-            || $this->canAccessBoxDocument($user, $path);
+            || $this->canAccessBoxDocument($user, $path)
+            || $this->canAccessDeliveryStopDocument($user, $path);
     }
 
     private function documentExistsInRecords(string $path): bool
@@ -108,6 +110,8 @@ class PrivateDocumentController extends Controller
             || WarehouseRequest::where(function ($query) use ($path) {
                 $this->whereWarehouseRequestDocumentPath($query, $path);
             })
+            ->exists()
+            || DeliveryStop::where('invoice_document', $path)
             ->exists();
     }
 
@@ -121,6 +125,16 @@ class PrivateDocumentController extends Controller
                     ->orWhereHas('warehouse', function ($warehouseQuery) use ($user) {
                         $this->whereWarehouseOwner($warehouseQuery, $user->id);
                     });
+            })
+            ->exists();
+    }
+
+    private function canAccessDeliveryStopDocument($user, string $path): bool
+    {
+        return DeliveryStop::where('invoice_document', $path)
+            ->whereHas('dispatchOrder', function ($query) use ($user) {
+                $query->where('client_id', $user->id)
+                    ->orWhere('driver_id', $user->id);
             })
             ->exists();
     }
