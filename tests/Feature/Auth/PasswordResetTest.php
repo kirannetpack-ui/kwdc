@@ -3,7 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\User;
-use Illuminate\Auth\Notifications\ResetPassword;
+use App\Notifications\ProfessionalResetPasswordNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
@@ -36,7 +36,27 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ProfessionalResetPasswordNotification::class);
+    }
+
+    public function test_reset_password_email_has_professional_security_details(): void
+    {
+        $user = User::factory()->create([
+            'name' => 'Kiran',
+            'email' => 'kiran@example.com',
+        ]);
+
+        $notification = new ProfessionalResetPasswordNotification('reset-token');
+        $mail = $notification->toMail($user);
+        $html = view($mail->view, $mail->viewData)->render();
+
+        $this->assertSame('Reset your KTM-WDC password', $mail->subject);
+        $this->assertStringContainsString('Account security', $html);
+        $this->assertStringContainsString('Hello Kiran', $html);
+        $this->assertStringContainsString('Reset password', $html);
+        $this->assertStringContainsString('This password reset link expires in 60 minutes.', $html);
+        $this->assertStringContainsString('KTM-WDC will never ask you to share your password, reset link, verification code, or payment details', $html);
+        $this->assertStringContainsString('reset-token', $html);
     }
 
     public function test_reset_password_screen_can_be_rendered(): void
@@ -47,7 +67,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
+        Notification::assertSentTo($user, ProfessionalResetPasswordNotification::class, function ($notification) {
             $response = $this->get('/reset-password/'.$notification->token);
 
             $response->assertStatus(200);
@@ -64,7 +84,7 @@ class PasswordResetTest extends TestCase
 
         $this->post('/forgot-password', ['email' => $user->email]);
 
-        Notification::assertSentTo($user, ResetPassword::class, function ($notification) use ($user) {
+        Notification::assertSentTo($user, ProfessionalResetPasswordNotification::class, function ($notification) use ($user) {
             $response = $this->post('/reset-password', [
                 'token' => $notification->token,
                 'email' => $user->email,

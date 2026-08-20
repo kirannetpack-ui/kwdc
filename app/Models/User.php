@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\DispatchOrder;
+use App\Notifications\ProfessionalResetPasswordNotification;
 
 class User extends Authenticatable
 {
@@ -111,6 +112,11 @@ class User extends Authenticatable
     public function isEquipmentOwner(): bool
     {
         return $this->role === 'equipment_owner' || $this->is_equipment_owner === true;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ProfessionalResetPasswordNotification($token));
     }
 
     // ============================================================

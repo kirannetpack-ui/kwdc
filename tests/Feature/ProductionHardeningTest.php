@@ -201,4 +201,15 @@ class ProductionHardeningTest extends TestCase
         $this->assertContains('forgot-password', $uris);
         $this->assertContains('reset-password/{token}', $uris);
     }
+
+    public function test_password_reset_uses_branded_security_email(): void
+    {
+        $userModel = file_get_contents(app_path('Models/User.php'));
+        $emailView = file_get_contents(resource_path('views/emails/password-reset.blade.php'));
+
+        $this->assertStringContainsString('ProfessionalResetPasswordNotification', $userModel);
+        $this->assertStringContainsString('Reset your KTM-WDC password', $emailView);
+        $this->assertStringContainsString('KTM-WDC will never ask you to share your password', $emailView);
+        $this->assertStringContainsString('This password reset link expires in', $emailView);
+    }
 }
