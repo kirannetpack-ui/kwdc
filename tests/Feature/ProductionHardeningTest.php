@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Notification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
@@ -99,6 +100,7 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString('MAIL_MAILER=smtp', $template);
         $this->assertStringContainsString('KHALTI_SECRET_KEY=', $template);
         $this->assertStringContainsString('ESEWA_VERIFICATION_URL=https://esewa.com.np/epay/transrec', $template);
+        $this->assertStringContainsString('PAYMENT_HTTP_TIMEOUT=10', $template);
     }
 
     public function test_deployment_config_does_not_generate_app_key_at_build_time(): void
@@ -110,7 +112,16 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringNotContainsString('key:generate', $nixpacks);
         $this->assertStringContainsString('npm run build', $nixpacks);
         $this->assertStringContainsString('APP_KEY must be configured', $startScript);
+        $this->assertStringContainsString('php artisan app:production-preflight', $startScript);
         $this->assertStringContainsString('php artisan migrate --force', $startScript);
+        $this->assertLessThan(
+            strpos($startScript, 'php artisan app:production-preflight'),
+            strpos($startScript, 'php artisan optimize:clear')
+        );
+        $this->assertLessThan(
+            strpos($startScript, 'php artisan migrate --force'),
+            strpos($startScript, 'php artisan app:production-preflight')
+        );
         $this->assertStringContainsString('worker: php artisan queue:work', $procfile);
         $this->assertStringContainsString('scheduler: php artisan schedule:work', $procfile);
     }
@@ -211,5 +222,52 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString('Reset your KTM-WDC password', $emailView);
         $this->assertStringContainsString('KTM-WDC will never ask you to share your password', $emailView);
         $this->assertStringContainsString('This password reset link expires in', $emailView);
+    }
+
+    public function test_production_preflight_fails_for_incomplete_configuration(): void
+    {
+        Config::set('app.env', 'production');
+        Config::set('app.debug', false);
+        Config::set('app.key', '');
+        Config::set('app.url', 'http://ktm-wdc.example');
+
+        $exitCode = Artisan::call('app:production-preflight');
+        $output = Artisan::output();
+
+        $this->assertSame(1, $exitCode);
+        $this->assertStringContainsString('APP_KEY must be configured.', $output);
+        $this->assertStringContainsString('APP_URL must be a real https:// URL.', $output);
+    }
+
+    public function test_production_preflight_passes_with_required_configuration(): void
+    {
+        Config::set('app.env', 'production');
+        Config::set('app.debug', false);
+        Config::set('app.key', 'base64:production-secret-key');
+        Config::set('app.url', 'https://ktm-wdc.example');
+        Config::set('session.encrypt', true);
+        Config::set('session.secure', true);
+        Config::set('session.http_only', true);
+        Config::set('session.same_site', 'lax');
+        Config::set('database.default', 'sqlite');
+        Config::set('database.connections.sqlite.database', ':memory:');
+        Config::set('mail.default', 'smtp');
+        Config::set('mail.mailers.smtp.host', 'smtp.example.com');
+        Config::set('mail.mailers.smtp.username', 'mail-user');
+        Config::set('mail.mailers.smtp.password', 'mail-password');
+        Config::set('mail.from.address', 'no-reply@ktm-wdc.example');
+        Config::set('payment.khalti.public_key', 'khalti-public');
+        Config::set('payment.khalti.secret_key', 'khalti-secret');
+        Config::set('payment.khalti.base_url', 'https://a.khalti.com/api/v2/');
+        Config::set('payment.khalti.verification_url', 'https://a.khalti.com/api/v2/epayment/lookup/');
+        Config::set('payment.esewa.merchant_code', 'esewa-merchant');
+        Config::set('payment.esewa.secret_key', 'esewa-secret');
+        Config::set('payment.esewa.payment_url', 'https://esewa.com.np/epay/main');
+        Config::set('payment.esewa.verification_url', 'https://esewa.com.np/epay/transrec');
+
+        $exitCode = Artisan::call('app:production-preflight');
+
+        $this->assertSame(0, $exitCode);
+        $this->assertStringContainsString('Production preflight passed.', Artisan::output());
     }
 }
