@@ -8,6 +8,7 @@ use App\Models\WarehouseRequest;
 use App\Models\Box;
 use App\Models\DeliveryStop;
 use App\Models\Equipment;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
@@ -81,7 +82,8 @@ class PrivateDocumentController extends Controller
             })
             ->exists()
             || $this->canAccessBoxDocument($user, $path)
-            || $this->canAccessDeliveryStopDocument($user, $path);
+            || $this->canAccessDeliveryStopDocument($user, $path)
+            || $this->canAccessVehicleDocument($user, $path);
     }
 
     private function documentExistsInRecords(string $path): bool
@@ -112,6 +114,10 @@ class PrivateDocumentController extends Controller
             })
             ->exists()
             || DeliveryStop::where('invoice_document', $path)
+            ->exists()
+            || Vehicle::where(function ($query) use ($path) {
+                $this->whereVehicleDocumentPath($query, $path);
+            })
             ->exists();
     }
 
@@ -139,6 +145,18 @@ class PrivateDocumentController extends Controller
             ->exists();
     }
 
+    private function canAccessVehicleDocument($user, string $path): bool
+    {
+        return Vehicle::where(function ($query) use ($path) {
+                $this->whereVehicleDocumentPath($query, $path);
+            })
+            ->where(function ($query) use ($user) {
+                $query->where('driver_id', $user->id)
+                    ->orWhere('user_id', $user->id);
+            })
+            ->exists();
+    }
+
     private function whereBoxDocumentPath($query, string $path): void
     {
         $query->where('invoice_document', $path)
@@ -158,6 +176,15 @@ class PrivateDocumentController extends Controller
         $query->where('invoice_path', $path)
             ->orWhere('packing_list_path', $path)
             ->orWhere('insurance_path', $path);
+    }
+
+    private function whereVehicleDocumentPath($query, string $path): void
+    {
+        $query->where('insurance_file_path', $path)
+            ->orWhere('fitness_file_path', $path)
+            ->orWhere('pollution_file_path', $path)
+            ->orWhere('permit_file_path', $path)
+            ->orWhere('blue_book_file_path', $path);
     }
 
     private function whereWarehouseOwner($query, int $userId): void

@@ -299,6 +299,20 @@ class ProductionHardeningTest extends TestCase
         $this->assertStringContainsString("->orWhere('insurance_doc', \$path)", $privateDocumentController);
     }
 
+    public function test_driver_vehicle_compliance_documents_are_private_uploads(): void
+    {
+        $controller = file_get_contents(app_path('Http/Controllers/DriverVehicleController.php'));
+        $privateDocumentController = file_get_contents(app_path('Http/Controllers/PrivateDocumentController.php'));
+
+        $this->assertStringContainsString("storeAs('vehicle-documents/' . \$folder, \$filename, 'private_uploads')", $controller);
+        $this->assertStringContainsString("'insurance_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'", $controller);
+        $this->assertStringContainsString("storeAs('vehicle-photos/' . \$folder, \$filename, 'public')", $controller);
+        $this->assertStringContainsString("Storage::disk('private_uploads')->delete", $controller);
+        $this->assertStringContainsString('whereVehicleDocumentPath', $privateDocumentController);
+        $this->assertStringContainsString("->orWhere('blue_book_file_path', \$path)", $privateDocumentController);
+        $this->assertStringNotContainsString("storeAs('vehicle_documents/' . \$folder, \$filename, 'public')", $controller);
+    }
+
     public function test_warehouse_request_insurance_documents_are_private_uploads(): void
     {
         $clientRequestController = file_get_contents(app_path('Http/Controllers/ClientRequestHandler.php'));

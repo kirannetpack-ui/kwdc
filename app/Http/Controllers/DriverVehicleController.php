@@ -45,20 +45,29 @@ class DriverVehicleController extends Controller
             'permit_number' => 'nullable|string|max:255',
             'permit_valid_until' => 'nullable|date',
             'blue_book_number' => 'nullable|string|max:255',
+            'insurance_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'fitness_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'pollution_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'permit_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'blue_book_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'front_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'back_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'left_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'right_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+            'interior_photo' => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
         ]);
 
-        // Handle file uploads
-        $insuranceFile = $this->uploadFile($request->file('insurance_file'), 'insurance');
-        $fitnessFile = $this->uploadFile($request->file('fitness_file'), 'fitness');
-        $pollutionFile = $this->uploadFile($request->file('pollution_file'), 'pollution');
-        $permitFile = $this->uploadFile($request->file('permit_file'), 'permit');
-        $blueBookFile = $this->uploadFile($request->file('blue_book_file'), 'blue_book');
+        $insuranceFile = $this->uploadPrivateDocument($request->file('insurance_file'), 'insurance');
+        $fitnessFile = $this->uploadPrivateDocument($request->file('fitness_file'), 'fitness');
+        $pollutionFile = $this->uploadPrivateDocument($request->file('pollution_file'), 'pollution');
+        $permitFile = $this->uploadPrivateDocument($request->file('permit_file'), 'permit');
+        $blueBookFile = $this->uploadPrivateDocument($request->file('blue_book_file'), 'blue-book');
         
-        $frontPhoto = $this->uploadFile($request->file('front_photo'), 'photos');
-        $backPhoto = $this->uploadFile($request->file('back_photo'), 'photos');
-        $leftPhoto = $this->uploadFile($request->file('left_photo'), 'photos');
-        $rightPhoto = $this->uploadFile($request->file('right_photo'), 'photos');
-        $interiorPhoto = $this->uploadFile($request->file('interior_photo'), 'photos');
+        $frontPhoto = $this->uploadPublicPhoto($request->file('front_photo'), 'front');
+        $backPhoto = $this->uploadPublicPhoto($request->file('back_photo'), 'back');
+        $leftPhoto = $this->uploadPublicPhoto($request->file('left_photo'), 'left');
+        $rightPhoto = $this->uploadPublicPhoto($request->file('right_photo'), 'right');
+        $interiorPhoto = $this->uploadPublicPhoto($request->file('interior_photo'), 'interior');
 
         $vehicle = Vehicle::create([
             'driver_id' => auth()->id(),
@@ -103,13 +112,23 @@ class DriverVehicleController extends Controller
             ->with('success', 'Vehicle registered successfully! Awaiting admin approval.');
     }
 
-    private function uploadFile($file, $folder)
+    private function uploadPrivateDocument($file, string $folder): ?string
     {
         if ($file && $file->isValid()) {
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $path = $file->storeAs('vehicle_documents/' . $folder, $filename, 'public');
-            return $path;
+            return $file->storeAs('vehicle-documents/' . $folder, $filename, 'private_uploads');
         }
+
+        return null;
+    }
+
+    private function uploadPublicPhoto($file, string $folder): ?string
+    {
+        if ($file && $file->isValid()) {
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            return $file->storeAs('vehicle-photos/' . $folder, $filename, 'public');
+        }
+
         return null;
     }
 
@@ -158,14 +177,23 @@ public function show($id)
     {
         $vehicle = Vehicle::where('driver_id', auth()->id())->findOrFail($id);
         
-        // Delete associated files
-        $files = [
+        $privateFiles = [
             'insurance_file_path', 'fitness_file_path', 'pollution_file_path',
-            'permit_file_path', 'blue_book_file_path', 'front_photo_path',
-            'back_photo_path', 'left_photo_path', 'right_photo_path', 'interior_photo_path'
+            'permit_file_path', 'blue_book_file_path',
         ];
-        
-        foreach ($files as $fileField) {
+
+        foreach ($privateFiles as $fileField) {
+            if ($vehicle->$fileField && Storage::disk('private_uploads')->exists($vehicle->$fileField)) {
+                Storage::disk('private_uploads')->delete($vehicle->$fileField);
+            }
+        }
+
+        $publicFiles = [
+            'front_photo_path', 'back_photo_path', 'left_photo_path',
+            'right_photo_path', 'interior_photo_path',
+        ];
+
+        foreach ($publicFiles as $fileField) {
             if ($vehicle->$fileField && Storage::disk('public')->exists($vehicle->$fileField)) {
                 Storage::disk('public')->delete($vehicle->$fileField);
             }

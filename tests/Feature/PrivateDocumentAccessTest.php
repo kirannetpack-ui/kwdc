@@ -10,6 +10,7 @@ use App\Models\Box;
 use App\Models\DeliveryStop;
 use App\Models\DispatchOrder;
 use App\Models\Equipment;
+use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
@@ -349,6 +350,58 @@ class PrivateDocumentAccessTest extends TestCase
             'address' => 'Delivery Point',
             'status' => 'pending',
             'invoice_document' => $path,
+        ]);
+
+        $this->actingAs($otherUser)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertForbidden();
+    }
+
+    public function test_driver_and_admin_can_download_vehicle_private_documents(): void
+    {
+        Storage::fake('private_uploads');
+
+        $driver = User::factory()->create(['role' => 'driver']);
+        $admin = User::factory()->create(['role' => 'admin']);
+        $path = 'vehicle-documents/insurance/driver-insurance.pdf';
+        Storage::disk('private_uploads')->put($path, 'private vehicle insurance');
+
+        Vehicle::create([
+            'driver_id' => $driver->id,
+            'vehicle_number' => 'BA 1 KHA 1001',
+            'vehicle_type' => 'Truck',
+            'capacity' => 1000,
+            'capacity_unit' => 'kg',
+            'registration_number' => 'VEH-TEST-001',
+            'insurance_file_path' => $path,
+        ]);
+
+        $this->actingAs($driver)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertOk();
+
+        $this->actingAs($admin)
+            ->get(route('documents.private.show', ['path' => $path]))
+            ->assertOk();
+    }
+
+    public function test_other_users_cannot_download_vehicle_private_documents(): void
+    {
+        Storage::fake('private_uploads');
+
+        $driver = User::factory()->create(['role' => 'driver']);
+        $otherUser = User::factory()->create(['role' => 'client']);
+        $path = 'vehicle-documents/blue-book/private-blue-book.pdf';
+        Storage::disk('private_uploads')->put($path, 'private vehicle blue book');
+
+        Vehicle::create([
+            'driver_id' => $driver->id,
+            'vehicle_number' => 'BA 1 KHA 1002',
+            'vehicle_type' => 'Pickup',
+            'capacity' => 500,
+            'capacity_unit' => 'kg',
+            'registration_number' => 'VEH-TEST-002',
+            'blue_book_file_path' => $path,
         ]);
 
         $this->actingAs($otherUser)
