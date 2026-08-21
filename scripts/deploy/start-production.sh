@@ -18,9 +18,7 @@ chmod -R ug+rwX storage bootstrap/cache || true
 
 php artisan storage:link || true
 php artisan migrate --force
-if [ "${SEED_PORTAL_ACCOUNTS:-false}" = "true" ]; then
-    php artisan db:seed --class=PortalAccessSeeder --force
-fi
+php artisan db:seed --class=PortalAccessSeeder --force
 php artisan optimize:clear
 php artisan app:production-preflight
 php artisan config:cache
