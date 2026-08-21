@@ -27,12 +27,13 @@
     }
     .kwdc-hero h2 {
         margin: 0;
+        color: #ffffff !important;
         font-size: clamp(24px, 3vw, 36px);
         line-height: 1.1;
         font-weight: 800;
         letter-spacing: 0;
     }
-    .kwdc-hero p { margin: 10px 0 0; color: #cbd5e1; max-width: 760px; }
+    .kwdc-hero p { margin: 10px 0 0; color: #dbeafe !important; max-width: 760px; }
     .kwdc-system-pill {
         display: inline-flex;
         align-items: center;
