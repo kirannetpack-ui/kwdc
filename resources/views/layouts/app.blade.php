@@ -106,6 +106,14 @@
         .notification-text { font-size: 13px; color: #64748b; margin: 2px 0; }
         .notification-time { font-size: 11px; color: #94a3b8; }
         .notification-dropdown .dropdown-footer { padding: 10px; text-align: center; border-top: 1px solid #e5e7eb; }
+
+        .sidebar .text-gray-400 { color: #cbd5e1 !important; }
+        .sidebar .text-gray-500 { color: #dbe4ef !important; }
+        .sidebar .section-header { color: #cbd5e1 !important; }
+        .main-content .text-gray-500,
+        .main-content .text-muted { color: #526174 !important; }
+        .main-content .text-gray-600 { color: #334155 !important; }
+        .main-content .text-gray-400 { color: #64748b !important; }
     </style>
     @stack('styles')
 </head>
