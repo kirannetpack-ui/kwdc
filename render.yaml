@@ -18,7 +18,7 @@ services:
       - key: APP_DEBUG
         value: "false"
       - key: PHASE_ONE_DEMO
-        value: "false"
+        value: "true"
       - key: SEED_PORTAL_ACCOUNTS
         value: "true"
       - key: APP_KEY
