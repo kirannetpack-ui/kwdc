@@ -13,10 +13,10 @@ class UserSeeder extends Seeder
     {
         // Admin User
         User::firstOrCreate(
-            ['email' => 'admin.demo@kwdc.test'],
+            ['email' => 'admin.access@kwdc.test'],
             [
                 'name' => 'Admin User',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000000',
                 'is_admin' => true,
                 'role' => 'admin',
@@ -26,10 +26,10 @@ class UserSeeder extends Seeder
 
         // Client Users
         User::firstOrCreate(
-            ['email' => 'client.demo@kwdc.test'],
+            ['email' => 'client.access@kwdc.test'],
             [
                 'name' => 'Client User',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000001',
                 'is_client' => true,
                 'role' => 'client',
@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
             ['email' => 'client.test@kwdc.test'],
             [
                 'name' => 'Test User',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000002',
                 'is_client' => true,
                 'role' => 'client',
@@ -51,10 +51,10 @@ class UserSeeder extends Seeder
 
         // Driver Users
         User::firstOrCreate(
-            ['email' => 'driver.demo@kwdc.test'],
+            ['email' => 'driver.access@kwdc.test'],
             [
                 'name' => 'Driver User',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000003',
                 'is_driver' => true,
                 'role' => 'driver',
@@ -66,7 +66,7 @@ class UserSeeder extends Seeder
             ['email' => 'driver.madan@kwdc.test'],
             [
                 'name' => 'Madan Driver',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000004',
                 'is_driver' => true,
                 'role' => 'driver',
@@ -79,7 +79,7 @@ class UserSeeder extends Seeder
             ['email' => 'equipment.owner@kwdc.test'],
             [
                 'name' => 'Equipment Owner',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000005',
                 'is_equipment_owner' => true,
                 'role' => 'equipment_owner',
@@ -92,7 +92,7 @@ class UserSeeder extends Seeder
             ['email' => 'property.owner@kwdc.test'],
             [
                 'name' => 'Warehouse Owner',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000006',
                 'is_property_owner' => true,
                 'role' => 'property_owner',
@@ -102,9 +102,9 @@ class UserSeeder extends Seeder
 
         $this->command->info('Users seeded successfully!');
         $this->command->info('Login credentials:');
-        $this->command->info('Admin: admin.demo@kwdc.test / development demo password');
-        $this->command->info('Client: client.demo@kwdc.test / development demo password');
-        $this->command->info('Driver: driver.demo@kwdc.test / development demo password');
+        $this->command->info('Admin: admin.access@kwdc.test / KwdcNew2026!');
+        $this->command->info('Client: client.access@kwdc.test / KwdcNew2026!');
+        $this->command->info('Driver: driver.access@kwdc.test / KwdcNew2026!');
         $this->command->info('Equipment: equipment.owner@kwdc.test / development demo password');
         $this->command->info('Property: property.owner@kwdc.test / development demo password');
     }

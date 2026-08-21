@@ -21,10 +21,10 @@ class DatabaseSeeder extends Seeder
         
         // Admin
         $admin = User::updateOrCreate(
-            ['email' => 'admin.demo@kwdc.test'],
+            ['email' => 'admin.access@kwdc.test'],
             [
                 'name' => 'Admin User',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000000',
                 'role' => 'admin',
                 'is_admin' => true,
@@ -35,14 +35,14 @@ class DatabaseSeeder extends Seeder
                 'user_code' => 'ADM' . Str::random(6),
             ]
         );
-        echo "✅ Admin: admin.demo@kwdc.test (ID: {$admin->id})\n";
+        echo "✅ Admin: admin.access@kwdc.test (ID: {$admin->id})\n";
 
         // Clients
         $client1 = User::updateOrCreate(
             ['email' => 'client.primary@kwdc.test'],
             [
                 'name' => 'Kiran Thapa',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000001',
                 'role' => 'client',
                 'is_admin' => false,
@@ -59,7 +59,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'client.secondary@kwdc.test'],
             [
                 'name' => 'Test Client',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000002',
                 'role' => 'client',
                 'is_admin' => false,
@@ -77,7 +77,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'driver.madan@kwdc.test'],
             [
                 'name' => 'Madan Gurung',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000010',
                 'role' => 'driver',
                 'is_admin' => false,
@@ -94,7 +94,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'driver.sita@kwdc.test'],
             [
                 'name' => 'Sita Rai',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000011',
                 'role' => 'driver',
                 'is_admin' => false,
@@ -111,7 +111,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'driver.hari@kwdc.test'],
             [
                 'name' => 'Hari Shrestha',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000012',
                 'role' => 'driver',
                 'is_admin' => false,
@@ -129,7 +129,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'property.ram@kwdc.test'],
             [
                 'name' => 'Ram Sharma',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000020',
                 'role' => 'property_owner',
                 'is_admin' => false,
@@ -146,7 +146,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'property.gita@kwdc.test'],
             [
                 'name' => 'Gita Adhikari',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000021',
                 'role' => 'property_owner',
                 'is_admin' => false,
@@ -164,7 +164,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'equipment.krishna@kwdc.test'],
             [
                 'name' => 'Krishna Tamang',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000030',
                 'role' => 'equipment_owner',
                 'is_admin' => false,
@@ -181,7 +181,7 @@ class DatabaseSeeder extends Seeder
             ['email' => 'equipment.maya@kwdc.test'],
             [
                 'name' => 'Maya Thapa',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'phone' => '9800000031',
                 'role' => 'equipment_owner',
                 'is_admin' => false,
@@ -518,16 +518,16 @@ class DatabaseSeeder extends Seeder
         echo "\n🎉 Database seeding completed!\n";
         echo "============================================\n";
         echo "🔑 Test Credentials:\n";
-        echo "   Admin: admin.demo@kwdc.test / development demo password\n";
-        echo "   Client: client.primary@kwdc.test / development demo password\n";
-        echo "   Client: client.secondary@kwdc.test / development demo password\n";
-        echo "   Driver: driver.madan@kwdc.test / development demo password\n";
-        echo "   Driver: driver.sita@kwdc.test / development demo password\n";
-        echo "   Driver: driver.hari@kwdc.test / development demo password\n";
-        echo "   Property Owner: property.ram@kwdc.test / development demo password\n";
-        echo "   Property Owner: property.gita@kwdc.test / development demo password\n";
-        echo "   Equipment Owner: equipment.krishna@kwdc.test / development demo password\n";
-        echo "   Equipment Owner: equipment.maya@kwdc.test / development demo password\n";
+        echo "   Admin: admin.access@kwdc.test / KwdcNew2026!\n";
+        echo "   Client: client.primary@kwdc.test / KwdcNew2026!\n";
+        echo "   Client: client.secondary@kwdc.test / KwdcNew2026!\n";
+        echo "   Driver: driver.madan@kwdc.test / KwdcNew2026!\n";
+        echo "   Driver: driver.sita@kwdc.test / KwdcNew2026!\n";
+        echo "   Driver: driver.hari@kwdc.test / KwdcNew2026!\n";
+        echo "   Property Owner: property.ram@kwdc.test / KwdcNew2026!\n";
+        echo "   Property Owner: property.gita@kwdc.test / KwdcNew2026!\n";
+        echo "   Equipment Owner: equipment.krishna@kwdc.test / KwdcNew2026!\n";
+        echo "   Equipment Owner: equipment.maya@kwdc.test / KwdcNew2026!\n";
         echo "============================================\n";
     }
 }

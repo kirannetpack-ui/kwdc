@@ -13,8 +13,8 @@ class UsersTableSeeder extends Seeder
         // Create Admin User
         User::create([
             'name' => 'Admin User',
-            'email' => 'admin.demo@kwdc.test',
-            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+            'email' => 'admin.access@kwdc.test',
+            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
             'role' => 'admin',
             'is_admin' => true,
             'user_code' => 'ADM-' . date('Y') . '-0001',
@@ -24,8 +24,8 @@ class UsersTableSeeder extends Seeder
         // Create Client User
         User::create([
             'name' => 'Test Client',
-            'email' => 'client.demo@kwdc.test',
-            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+            'email' => 'client.access@kwdc.test',
+            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
             'role' => 'client',
             'is_client' => true,
             'user_code' => 'CLT-' . date('Y') . '-0001',
@@ -34,8 +34,8 @@ class UsersTableSeeder extends Seeder
         // Create Driver User
         User::create([
             'name' => 'Test Driver',
-            'email' => 'driver.demo@kwdc.test',
-            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+            'email' => 'driver.access@kwdc.test',
+            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
             'role' => 'driver',
             'is_driver' => true,
             'user_code' => 'DRV-' . date('Y') . '-0001',
@@ -44,8 +44,8 @@ class UsersTableSeeder extends Seeder
         // Create Equipment Owner User
         User::create([
             'name' => 'Test Equipment Owner',
-            'email' => 'equipment.demo@kwdc.test',
-            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+            'email' => 'equipment.access@kwdc.test',
+            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
             'role' => 'equipment_owner',
             'is_equipment_owner' => true,
             'user_code' => 'EQO-' . date('Y') . '-0001',
@@ -54,8 +54,8 @@ class UsersTableSeeder extends Seeder
         // Create Property Owner User
         User::create([
             'name' => 'Test Property Owner',
-            'email' => 'property.demo@kwdc.test',
-            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+            'email' => 'property.access@kwdc.test',
+            'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
             'role' => 'property_owner',
             'is_property_owner' => true,
             'user_code' => 'PRP-' . date('Y') . '-0001',

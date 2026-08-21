@@ -13,16 +13,16 @@ class NepaliDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        $password = Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password'));
+        $password = Hash::make('KwdcNew2026!');
 
-        $admin = $this->user('admin.demo@kwdc.test', 'Demo Admin', 'admin', $password, [
+        $admin = $this->user('admin.access@kwdc.test', 'Demo Admin', 'admin', $password, [
             'is_admin' => true,
             'phone' => '9800000000',
             'address' => 'Putalisadak, Kathmandu',
             'user_code' => 'ADM-DEMO',
         ]);
 
-        $client = $this->user('client.demo@kwdc.test', 'Sita Enterprises Demo', 'client', $password, [
+        $client = $this->user('client.access@kwdc.test', 'Sita Enterprises Demo', 'client', $password, [
             'is_client' => true,
             'phone' => '9801112233',
             'address' => 'New Road, Kathmandu',
@@ -36,7 +36,7 @@ class NepaliDemoSeeder extends Seeder
             'user_code' => 'CLI-PKR',
         ]);
 
-        $driver = $this->user('driver.demo@kwdc.test', 'Ram Bahadur Driver', 'driver', $password, [
+        $driver = $this->user('driver.access@kwdc.test', 'Ram Bahadur Driver', 'driver', $password, [
             'is_driver' => true,
             'phone' => '9802223344',
             'address' => 'Koteshwor, Kathmandu',
@@ -50,21 +50,21 @@ class NepaliDemoSeeder extends Seeder
             'user_code' => 'DRV-LAXMAN',
         ]);
 
-        $propertyOwner = $this->user('property.demo@kwdc.test', 'Maya Warehouse Owner', 'property_owner', $password, [
+        $propertyOwner = $this->user('property.access@kwdc.test', 'Maya Warehouse Owner', 'property_owner', $password, [
             'is_property_owner' => true,
             'phone' => '9803334455',
             'address' => 'Satdobato, Lalitpur',
             'user_code' => 'PRO-DEMO',
         ]);
 
-        $equipmentOwner = $this->user('equipment.demo@kwdc.test', 'Krishna Equipment Owner', 'equipment_owner', $password, [
+        $equipmentOwner = $this->user('equipment.access@kwdc.test', 'Krishna Equipment Owner', 'equipment_owner', $password, [
             'is_equipment_owner' => true,
             'phone' => '9804445566',
             'address' => 'Biratnagar, Morang',
             'user_code' => 'EQP-DEMO',
         ]);
 
-        $securityUser = $this->user('security.demo@kwdc.test', 'Nepal Suraksha Agency', 'security_agency', $password, [
+        $securityUser = $this->user('security.access@kwdc.test', 'Nepal Suraksha Agency', 'security_agency', $password, [
             'phone' => '9805556677',
             'address' => 'Baluwatar, Kathmandu',
             'user_code' => 'SEC-DEMO',
@@ -427,7 +427,7 @@ class NepaliDemoSeeder extends Seeder
                 'address' => 'Baluwatar, Kathmandu',
                 'phone' => '9805556677',
                 'emergency_phone' => '9805556688',
-                'email' => 'security.demo@kwdc.test',
+                'email' => 'security.access@kwdc.test',
                 'services_offered' => 'Warehouse guard, night patrol, CCTV monitoring',
                 'year_established' => '2075',
                 'status' => 'approved',

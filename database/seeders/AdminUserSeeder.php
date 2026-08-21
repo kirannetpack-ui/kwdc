@@ -11,11 +11,11 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         // Create admin user only if it doesn't exist
-        if (!User::where('email', 'admin.demo@kwdc.test')->exists()) {
+        if (!User::where('email', 'admin.access@kwdc.test')->exists()) {
             User::create([
                 'name' => 'Admin',
-                'email' => 'admin.demo@kwdc.test',
-                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'local-demo-password')),
+                'email' => 'admin.access@kwdc.test',
+                'password' => Hash::make(env('KWDC_DEMO_PASSWORD', 'KwdcNew2026!')),
                 'role' => 'admin',
                 'user_code' => 'ADM-2026-0001',
                 'is_client' => false,
