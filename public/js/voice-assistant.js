@@ -108,14 +108,33 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // ===== Language Selector =====
+    // ===== Language Selector & Toggle =====
+    const langToggle = document.getElementById('voiceLangToggle');
+    const langOptEn = document.getElementById('langOptEn');
+    const langOptNp = document.getElementById('langOptNp');
+
+    function setLanguage(lang) {
+        currentLanguage = lang;
+        if (langSelect) langSelect.value = lang;
+        if (langOptEn) langOptEn.classList.toggle('active', lang === 'en');
+        if (langOptNp) langOptNp.classList.toggle('active', lang === 'np');
+        const msg = lang === 'en' 
+            ? 'Language changed to English' 
+            : 'भाषा नेपालीमा परिवर्तन भयो';
+        addMessage(msg, 'assistant');
+    }
+
+    if (langToggle) {
+        langToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            const nextLang = currentLanguage === 'en' ? 'np' : 'en';
+            setLanguage(nextLang);
+        });
+    }
+
     if (langSelect) {
         langSelect.addEventListener('change', function() {
-            currentLanguage = this.value;
-            const msg = currentLanguage === 'en' 
-                ? 'Language changed to English' 
-                : 'भाषा नेपालीमा परिवर्तन भयो';
-            addMessage(msg, 'assistant');
+            setLanguage(this.value);
         });
     }
 
@@ -142,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
             toggleBtn.title = active ? 'Stop listening' : 'Voice Input';
         }
         if (statusEl) {
-            statusEl.textContent = message || (active ? 'Listening... speak now' : 'Ready • Speak or type below');
+            statusEl.textContent = message || (active ? 'Listening... speak now' : 'Type a request or tap mic to speak');
         }
     }
 
@@ -169,6 +188,29 @@ document.addEventListener('DOMContentLoaded', function() {
             setAssistantOpen(false);
         });
     }
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && chatWindow.style.display === 'flex') {
+            closeBtn ? closeBtn.click() : (chatWindow.style.display = 'none');
+        }
+    });
+
+    // Close on click outside
+    document.addEventListener('click', function(e) {
+        if (chatWindow.style.display === 'flex') {
+            const container = document.getElementById('voice-assistant-container');
+            if (container && !container.contains(e.target)) {
+                chatWindow.style.display = 'none';
+                if (isListening) {
+                    recognition?.stop();
+                    setListeningUi(false);
+                }
+                stopSpeaking();
+                setAssistantOpen(false);
+            }
+        }
+    });
 
     // ===== SPEECH RECOGNITION =====
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -837,7 +879,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             const responseMessage = formatAssistantResponse(data);
             addMessage(responseMessage, 'assistant');
-            statusEl.textContent = 'Ready';
+            statusEl.textContent = 'Type a request or tap mic to speak';
 
             // ===== HANDLE ACTIONS =====
             if (handleAssistantAction(data)) {
@@ -852,17 +894,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (data.done) {
-                toggleBtn.textContent = 'New Session';
                 toggleBtn.disabled = false;
             }
         })
         .catch(err => {
             console.error('❌ Backend error:', err);
             const msg = currentLanguage === 'np' 
-                ? 'क्षमा गर्नुहोस्, मैले एउटा त्रुटि भेटाएँ। कृपया फेरि प्रयास गर्नुहोस्।' 
-                : 'Sorry, I could not complete that. You can try again or use the form directly.';
-            addAssistantNotice(msg);
-            statusEl.textContent = 'Could not complete request';
+                ? 'क्षमा गर्नुहोस्, अनुरोध पूरा गर्न सकिएन।' 
+                : 'Could not process that request. You can try rephrasing or type below.';
+            addMessage(msg, 'assistant');
+            statusEl.textContent = 'Type below or retry';
         })
         .finally(() => {
             if (textInput) textInput.disabled = false;
@@ -980,14 +1021,14 @@ document.addEventListener('DOMContentLoaded', function() {
         lastRecognitionError = event.error;
 
         const statusMap = {
-            'not-allowed': 'Mic permission blocked. Type below.',
-            'service-not-allowed': 'Speech engine not available. Type below.',
-            'no-speech': 'No voice heard. Tap mic or type below.',
-            'audio-capture': 'No microphone found. Type below.',
-            'network': 'Speech cloud offline. Type below or retry.',
+            'not-allowed': 'Mic access blocked. Type below.',
+            'service-not-allowed': 'Voice engine unavailable. Type below.',
+            'no-speech': 'No voice heard. Tap mic or type.',
+            'audio-capture': 'No mic found. Type below.',
+            'network': 'Voice offline — type your message below.',
         };
 
-        const hint = statusMap[event.error] || 'Mic unavailable. Type below.';
+        const hint = statusMap[event.error] || 'Voice unavailable — type below.';
         if (statusEl) {
             statusEl.textContent = hint;
         }
@@ -998,9 +1039,7 @@ document.addEventListener('DOMContentLoaded', function() {
             stopSpeaking();
         }
 
-        if (event.error === 'network' || event.error === 'not-allowed' || event.error === 'audio-capture') {
-            textInput?.focus();
-        }
+        textInput?.focus();
     };
 
     // ===== TOGGLE LISTENING =====

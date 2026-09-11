@@ -27,6 +27,9 @@
 
     function isSmoothLink(link) {
         if (!link || !link.href) return false;
+        const rawHref = link.getAttribute('href') || '';
+        if (!rawHref || rawHref === '#' || rawHref.startsWith('#') || rawHref.startsWith('javascript:')) return false;
+        if (link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-toggle')) return false;
         if (link.target && link.target !== '_self') return false;
         if (link.hasAttribute('download')) return false;
         if (link.dataset.noSmooth === 'true') return false;

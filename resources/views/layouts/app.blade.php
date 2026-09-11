@@ -474,19 +474,16 @@
             @auth
             <div class="dropdown">
                 <a href="#" class="kwdc-topbar-profile" id="userMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
-                    <div class="kwdc-topbar-avatar-wrap">
-                        @if(auth()->user()->profile_photo)
-                            <img src="{{ asset(auth()->user()->profile_photo) }}" class="kwdc-topbar-avatar" alt="Avatar">
-                        @else
-                            <div class="kwdc-topbar-avatar">
-                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                            </div>
-                        @endif
-                        <span class="kwdc-topbar-status-dot"></span>
-                    </div>
+                    @if(auth()->user()->profile_photo)
+                        <img src="{{ asset(auth()->user()->profile_photo) }}" class="kwdc-topbar-avatar" alt="Avatar">
+                    @else
+                        <div class="kwdc-topbar-avatar">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                    @endif
                     <div class="kwdc-topbar-userinfo">
                         <span class="kwdc-topbar-name">{{ auth()->user()->name }}</span>
-                        <span class="kwdc-topbar-role">{{ str_replace('_', ' ', auth()->user()->role) }}</span>
+                        <span class="kwdc-topbar-role">{{ ucwords(str_replace('_', ' ', auth()->user()->role)) }}</span>
                     </div>
                     <i class="fas fa-chevron-down kwdc-topbar-chevron"></i>
                 </a>
@@ -717,62 +714,41 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <!-- ============================================================ -->
-<!-- KWDC ASSISTANT -->
+<!-- KWDC ASSISTANT & TOPBAR PROFILE STYLES                      -->
 <!-- ============================================================ -->
 <style>
-    /* ============================================================ */
-    /* TOPBAR PROFILE COMPONENT                                     */
-    /* ============================================================ */
+    /* Topbar Profile Component */
     .kwdc-topbar-profile {
         display: inline-flex !important;
         align-items: center;
-        gap: 9px;
-        padding: 4px 12px 4px 5px;
+        gap: 8px;
+        padding: 3px 10px 3px 4px;
         border-radius: 9999px;
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
         text-decoration: none !important;
         cursor: pointer;
-        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: all 0.16s ease;
     }
     .kwdc-topbar-profile:hover,
     .kwdc-topbar-profile[aria-expanded="true"] {
         background: #f8fafc;
-        border-color: rgba(249, 115, 22, 0.4);
-        box-shadow: 0 4px 14px rgba(249, 115, 22, 0.12);
-        transform: translateY(-1px);
-    }
-    .kwdc-topbar-avatar-wrap {
-        position: relative;
-        width: 32px;
-        height: 32px;
-        flex-shrink: 0;
+        border-color: #cbd5e1;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
     }
     .kwdc-topbar-avatar {
-        width: 32px;
-        height: 32px;
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         object-fit: cover;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        background: #0f172a;
         color: #ffffff;
-        font-size: 13px;
-        font-weight: 800;
+        font-size: 12px;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 6px rgba(249, 115, 22, 0.25);
-        border: 2px solid #ffffff;
-    }
-    .kwdc-topbar-status-dot {
-        position: absolute;
-        bottom: 0px;
-        right: 0px;
-        width: 8.5px;
-        height: 8.5px;
-        border-radius: 50%;
-        background: #10b981;
-        border: 2px solid #ffffff;
+        flex-shrink: 0;
     }
     .kwdc-topbar-userinfo {
         display: flex;
@@ -782,35 +758,34 @@
     }
     .kwdc-topbar-name {
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 700;
         color: #0f172a;
-        max-width: 125px;
+        max-width: 120px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
     }
     .kwdc-topbar-role {
-        font-size: 9px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: #ea580c;
+        font-size: 10px;
+        font-weight: 500;
+        color: #64748b;
+        text-transform: capitalize;
     }
     .kwdc-topbar-chevron {
         font-size: 9px;
         color: #94a3b8;
         margin-left: 2px;
-        transition: transform 0.2s ease;
+        transition: transform 0.18s ease;
     }
     .kwdc-topbar-profile[aria-expanded="true"] .kwdc-topbar-chevron {
         transform: rotate(180deg);
     }
     .kwdc-topbar-menu {
-        border-radius: 16px !important;
+        border-radius: 14px !important;
         border: 1px solid #e2e8f0 !important;
-        box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.16) !important;
+        box-shadow: 0 12px 30px -4px rgba(15, 23, 42, 0.12) !important;
         padding: 6px !important;
-        min-width: 220px !important;
+        min-width: 210px !important;
         background: #ffffff !important;
         margin-top: 6px !important;
     }
@@ -827,11 +802,11 @@
     .kwdc-menu-user-avatar {
         width: 32px;
         height: 32px;
-        border-radius: 10px;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        border-radius: 50%;
+        background: #0f172a;
         color: #ffffff;
         font-size: 13px;
-        font-weight: 800;
+        font-weight: 700;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -843,8 +818,8 @@
         min-width: 0;
     }
     .kwdc-menu-user-name {
-        font-size: 12.5px;
-        font-weight: 800;
+        font-size: 12px;
+        font-weight: 700;
         color: #0f172a;
         white-space: nowrap;
         overflow: hidden;
@@ -860,12 +835,12 @@
     .kwdc-menu-item {
         display: flex !important;
         align-items: center;
-        gap: 10px;
-        padding: 8px 12px !important;
+        gap: 9px;
+        padding: 7px 10px !important;
         font-size: 12px !important;
-        font-weight: 600 !important;
+        font-weight: 500 !important;
         color: #334155 !important;
-        border-radius: 10px !important;
+        border-radius: 8px !important;
         text-decoration: none !important;
         transition: all 0.15s ease !important;
         border: 0 !important;
@@ -874,11 +849,10 @@
         text-align: left;
     }
     .kwdc-menu-item i {
-        font-size: 13px;
+        font-size: 12px;
         width: 16px;
         text-align: center;
         color: #94a3b8;
-        transition: color 0.15s ease;
     }
     .kwdc-menu-item:hover {
         background: #f8fafc !important;
@@ -903,231 +877,172 @@
         color: #b91c1c !important;
     }
 
-    /* ============================================================ */
-    /* AI COPILOT LAUNCHER & WINDOW                                 */
-    /* ============================================================ */
+    /* Floating AI Copilot Orb - Minimalist */
     .kwdc-assistant {
         position: fixed;
         bottom: 24px;
         right: 24px;
         z-index: 99999;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-end;
     }
     .kwdc-assistant-launch {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        padding: 6px 16px 6px 7px;
-        background: linear-gradient(135deg, #090e17 0%, #151d2e 100%);
-        border: 1px solid rgba(249, 115, 22, 0.45);
-        border-radius: 9999px;
-        color: #ffffff;
-        cursor: pointer;
-        box-shadow: 0 12px 32px -4px rgba(15, 23, 42, 0.45), 0 0 18px rgba(249, 115, 22, 0.25);
-        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-        outline: none;
-        user-select: none;
+        width: 52px !important;
+        height: 52px !important;
+        border-radius: 50% !important;
+        background: #0f172a !important;
+        color: #f97316 !important;
+        border: 1.5px solid rgba(249, 115, 22, 0.45) !important;
+        box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.35), 0 0 16px rgba(249, 115, 22, 0.2) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 19px !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        outline: none !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
     }
     .kwdc-assistant-launch:hover {
-        transform: translateY(-2px) scale(1.02);
-        border-color: #f97316;
-        box-shadow: 0 16px 40px -4px rgba(15, 23, 42, 0.5), 0 0 26px rgba(249, 115, 22, 0.45);
+        transform: translateY(-2px) scale(1.06) !important;
+        background: #1e293b !important;
+        border-color: #f97316 !important;
+        color: #ffffff !important;
+        box-shadow: 0 14px 32px -4px rgba(15, 23, 42, 0.45), 0 0 24px rgba(249, 115, 22, 0.4) !important;
     }
-    .kwdc-launch-orb {
-        width: 38px;
-        height: 38px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 60%, #c2410c 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-        box-shadow: 0 0 12px rgba(249, 115, 22, 0.6);
-        position: relative;
-        flex-shrink: 0;
-    }
-    .kwdc-launch-orb::after {
-        content: '';
-        position: absolute;
-        inset: -3px;
-        border-radius: 50%;
-        border: 2px solid rgba(249, 115, 22, 0.45);
-        animation: kwdcOrbPulse 2.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes kwdcOrbPulse {
-        0%, 100% { transform: scale(1); opacity: 0.9; }
-        50% { transform: scale(1.2); opacity: 0; }
-    }
-    .kwdc-launch-text {
-        display: flex;
-        flex-direction: column;
-        text-align: left;
-        line-height: 1.15;
-    }
-    .kwdc-launch-title {
-        font-size: 13px;
-        font-weight: 800;
-        color: #ffffff;
-        letter-spacing: -0.01em;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .kwdc-launch-subtitle {
-        font-size: 10px;
-        font-weight: 700;
-        color: #fb923c;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    .kwdc-launch-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #10b981;
-        box-shadow: 0 0 6px #10b981;
-        animation: kwdcBlink 2s infinite;
-    }
-    @keyframes kwdcBlink {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.4; }
+    .kwdc-assistant-launch:active {
+        transform: translateY(0) scale(0.96) !important;
     }
 
-    /* Modal / Chat Window */
+    /* Minimalist AI Chat Window */
     .kwdc-assistant-panel {
-        width: 390px;
+        width: 380px;
         max-width: calc(100vw - 32px);
-        height: 560px;
+        height: 540px;
         max-height: calc(100vh - 100px);
         display: none;
         flex-direction: column;
         position: absolute;
-        bottom: 68px;
+        bottom: 66px;
         right: 0;
         overflow: hidden;
         background: #ffffff;
-        border: 1px solid rgba(226, 232, 240, 0.9);
-        border-radius: 22px;
-        box-shadow: 0 24px 60px -10px rgba(15, 23, 42, 0.28), 0 0 0 1px rgba(15, 23, 42, 0.04);
-        animation: kwdcPanelIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        border: 1px solid #e2e8f0;
+        border-radius: 20px;
+        box-shadow: 0 20px 50px -10px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.04);
+        animation: kwdcPanelIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @keyframes kwdcPanelIn {
-        from { opacity: 0; transform: translateY(14px) scale(0.97); }
+        from { opacity: 0; transform: translateY(10px) scale(0.98); }
         to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* Chat Header */
+    /* Clean Header */
     .kwdc-assistant-header {
-        padding: 14px 18px;
-        background: linear-gradient(135deg, #090e17 0%, #151d2f 100%);
+        padding: 12px 16px;
+        background: #0f172a;
         color: #ffffff;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     }
     .kwdc-assistant-title {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 8px;
         min-width: 0;
     }
-    .kwdc-assistant-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 12px;
-        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    .kwdc-assistant-icon-wrap {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(249, 115, 22, 0.2);
+        border: 1px solid rgba(249, 115, 22, 0.4);
+        color: #f97316;
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #ffffff;
-        font-size: 15px;
+        font-size: 13px;
         flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(249, 115, 22, 0.35);
     }
-    .kwdc-assistant-title strong {
+    .kwdc-assistant-meta {
         display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 13.5px;
-        font-weight: 800;
-        color: #ffffff;
-        line-height: 1.2;
+        flex-direction: column;
+        line-height: 1.15;
     }
-    .kwdc-assistant-badge-pill {
-        font-size: 9.5px;
+    .kwdc-assistant-name {
+        font-size: 13px;
         font-weight: 700;
-        padding: 1px 6px;
-        border-radius: 9999px;
-        background: rgba(249, 115, 22, 0.2);
-        color: #fb923c;
-        border: 1px solid rgba(249, 115, 22, 0.35);
-        text-transform: uppercase;
+        color: #ffffff;
     }
-    .kwdc-assistant-title span {
-        display: block;
-        font-size: 11px;
+    .kwdc-assistant-sub {
+        font-size: 10.5px;
         color: #94a3b8;
-        line-height: 1.2;
     }
     .kwdc-assistant-actions {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 4px;
         flex-shrink: 0;
     }
-    .kwdc-assistant-select {
-        height: 28px;
+    .kwdc-lang-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 2px 7px;
+        border-radius: 9999px;
         background: rgba(255, 255, 255, 0.08);
-        color: #f1f5f9;
         border: 1px solid rgba(255, 255, 255, 0.14);
-        border-radius: 8px;
-        padding: 0 8px;
+        color: #cbd5e1;
         font-size: 11px;
         font-weight: 700;
         cursor: pointer;
-        outline: none;
+        transition: all 0.15s ease;
     }
-    .kwdc-assistant-select option {
-        background: #0f172a;
+    .kwdc-lang-toggle:hover {
+        background: rgba(255, 255, 255, 0.15);
         color: #ffffff;
     }
-    .kwdc-assistant-ctrl {
-        color: #94a3b8;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(255, 255, 255, 0.1);
+    .kwdc-lang-toggle .lang-opt.active {
+        color: #f97316;
+    }
+    .kwdc-lang-toggle .lang-divider {
+        color: #64748b;
+        font-size: 10px;
+    }
+    .kwdc-assistant-btn {
         width: 28px;
         height: 28px;
         border-radius: 8px;
+        background: transparent;
+        border: 0;
+        color: #94a3b8;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-size: 12px;
         cursor: pointer;
         transition: all 0.15s ease;
     }
-    .kwdc-assistant-ctrl:hover {
+    .kwdc-assistant-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
         color: #ffffff;
-        background: rgba(255, 255, 255, 0.15);
-        border-color: rgba(255, 255, 255, 0.25);
     }
 
     /* Messages Stream */
     .kwdc-assistant-messages {
         flex: 1;
         overflow-y: auto;
-        padding: 16px;
+        padding: 14px;
         background: #f8fafc;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 10px;
         scroll-behavior: smooth;
     }
     .kwdc-assistant-messages::-webkit-scrollbar {
-        width: 5px;
+        width: 4px;
     }
     .kwdc-assistant-messages::-webkit-scrollbar-thumb {
         background: #cbd5e1;
@@ -1137,10 +1052,10 @@
         display: flex;
         flex-direction: column;
         max-width: 88%;
-        animation: kwdcMsgIn 0.18s ease-out;
+        animation: kwdcMsgIn 0.16s ease-out;
     }
     @keyframes kwdcMsgIn {
-        from { opacity: 0; transform: translateY(6px); }
+        from { opacity: 0; transform: translateY(4px); }
         to { opacity: 1; transform: translateY(0); }
     }
     .kwdc-assistant-msg.user-msg {
@@ -1152,10 +1067,10 @@
         align-items: flex-start;
     }
     .kwdc-assistant-bubble {
-        padding: 11px 15px;
-        border-radius: 18px;
-        line-height: 1.5;
-        font-size: 13px;
+        padding: 9px 13px;
+        border-radius: 15px;
+        line-height: 1.45;
+        font-size: 12.5px;
         white-space: pre-line;
         word-break: break-word;
     }
@@ -1163,97 +1078,81 @@
         background: #ffffff;
         color: #0f172a;
         border: 1px solid #e2e8f0;
-        border-top-left-radius: 4px;
-        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+        border-top-left-radius: 3px;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
     }
     .user-msg .kwdc-assistant-bubble {
         background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         color: #ffffff;
-        border-top-right-radius: 4px;
+        border-top-right-radius: 3px;
         font-weight: 500;
-        box-shadow: 0 3px 10px rgba(249, 115, 22, 0.25);
+        box-shadow: 0 2px 6px rgba(249, 115, 22, 0.2);
     }
 
-    /* Quick Action Pill Chips */
+    /* Minimalist Quick Action Chips */
     .kwdc-quick-chips {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        margin-top: 10px;
+        gap: 5px;
+        margin-top: 8px;
         width: 100%;
     }
     .kwdc-chip-btn {
         display: inline-flex;
         align-items: center;
-        gap: 6px;
-        padding: 6px 12px;
+        gap: 5px;
+        padding: 4px 10px;
         background: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 9999px;
-        font-size: 11.5px;
-        font-weight: 700;
+        font-size: 11px;
+        font-weight: 600;
         color: #334155;
         cursor: pointer;
-        transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        transition: all 0.14s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
     }
     .kwdc-chip-btn:hover {
         background: #fff7ed;
         border-color: #f97316;
         color: #ea580c;
         transform: translateY(-1px);
-        box-shadow: 0 3px 8px rgba(249, 115, 22, 0.15);
     }
 
-    /* Footer / Input Area */
+    /* Footer & Input Capsule */
     .kwdc-assistant-footer {
-        padding: 12px 14px 10px;
+        padding: 10px 12px 10px;
         border-top: 1px solid #e2e8f0;
         background: #ffffff;
         display: flex;
         flex-direction: column;
-        gap: 8px;
-    }
-    .kwdc-assistant-status-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 11px;
-        color: #64748b;
-        padding: 0 4px;
-    }
-    .kwdc-status-badge {
-        display: inline-flex;
-        align-items: center;
         gap: 6px;
-        font-size: 11px;
-        font-weight: 600;
-        color: #64748b;
     }
-    .kwdc-status-indicator {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: #10b981;
+    .kwdc-assistant-hint {
+        font-size: 11px;
+        color: #64748b;
+        font-weight: 500;
+        text-align: center;
+        min-height: 16px;
     }
     .kwdc-assistant-input-capsule {
         display: flex;
         align-items: center;
-        gap: 6px;
-        border: 1px solid #e2e8f0;
+        gap: 4px;
+        border: 1.5px solid #e2e8f0;
         border-radius: 9999px;
         background: #f8fafc;
-        padding: 4px 5px 4px 6px;
-        transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+        padding: 3px 4px 3px 6px;
+        transition: all 0.16s ease;
     }
     .kwdc-assistant-input-capsule:focus-within {
         border-color: #f97316;
         background: #ffffff;
-        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
     }
-    .kwdc-assistant-mic-btn {
-        width: 32px;
-        height: 32px;
+    .kwdc-mic-btn {
+        width: 30px;
+        height: 30px;
         border-radius: 50%;
         background: #e2e8f0;
         border: none;
@@ -1261,38 +1160,43 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 12px;
+        font-size: 11.5px;
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.14s ease;
         flex-shrink: 0;
     }
-    .kwdc-assistant-mic-btn:hover {
+    .kwdc-mic-btn:hover {
         background: #cbd5e1;
         color: #0f172a;
     }
-    .kwdc-assistant-mic-btn.listening {
+    .kwdc-mic-btn.listening {
         background: #ef4444;
         color: #ffffff;
         animation: kwdcMicPulse 1.2s infinite;
-        box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
     }
     @keyframes kwdcMicPulse {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.1); }
     }
-    .kwdc-assistant-input-field {
+    .kwdc-input-clean {
         flex: 1;
-        border: 0;
-        background: transparent;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
         min-width: 0;
-        padding: 6px 4px;
-        font-size: 13px;
+        padding: 4px 4px;
+        font-size: 12.5px;
         color: #0f172a;
-        outline: none;
     }
-    .kwdc-assistant-send-btn {
-        width: 32px;
-        height: 32px;
+    .kwdc-input-clean:focus {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+    .kwdc-send-btn {
+        width: 30px;
+        height: 30px;
         border: 0;
         background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
         color: #ffffff;
@@ -1301,108 +1205,84 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        font-size: 12px;
+        font-size: 11.5px;
         flex-shrink: 0;
-        transition: all 0.18s ease;
-        box-shadow: 0 2px 6px rgba(249, 115, 22, 0.3);
+        transition: all 0.16s ease;
     }
-    .kwdc-assistant-send-btn:hover {
-        transform: scale(1.06);
-        box-shadow: 0 4px 10px rgba(249, 115, 22, 0.45);
+    .kwdc-send-btn:hover {
+        transform: scale(1.05);
     }
-    .kwdc-input-hint {
-        font-size: 10px;
-        color: #94a3b8;
-        text-align: center;
-        margin-top: 2px;
-    }
-
     @media (max-width: 640px) {
         .kwdc-assistant {
             right: 16px;
-            bottom: 18px;
-        }
-        .kwdc-assistant-launch {
-            padding: 5px;
-        }
-        .kwdc-launch-text {
-            display: none;
+            bottom: 16px;
         }
         .kwdc-assistant-panel {
             right: -6px;
-            width: calc(100vw - 24px);
-            height: min(540px, calc(100vh - 90px));
+            width: calc(100vw - 20px);
+            height: min(520px, calc(100vh - 80px));
         }
     }
 </style>
 
 <div id="voice-assistant-container" class="kwdc-assistant">
     <div class="kwdc-assistant-panel" id="voiceChatWindow">
+        <!-- Clean Minimalist Header -->
         <div class="kwdc-assistant-header">
             <div class="kwdc-assistant-title">
-                <div class="kwdc-assistant-avatar">
+                <div class="kwdc-assistant-icon-wrap">
                     <i class="fas fa-wand-magic-sparkles"></i>
                 </div>
-                <div>
-                    <strong>KWDC Assistant <span class="kwdc-assistant-badge-pill">AI Copilot</span></strong>
-                    <span>Kathmandu Logistics Intelligence</span>
+                <div class="kwdc-assistant-meta">
+                    <span class="kwdc-assistant-name">KWDC Assistant</span>
+                    <span class="kwdc-assistant-sub">Logistics Copilot</span>
                 </div>
             </div>
             <div class="kwdc-assistant-actions">
-                <select id="voiceLangSelect" class="kwdc-assistant-select" title="Switch Language">
-                    <option value="en">EN</option>
-                    <option value="np">नेपाली</option>
+                <button type="button" id="voiceLangToggle" class="kwdc-lang-toggle" title="Switch Language">
+                    <span class="lang-opt active" id="langOptEn">EN</span>
+                    <span class="lang-divider">/</span>
+                    <span class="lang-opt" id="langOptNp">NP</span>
+                </button>
+                <select id="voiceLangSelect" style="display:none;">
+                    <option value="en" selected>EN</option>
+                    <option value="np">NP</option>
                 </select>
-                <button id="voiceSpeechToggle" class="kwdc-assistant-ctrl" aria-label="Toggle speech" title="Audible Responses"><i class="fas fa-volume-up"></i></button>
-                <button id="assistantClearBtn" class="kwdc-assistant-ctrl" aria-label="Clear chat" title="Reset Chat"><i class="fas fa-rotate-left"></i></button>
-                <button id="voiceCloseBtn" class="kwdc-assistant-ctrl" aria-label="Close" title="Close"><i class="fas fa-xmark"></i></button>
+                <button id="voiceSpeechToggle" class="kwdc-assistant-btn" aria-label="Toggle voice responses" title="Voice audio response"><i class="fas fa-volume-up"></i></button>
+                <button id="assistantClearBtn" class="kwdc-assistant-btn" aria-label="Reset chat" title="Reset chat"><i class="fas fa-rotate-left"></i></button>
+                <button id="voiceCloseBtn" class="kwdc-assistant-btn" aria-label="Close" title="Close"><i class="fas fa-xmark"></i></button>
             </div>
         </div>
 
+        <!-- Messages Stream -->
         <div class="kwdc-assistant-messages" id="voiceMessages">
             <div class="kwdc-assistant-msg assistant-msg">
                 <div class="kwdc-assistant-bubble">
                     Namaste! I am your KWDC Logistics Copilot. How can I assist you with pickups, dispatches, tracking, or reminders today?
                 </div>
                 <div class="kwdc-quick-chips" id="assistantQuickActions">
-                    <button type="button" class="kwdc-chip-btn" data-prompt="Create a pickup from Boudha to Bhaktapur">📦 Book Pickup</button>
-                    <button type="button" class="kwdc-chip-btn" data-prompt="Create a dispatch from Kathmandu to Pokhara">🚚 New Dispatch</button>
-                    <button type="button" class="kwdc-chip-btn" data-prompt="Track my dispatch order">📍 Track Order</button>
-                    <button type="button" class="kwdc-chip-btn" data-prompt="Remind me to call the driver tomorrow at 5 PM">⏰ Set Reminder</button>
+                    <button type="button" class="kwdc-chip-btn" data-prompt="Create a pickup from Boudha to Bhaktapur">📦 Pickup</button>
+                    <button type="button" class="kwdc-chip-btn" data-prompt="Create a dispatch from Kathmandu to Pokhara">🚚 Dispatch</button>
+                    <button type="button" class="kwdc-chip-btn" data-prompt="Track my dispatch order">📍 Tracking</button>
+                    <button type="button" class="kwdc-chip-btn" data-prompt="Remind me to call the driver tomorrow at 5 PM">⏰ Reminder</button>
                 </div>
             </div>
         </div>
 
+        <!-- Minimalist Footer -->
         <div class="kwdc-assistant-footer">
-            <div class="kwdc-assistant-status-row">
-                <div class="kwdc-status-badge">
-                    <span class="kwdc-status-indicator"></span>
-                    <span id="voiceStatus">Ready • Speak or type below</span>
-                </div>
-            </div>
+            <div class="kwdc-assistant-hint" id="voiceStatus">Type a request or tap mic to speak</div>
             <div class="kwdc-assistant-input-capsule">
-                <button id="voiceToggleBtn" class="kwdc-assistant-mic-btn" aria-label="Toggle microphone" title="Voice Input"><i class="fas fa-microphone"></i></button>
-                <input type="text" id="voiceTextInput" class="kwdc-assistant-input-field" placeholder="Ask anything (e.g. 'Create pickup to Thamel')...">
-                <button id="voiceSendBtn" class="kwdc-assistant-send-btn" aria-label="Send message" title="Send"><i class="fas fa-arrow-up"></i></button>
-            </div>
-            <div class="kwdc-input-hint">
-                Press Enter ↵ to send • Voice & English/Nepali supported
+                <button id="voiceToggleBtn" class="kwdc-mic-btn" aria-label="Toggle microphone" title="Voice Input"><i class="fas fa-microphone"></i></button>
+                <input type="text" id="voiceTextInput" class="kwdc-input-clean" placeholder="Ask anything (e.g. 'Pickup to Thamel')...">
+                <button id="voiceSendBtn" class="kwdc-send-btn" aria-label="Send message" title="Send"><i class="fas fa-arrow-up"></i></button>
             </div>
         </div>
     </div>
 
-    <!-- Floating AI Bubble / Launcher Orb -->
-    <button id="voiceLaunchBtn" class="kwdc-assistant-launch" aria-label="Open KWDC assistant" title="KWDC Logistics AI Copilot">
-        <div class="kwdc-launch-orb">
-            <i class="fas fa-wand-magic-sparkles" style="font-size: 16px;"></i>
-        </div>
-        <div class="kwdc-launch-text">
-            <div class="kwdc-launch-title">
-                <span>AI Copilot</span>
-                <span class="kwdc-launch-dot"></span>
-            </div>
-            <span class="kwdc-launch-subtitle">Logistics Assistant</span>
-        </div>
+    <!-- Minimalist Floating Orb -->
+    <button id="voiceLaunchBtn" class="kwdc-assistant-launch" aria-label="Open KWDC AI Copilot" title="AI Copilot">
+        <i class="fas fa-wand-magic-sparkles"></i>
     </button>
 </div>
 
