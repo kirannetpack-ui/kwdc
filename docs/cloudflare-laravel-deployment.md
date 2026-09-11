@@ -16,7 +16,7 @@ Use Cloudflare for:
 
 Use a PHP-capable application host for Laravel:
 
-- Railway, Render, Fly.io, DigitalOcean App Platform, Laravel Forge/VPS, or cPanel.
+- Railway, Fly.io, DigitalOcean App Platform, Laravel Forge/VPS, or cPanel.
 - MySQL or Postgres database on the same provider or a managed database provider.
 - Queue worker and scheduler process.
 - Persistent private file storage.
@@ -24,7 +24,7 @@ Use a PHP-capable application host for Laravel:
 
 ## Recommended Production Stack
 
-- App host: Railway or Render, because this repository already includes `nixpacks.toml`, `Procfile`, and `scripts/deploy/start-production.sh`.
+- App host: Standard container or VPS host (e.g. Railway, Fly.io, Laravel Forge), because this repository already includes `nixpacks.toml`, `Procfile`, and `scripts/deploy/start-production.sh`.
 - Database: managed MySQL or Postgres. Prefer MySQL if the hosting provider offers it easily, because the project already includes MySQL/PDO support in Nixpacks.
 - Cloudflare: point the production domain to the app host with proxied DNS enabled.
 - Mail: SMTP provider configured with `MAIL_*` environment variables.
@@ -61,7 +61,7 @@ Use a PHP-capable application host for Laravel:
 
 ## Deployment Steps
 
-1. Create a PHP/Laravel web service on Railway or Render from GitHub repository `kirannetpack-ui/kwdc`.
+1. Create a PHP/Laravel web service on your production host from GitHub repository `kirannetpack-ui/kwdc`.
 2. Select branch `production-readiness-reminders-notifications`.
 3. Let Nixpacks detect the project from `nixpacks.toml`.
 4. Add a managed MySQL/Postgres database.

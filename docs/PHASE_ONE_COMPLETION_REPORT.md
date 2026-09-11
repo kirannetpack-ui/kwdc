@@ -79,7 +79,7 @@ The local Laravel project was upgraded toward a phase-one production-ready websi
 ## Not Yet Launch-Complete
 
 - Gmail SMTP still needs a new valid Gmail app password.
-- Render/MySQL production environment variables still need to be set before deployment.
+- Production database and environment variables still need to be set before deployment.
 - Production map provider endpoints must be configured before live launch.
 - Payment provider credentials must be real before payment workflows can be considered production-ready.
 - The current work is local only; no live deployment was performed in this phase because the latest instruction was to keep everything local for now.
