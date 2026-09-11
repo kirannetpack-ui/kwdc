@@ -125,7 +125,7 @@
                     <i class="fas fa-chart-line me-2"></i>Revenue Trend (Last 12 Months)
                 </div>
                 <div class="card-body">
-                    <canvas id="revenueChart" height="200"></canvas>
+                    <div style="position: relative; height: 260px; width: 100%;"><canvas id="revenueChart"></canvas></div>
                 </div>
             </div>
         </div>
@@ -135,7 +135,7 @@
                     <i class="fas fa-chart-pie me-2"></i>Dispatch Status
                 </div>
                 <div class="card-body">
-                    <canvas id="statusChart" height="200"></canvas>
+                    <div style="position: relative; height: 260px; width: 100%;"><canvas id="statusChart"></canvas></div>
                 </div>
             </div>
         </div>
