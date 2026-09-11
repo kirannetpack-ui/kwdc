@@ -26,7 +26,7 @@ class ActivationController extends Controller
 
         $user = User::where('email', $data['email'])->first();
 
-        if (!$user || !$activationCodes->verify($user, $data['activation_code'])) {
+        if (!$user || !$user->is_active || $user->hasVerifiedEmail() || !$activationCodes->verify($user, $data['activation_code'])) {
             return back()
                 ->withInput($request->only('email'))
                 ->withErrors(['activation_code' => 'The activation code is invalid or expired.']);
@@ -40,6 +40,7 @@ class ActivationController extends Controller
         ])->save();
 
         Auth::login($user);
+        $request->session()->regenerate();
 
         return redirect()->route('dashboard')->with('success', 'Your account has been activated.');
     }
@@ -52,12 +53,12 @@ class ActivationController extends Controller
 
         $user = User::where('email', $data['email'])->first();
 
-        if ($user && !$user->hasVerifiedEmail()) {
+        if ($user && $user->is_active && !$user->hasVerifiedEmail()) {
             $activationCodes->send($user);
         }
 
         return back()
             ->withInput($request->only('email'))
-            ->with('status', 'If the account exists and is not active, a new activation code has been sent.');
+            ->with('status', session('status', 'If the account is eligible, a new code will arrive shortly.'));
     }
 }

@@ -117,12 +117,16 @@ class DispatchController extends Controller
             'delivery_stops.*.address' => 'required|string|max:500',
             'delivery_stops.*.recipient_name' => 'required|string|max:100',
             'delivery_stops.*.recipient_phone' => 'required|string|max:20',
+            'delivery_stops.*.latitude' => 'nullable|numeric|between:-90,90',
+            'delivery_stops.*.longitude' => 'nullable|numeric|between:-180,180',
             'total_distance' => 'nullable|numeric|min:0',
             'base_price' => 'nullable|numeric|min:0',
             'total_price' => 'nullable|numeric|min:0',
             'client_id' => 'nullable|exists:users,id',
             'pickup_contact_person' => 'nullable|string|max:100',
             'pickup_contact_phone' => 'nullable|string|max:20',
+            'pickup_latitude' => 'nullable|numeric|between:-90,90',
+            'pickup_longitude' => 'nullable|numeric|between:-180,180',
             'bill_type' => 'nullable|string',
             'pan_number' => 'nullable|string|max:50',
         ]);
@@ -143,14 +147,17 @@ class DispatchController extends Controller
         try {
             $clientId = $this->dispatchClientId($request);
             $basePrice = (float) ($request->input('total_price', $request->input('base_price', 0)));
+            $firstDeliveryStop = collect($request->input('delivery_stops', []))->first();
 
             $dispatch = DispatchOrder::create([
                 'client_id' => $clientId,
                 'driver_id' => $request->driver_id,
                 'pickup_address' => $request->pickup_address,
-                'delivery_address' => $request->delivery_address,
+                'delivery_address' => $request->delivery_address ?? ($firstDeliveryStop['address'] ?? null),
                 'pickup_contact_person' => $request->pickup_contact_person,
                 'pickup_contact_phone' => $request->pickup_contact_phone,
+                'pickup_latitude' => $request->pickup_latitude,
+                'pickup_longitude' => $request->pickup_longitude,
                 'total_distance' => $request->total_distance ?? 0,
                 'base_price' => $basePrice,
                 'driver_earning' => $basePrice * 0.75,
@@ -168,6 +175,8 @@ class DispatchController extends Controller
                     'address' => $stopData['address'],
                     'recipient_name' => $stopData['recipient_name'],
                     'recipient_phone' => $stopData['recipient_phone'],
+                    'latitude' => $stopData['latitude'] ?? null,
+                    'longitude' => $stopData['longitude'] ?? null,
                     'notes' => $stopData['notes'] ?? null,
                     'status' => 'pending',
                 ]);
@@ -264,7 +273,7 @@ class DispatchController extends Controller
         $validator = Validator::make($request->all(), [
             'pickup_stops' => 'required|array|min:1',
             'delivery_stops' => 'required|array|min:1',
-            'total_distance' => 'nullable|numeric|min:0',
+            'total_distance' => 'required|numeric|min:0',
             'vehicle_type' => 'nullable|string',
         ]);
 
@@ -275,13 +284,13 @@ class DispatchController extends Controller
             ], 422);
         }
 
-        $totalDistance = $request->total_distance ?? (count($request->delivery_stops) * 5 + 5);
+        $totalDistance = (float) $request->total_distance;
         $basePrice = $totalDistance * 20;
         $marginPercentage = 10;
         $marginAmount = $basePrice * ($marginPercentage / 100);
         $finalPrice = $basePrice + $marginAmount;
 
-        $explanation = "AI estimated distance: {$totalDistance}km, base rate: रू20/km, margin: {$marginPercentage}%";
+        $explanation = "Road distance: {$totalDistance} km. Base rate: NPR 20/km, margin: {$marginPercentage}%.";
 
         return response()->json([
             'success' => true,

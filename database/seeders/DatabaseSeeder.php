@@ -514,6 +514,8 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->call(NepaliDemoSeeder::class);
+        $this->call(PortalAccessSeeder::class);
+        $this->call(CalendarDemoSeeder::class);
 
         echo "\n🎉 Database seeding completed!\n";
         echo "============================================\n";

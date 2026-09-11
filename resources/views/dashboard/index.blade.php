@@ -7,18 +7,19 @@
 <style>
     .kwdc-dashboard-shell { display: grid; gap: 24px; }
     .kwdc-hero {
-        background: #0f172a;
-        color: #ffffff;
-        border-radius: 8px;
-        padding: 24px;
+        background: #ffffff;
+        color: #111827;
+        border-radius: 28px;
+        padding: 26px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         gap: 20px;
         align-items: center;
-        border: 1px solid #1e293b;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 22px 70px rgba(15, 23, 42, .08);
     }
     .kwdc-hero-eyebrow {
-        color: #fbbf24;
+        color: #d97706;
         font-size: 12px;
         font-weight: 700;
         letter-spacing: .08em;
@@ -27,21 +28,21 @@
     }
     .kwdc-hero h2 {
         margin: 0;
-        color: #ffffff !important;
+        color: #111827 !important;
         font-size: clamp(24px, 3vw, 36px);
         line-height: 1.1;
         font-weight: 800;
         letter-spacing: 0;
     }
-    .kwdc-hero p { margin: 10px 0 0; color: #dbeafe !important; max-width: 760px; }
+    .kwdc-hero p { margin: 10px 0 0; color: #64748b !important; max-width: 640px; }
     .kwdc-system-pill {
         display: inline-flex;
         align-items: center;
         gap: 8px;
         padding: 10px 12px;
-        border-radius: 999px;
+        border-radius: 26px;
         background: rgba(34, 197, 94, .12);
-        color: #bbf7d0;
+        color: #047857;
         border: 1px solid rgba(34, 197, 94, .25);
         font-size: 13px;
         font-weight: 700;
@@ -63,8 +64,8 @@
     .kwdc-panel {
         background: #ffffff;
         border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+        border-radius: 26px;
+        box-shadow: 0 16px 50px rgba(15, 23, 42, .05);
     }
     .kwdc-stat-card {
         padding: 18px;
@@ -98,12 +99,11 @@
     .kwdc-stat-icon {
         width: 42px;
         height: 42px;
-        border-radius: 8px;
+        border-radius: 18px;
         display: grid;
         place-items: center;
         flex: 0 0 auto;
     }
-    .kwdc-stat-foot { color: #94a3b8; font-size: 12px; margin-top: 16px; }
     .kwdc-grid-2 {
         display: grid;
         grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
@@ -123,7 +123,6 @@
         font-size: 16px;
         font-weight: 800;
     }
-    .kwdc-panel-kicker { margin: 3px 0 0; color: #64748b; font-size: 13px; }
     .kwdc-chart-box { position: relative; height: 300px; width: 100%; }
     .kwdc-activity-list { display: grid; gap: 10px; }
     .kwdc-activity-item {
@@ -133,7 +132,7 @@
         gap: 12px;
         padding: 12px;
         border: 1px solid #edf2f7;
-        border-radius: 8px;
+        border-radius: 18px;
         background: #f8fafc;
     }
     .kwdc-activity-title { margin: 0; color: #172033; font-weight: 700; font-size: 14px; }
@@ -162,7 +161,7 @@
         align-items: center;
         gap: 10px;
         padding: 13px 14px;
-        border-radius: 8px;
+        border-radius: 18px;
         background: #ffffff;
         border: 1px solid #e5e7eb;
         color: #172033;
@@ -266,12 +265,12 @@
     <section class="kwdc-hero">
         <div>
             <div class="kwdc-hero-eyebrow">KTM-WDC {{ ucwords(str_replace('_', ' ', $role ?? 'user')) }}</div>
-            <h2>Welcome back, {{ $user->name ?? 'User' }}</h2>
-            <p>Here is the current picture of operations, requests, jobs, and revenue signals across your workspace.</p>
+            <h2>{{ $user->name ?? 'Workspace' }}</h2>
+            <p>Requests, jobs, and revenue in one clean view.</p>
         </div>
         <div class="kwdc-system-pill">
             <span class="kwdc-system-dot"></span>
-            System Online
+            Ready
         </div>
     </section>
 
@@ -293,7 +292,6 @@
                         <i class="fas fa-{{ $icon }}"></i>
                     </div>
                 </div>
-                <div class="kwdc-stat-foot">Updated {{ now()->format('M j, g:i A') }}</div>
             </article>
         @endforeach
     </section>
@@ -304,7 +302,6 @@
             <div class="kwdc-panel-header">
                 <div>
                     <h3 class="kwdc-panel-title">{{ $weeklyEarningValues->isNotEmpty() ? 'Weekly Earnings' : 'Key Metrics' }}</h3>
-                    <p class="kwdc-panel-kicker">{{ $weeklyEarningValues->isNotEmpty() ? 'Delivered job earnings over the last 7 days' : 'Fast visual read of your most important numbers' }}</p>
                 </div>
                 <i class="fas fa-chart-line text-orange-500"></i>
             </div>
@@ -317,7 +314,6 @@
             <div class="kwdc-panel-header">
                 <div>
                     <h3 class="kwdc-panel-title">Activity Mix</h3>
-                    <p class="kwdc-panel-kicker">Recent work by type</p>
                 </div>
                 <i class="fas fa-chart-pie text-blue-500"></i>
             </div>
@@ -332,7 +328,6 @@
         <div class="kwdc-panel-header">
             <div>
                 <h3 class="kwdc-panel-title">Quick Actions</h3>
-                <p class="kwdc-panel-kicker">Common next steps for your role</p>
             </div>
         </div>
         <div class="kwdc-quick-grid">
@@ -352,7 +347,6 @@
             <div class="kwdc-panel-header">
                 <div>
                     <h3 class="kwdc-panel-title">Recent Requests</h3>
-                    <p class="kwdc-panel-kicker">Newest warehouse and service requests</p>
                 </div>
             </div>
             <div class="kwdc-activity-list">
@@ -374,7 +368,6 @@
             <div class="kwdc-panel-header">
                 <div>
                     <h3 class="kwdc-panel-title">Recent Dispatches</h3>
-                    <p class="kwdc-panel-kicker">Latest movement and delivery work</p>
                 </div>
             </div>
             <div class="kwdc-activity-list">
@@ -397,7 +390,6 @@
         <div class="kwdc-panel-header">
             <div>
                 <h3 class="kwdc-panel-title">Recent Pickups</h3>
-                <p class="kwdc-panel-kicker">New pickup requests and their current status</p>
             </div>
         </div>
         <div class="overflow-x-auto">
@@ -448,12 +440,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [{
                     label: primaryType === 'line' ? 'Earnings' : 'Value',
                     data: primaryValues,
-                    backgroundColor: primaryType === 'line' ? 'rgba(245, 158, 11, .14)' : '#2563eb',
-                    borderColor: '#f59e0b',
-                    borderWidth: primaryType === 'line' ? 3 : 0,
+                    backgroundColor: primaryType === 'line' ? 'rgba(23, 105, 206, .07)' : '#6095d8',
+                    borderColor: '#1769ce',
+                    borderWidth: primaryType === 'line' ? 2 : 0,
                     borderRadius: 6,
-                    pointRadius: 4,
-                    pointBackgroundColor: '#f59e0b',
+                    pointRadius: 2,
+                    pointHoverRadius: 5,
+                    pointBackgroundColor: '#1769ce',
+                    maxBarThickness: 44,
                     tension: .35,
                     fill: primaryType === 'line'
                 }]
@@ -478,14 +472,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels: activityLabels,
                 datasets: [{
                     data: activityValues,
-                    backgroundColor: ['#f59e0b', '#2563eb', '#059669', '#7c3aed', '#db2777', '#0f766e'],
-                    borderWidth: 0
+                    backgroundColor: ['#6095d8', '#69ad91', '#e5b55e', '#da8490', '#999ba3', '#87bfc5'],
+                    borderWidth: 3,
+                    borderColor: '#ffffff',
+                    borderRadius: 4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '64%',
+                cutout: '76%',
                 plugins: {
                     legend: {
                         position: 'bottom',

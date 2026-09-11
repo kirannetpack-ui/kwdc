@@ -40,24 +40,25 @@ class RegisterController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
             'role' => ['required', 'string', 'in:client,driver,property_owner,equipment_owner,security_agency'],
         ];
 
         // Conditional validation based on role
-        if ($data['role'] === 'driver') {
+        if (($data['role'] ?? null) === 'driver') {
             $rules['vehicle_type'] = ['nullable', 'string', 'max:50'];
             $rules['license_number'] = ['nullable', 'string', 'max:50'];
         }
 
-        if ($data['role'] === 'property_owner') {
+        if (($data['role'] ?? null) === 'property_owner') {
             $rules['company_name'] = ['nullable', 'string', 'max:255'];
         }
 
-        if ($data['role'] === 'equipment_owner') {
+        if (($data['role'] ?? null) === 'equipment_owner') {
             $rules['equipment_type'] = ['nullable', 'string', 'max:255'];
         }
 
-        if ($data['role'] === 'security_agency') {
+        if (($data['role'] ?? null) === 'security_agency') {
             $rules['agency_name'] = ['required', 'string', 'max:255'];
             $rules['registration_number'] = ['required', 'string', 'max:100'];
         }
@@ -79,6 +80,7 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
             'role' => $data['role'],
             'user_type' => $data['role'],
             'is_active' => true,
@@ -162,7 +164,7 @@ class RegisterController extends Controller
 
     private function phaseOneDemo(): bool
     {
-        return filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN);
+        return (bool) config('kwdc.demo') && app()->environment('local');
     }
 
     /**

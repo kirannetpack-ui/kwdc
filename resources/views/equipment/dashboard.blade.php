@@ -108,7 +108,7 @@
             <i class="fas fa-plus-circle text-orange-500 text-2xl mb-2"></i>
             <p class="text-sm font-semibold">Register Equipment</p>
         </a>
-        <a href="{{ route('equipment.jobs') }}" class="bg-gray-50 p-4 rounded-lg text-center hover:bg-orange-50 transition">
+        <a href="{{ route('equipment.jobs.index') }}" class="bg-gray-50 p-4 rounded-lg text-center hover:bg-orange-50 transition">
             <i class="fas fa-briefcase text-orange-500 text-2xl mb-2"></i>
             <p class="text-sm font-semibold">View Jobs</p>
         </a>
@@ -160,7 +160,7 @@
     <div class="bg-white rounded-xl shadow-md p-6">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold text-gray-800">Recent Job Requests</h3>
-            <a href="{{ route('equipment.jobs') }}" class="text-orange-500 hover:text-orange-600 text-sm">View All →</a>
+            <a href="{{ route('equipment.jobs.index') }}" class="text-orange-500 hover:text-orange-600 text-sm">View all</a>
         </div>
         <div class="space-y-3">
             @forelse($jobRequests ?? [] as $job)

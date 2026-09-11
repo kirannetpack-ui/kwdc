@@ -24,45 +24,33 @@ class ActivationCodeService
 
     public function send(User $user): bool
     {
+        $previousHash = $user->activation_code_hash;
+        $previousExpiry = $user->activation_expires_at;
         $code = $this->generateFor($user);
 
-        if ($this->phaseOneDemo()) {
-            Log::info('Activation email skipped in phase-one demo mode; showing demo code instead.', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
-
-            session()->flash('activation_demo_code', $code);
-            session()->flash('status', 'Email delivery is not connected on this demo environment. Use the demo activation code shown below.');
-
-            return false;
-        }
-
         try {
+            if (! app()->environment('testing') && in_array(config('mail.default'), ['log', 'array', 'failover'], true)) {
+                throw new \RuntimeException('A delivery transport is required for activation mail.');
+            }
             Mail::to($user->email, $user->name)->send(new ActivationCodeMail($user, $code));
 
             return true;
         } catch (\Throwable $e) {
-            if (! $this->phaseOneDemo()) {
-                throw $e;
-            }
-
-            Log::warning('Activation email unavailable; showing demo code instead.', [
+            // A failed resend must not invalidate the code already in the inbox.
+            User::whereKey($user->id)
+                ->where('activation_code_hash', $user->activation_code_hash)
+                ->update([
+                    'activation_code_hash' => $previousHash,
+                    'activation_expires_at' => $previousExpiry,
+                ]);
+            Log::warning('Activation email delivery failed.', [
                 'user_id' => $user->id,
-                'email' => $user->email,
-                'error' => $e->getMessage(),
+                'exception_type' => get_class($e),
             ]);
-
-            session()->flash('activation_demo_code', $code);
-            session()->flash('status', 'Email delivery is unavailable on this demo environment. Use the demo activation code shown below.');
+            session()->flash('status', 'Email delivery is temporarily unavailable. Please try sending a new code shortly.');
 
             return false;
         }
-    }
-
-    private function phaseOneDemo(): bool
-    {
-        return filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN);
     }
 
     public function verify(User $user, string $code): bool

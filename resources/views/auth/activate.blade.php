@@ -1,7 +1,7 @@
 <x-guest-layout>
     <style>
         .activation-head {
-            margin-bottom: 28px;
+            margin-bottom: 34px;
         }
 
         .activation-kicker {
@@ -30,9 +30,9 @@
             display: flex;
             gap: 12px;
             margin-bottom: 22px;
-            padding: 14px 15px;
+            padding: 18px 20px;
             border: 1px solid #bfdbfe;
-            border-radius: 10px;
+            border-radius: 22px;
             color: #1d4ed8;
             background: #eff6ff;
             line-height: 1.5;
@@ -41,9 +41,9 @@
 
         .demo-code-box {
             margin-bottom: 22px;
-            padding: 18px;
+            padding: 22px;
             border: 1px solid #f5d38a;
-            border-radius: 12px;
+            border-radius: 24px;
             background: #fffbeb;
         }
 
@@ -126,9 +126,9 @@
     </style>
 
     <div class="activation-head">
-        <span class="activation-kicker"><i class="fas fa-shield-check"></i> Account verification</span>
+        <span class="activation-kicker"><i class="fas fa-shield-check"></i> Verification</span>
         <h1>Activate your account</h1>
-        <p>Enter the 6-digit code sent to your email address. Codes expire after 30 minutes.</p>
+        <p>Enter your 6-digit code.</p>
     </div>
 
     @if(session('status'))
@@ -138,14 +138,7 @@
         </div>
     @endif
 
-    @if(session('activation_demo_code'))
-        <div class="demo-code-box">
-            <span>Demo activation code</span>
-            <strong>{{ session('activation_demo_code') }}</strong>
-        </div>
-    @endif
-
-    <form method="POST" action="{{ route('activation.verify') }}" class="activation-form">
+    <form method="POST" action="{{ route('activation.verify') }}" class="activation-form" id="activation-form">
         @csrf
         <div>
             <label for="email">Email address</label>
@@ -156,7 +149,7 @@
         <div>
             <label for="activation_code">Activation code</label>
             <input id="activation_code" class="code-input" name="activation_code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required placeholder="000000">
-            <p class="field-help">Check inbox and spam. Gmail may group the welcome and activation messages together.</p>
+            <p class="field-help">Use the newest code.</p>
             @error('activation_code') <p class="error-text">{{ $message }}</p> @enderror
         </div>
 
@@ -164,18 +157,13 @@
             <button type="submit" class="activate-button">
                 <i class="fas fa-check-circle"></i> Activate account
             </button>
+            <button type="submit" formaction="{{ route('activation.resend') }}" formnovalidate class="resend-button">
+                <i class="fas fa-paper-plane"></i> Send a new code
+            </button>
         </div>
     </form>
 
-    <form method="POST" action="{{ route('activation.resend') }}" class="activation-actions" style="margin-top: 12px;">
-        @csrf
-        <input type="hidden" name="email" value="{{ old('email', $email) }}">
-        <button type="submit" class="resend-button">
-            <i class="fas fa-paper-plane"></i> Send a new code
-        </button>
-    </form>
-
     <div class="activation-footer">
-        Use the newest code if you requested more than one. For security, KTM-WDC will never ask for your password to verify email.
+        KTM-WDC will never ask for your password to verify email.
     </div>
 </x-guest-layout>

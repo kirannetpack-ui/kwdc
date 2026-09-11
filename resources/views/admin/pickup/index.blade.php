@@ -28,7 +28,7 @@
                         <span class="status-badge status-{{ $pickup->status }}">{{ ucfirst($pickup->status ?? 'Pending') }}</span>
                     </td>
                     <td class="px-6 py-4">
-                        <button class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button>
+                        <a class="btn btn-sm btn-outline-primary" href="{{ route('pickup.show', $pickup->id) }}" aria-label="View pickup #{{ $pickup->id }}"><i class="fas fa-arrow-right"></i></a>
                     </td>
                 </tr>
                 @empty

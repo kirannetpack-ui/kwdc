@@ -30,7 +30,7 @@
                     </td>
                     <td class="px-6 py-4">{{ $request->created_at->format('Y-m-d') }}</td>
                     <td class="px-6 py-4">
-                        <button class="text-blue-500 hover:text-blue-700"><i class="fas fa-eye"></i></button>
+                        <a href="{{ route('warehouse-requests.show', $request->id) }}" class="btn btn-sm btn-outline-primary" aria-label="View request #{{ $request->id }}"><i class="fas fa-arrow-right"></i></a>
                     </td>
                 </tr>
                 @empty

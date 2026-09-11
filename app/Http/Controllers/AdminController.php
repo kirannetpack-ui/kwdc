@@ -375,9 +375,14 @@ class AdminController extends Controller
     public function approve($id)
     {
         $warehouse = Warehouse::findOrFail($id);
-        $warehouse->update(['status' => 'approved']);
+        $updated = Warehouse::whereKey($warehouse->id)->where('status', 'pending')->update(['status' => 'approved']);
+        abort_unless($updated, 409, 'This warehouse has already been reviewed.');
 
-        NotificationService::notifyWarehouseApproved($warehouse);
+        try {
+            NotificationService::notifyWarehouseApproved($warehouse);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Warehouse approval notification failed: ' . $e->getMessage());
+        }
 
         return back()->with('success', 'Warehouse approved successfully');
     }
@@ -388,7 +393,9 @@ class AdminController extends Controller
     public function reject($id)
     {
         $warehouse = Warehouse::findOrFail($id);
-        $warehouse->update(['status' => 'rejected']);
+        $updated = Warehouse::whereKey($warehouse->id)->where('status', 'pending')->update(['status' => 'rejected']);
+        abort_unless($updated, 409, 'This warehouse has already been reviewed.');
+
         return back()->with('success', 'Warehouse rejected');
     }
 
@@ -572,8 +579,15 @@ class AdminController extends Controller
     // Add these new methods below it:
     public function showDriver($id)
     {
-        $driver = User::where('role', 'driver')->findOrFail($id);
-        return view('admin.drivers.show', compact('driver'));
+        $driver = User::where('role', 'driver')
+            ->with(['vehicles', 'dispatchOrders' => fn($q) => $q->latest()->limit(10), 'driverRates'])
+            ->findOrFail($id);
+        $totalTrips = \App\Models\DispatchOrder::where('driver_id', $driver->id)->where('status', 'delivered')->count()
+            + \App\Models\PickupRequest::where('driver_id', $driver->id)->whereIn('status', ['delivered', 'completed'])->count();
+        $totalEarnings = (float) \App\Models\DispatchOrder::where('driver_id', $driver->id)->where('status', 'delivered')->sum('base_price')
+            + (float) \App\Models\PickupRequest::where('driver_id', $driver->id)->whereIn('status', ['delivered', 'completed'])->sum('total_price');
+
+        return view('admin.drivers.show', compact('driver', 'totalTrips', 'totalEarnings'));
     }
 
     public function editDriver($id)
@@ -758,9 +772,13 @@ class AdminController extends Controller
      */
     public function reports()
     {
-        // Adjusted for MySQL DATE_FORMAT (previously used strftime for SQLite)
+        $monthExpression = match (DB::connection()->getDriverName()) {
+            'sqlite' => "strftime('%Y-%m', created_at)",
+            'pgsql' => "to_char(created_at, 'YYYY-MM')",
+            default => "DATE_FORMAT(created_at, '%Y-%m')",
+        };
         $monthlyStats = DB::table('dispatch_orders')
-            ->select(DB::raw("DATE_FORMAT(created_at, '%Y-%m') as month"), DB::raw('count(*) as count'))
+            ->select(DB::raw($monthExpression.' as month'), DB::raw('count(*) as count'))
             ->groupBy('month')
             ->orderBy('month', 'desc')
             ->limit(6)
@@ -793,10 +811,6 @@ class AdminController extends Controller
             $areaSqft = $w->area_sqft ?? 0;
             $occupied = $w->warehouseRequests->sum('space_required') ?? 0;
 
-            if ($occupied == 0 && $areaSqft > 0) {
-                $occupied = $areaSqft * (rand(10, 80) / 100);
-            }
-
             $occupied = min($occupied, $areaSqft);
 
             $totalCapacity += $areaSqft;
@@ -815,20 +829,7 @@ class AdminController extends Controller
             $chartOccupied[] = round($occupied, 2);
         }
 
-        if (empty($stats)) {
-            $chartLabels = ['Kalimati Warehouse', 'Balkumari Storage'];
-            $chartCapacity = [5000, 8000];
-            $chartOccupied = [2000, 6000];
-            $totalCapacity = 13000;
-            $totalOccupied = 8000;
-            $stats = [
-                ['name' => 'Kalimati Warehouse', 'current_area_sqft' => 5000, 'occupied_sqft' => 2000, 'incoming_requests' => 12, 'avg_growth_percent' => 8.5],
-                ['name' => 'Balkumari Storage', 'current_area_sqft' => 8000, 'occupied_sqft' => 6000, 'incoming_requests' => 8, 'avg_growth_percent' => 4.2],
-            ];
-        }
-
-        // Let AI predict the utilization
-        $rawPredictions = $aiService->predictWarehouseUtilization($stats, 30);
+        $rawPredictions = empty($stats) ? [] : $aiService->predictWarehouseUtilization($stats, 30);
 
         // Normalize the AI's keys so the View never crashes
         $predictions = [];

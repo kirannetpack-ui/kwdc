@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="user-id" content="{{ auth()->check() ? auth()->id() : '' }}">
+    <script src="{{ asset('js/kwdc-maps.js') }}" defer></script>
     <title>KTM-WDC - @yield('title', 'Warehouse & Distribution Connect')</title>
     
     <!-- Bootstrap CSS -->
@@ -17,12 +18,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Leaflet CSS for Maps -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    @vite('resources/css/app.css')
     <link rel="stylesheet" href="{{ asset('css/kwdc-ui.css') }}">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
         * { font-family: 'Inter', sans-serif; }
@@ -116,12 +114,14 @@
         .main-content .text-gray-400 { color: #64748b !important; }
     </style>
     @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/kwdc-minimal.css') }}">
+    <script src="{{ asset('js/kwdc-records.js') }}" defer></script>
 </head>
 <body class="kwdc-app-shell">
 <div id="kwdc-page-progress" aria-hidden="true"></div>
 
 <!-- Mobile Menu Toggle -->
-<button class="menu-toggle" onclick="toggleMobileMenu()"><i class="fas fa-bars"></i></button>
+<button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
 
 <!-- ============================================================ -->
@@ -464,11 +464,20 @@
 <script src="{{ asset('js/kwdc-flow.js') }}" defer></script>
 <script>
     function toggleMobileMenu() {
-        document.getElementById('sidebar').classList.toggle('mobile-open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
+        const sidebar = document.getElementById('sidebar');
+        const open = sidebar.classList.toggle('mobile-open');
+        document.getElementById('sidebarOverlay').classList.toggle('active', open);
+        const toggle = document.querySelector('.menu-toggle');
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
+        if (open) sidebar.querySelector('a')?.focus();
+        else toggle.focus();
     }
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && document.getElementById('sidebar').classList.contains('mobile-open')) toggleMobileMenu();
+    });
     document.addEventListener('DOMContentLoaded', function() {
-        const alerts = document.querySelectorAll('.alert');
+        const alerts = document.querySelectorAll('.alert-success');
         alerts.forEach(function(alert) { 
             setTimeout(function() { 
                 alert.style.transition = 'opacity 0.5s ease'; 
@@ -843,7 +852,7 @@
         <i class="fas fa-headset"></i>
         <div>
             <strong>KWDC Assistant</strong>
-            <span>Free mode: forms, reminders, tracking</span>
+            <span>Workspace assistant</span>
         </div>
     </div>
     <div class="kwdc-assistant-actions">
@@ -858,7 +867,7 @@
         <div class="kwdc-assistant-messages" id="voiceMessages">
             <div class="kwdc-assistant-msg assistant-msg">
                 <div class="kwdc-assistant-bubble">
-                    Tell me what you need. I can prepare pickup, dispatch, tracking, invoices, equipment, security, and reminder forms.
+                    What would you like to do?
                 </div>
                 <div class="kwdc-quick-actions" id="assistantQuickActions">
                     <button type="button" class="kwdc-quick-action" data-prompt="Create a pickup from Boudha to Bhaktapur">Pickup</button>

@@ -38,6 +38,11 @@ class Invoice extends Model
         return $this->belongsTo(Warehouse::class);
     }
 
+    public function warehouseRequest(): BelongsTo
+    {
+        return $this->belongsTo(WarehouseRequest::class, 'warehouse_request_id');
+    }
+
     public function order(): MorphTo
     {
         return $this->morphTo('order', 'order_type', 'order_id');

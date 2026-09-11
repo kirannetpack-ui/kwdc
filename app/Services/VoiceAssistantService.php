@@ -75,7 +75,7 @@ class VoiceAssistantService
             Log::error('Exception trace: ' . $e->getTraceAsString());
             return [
                 'action' => 'error',
-                'message' => $e->getMessage(),
+                'message' => 'The assistant could not complete this request. Please try again.',
                 'done' => false,
             ];
         }

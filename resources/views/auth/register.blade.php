@@ -18,6 +18,7 @@
             --red: #dc2626;
             --paper: #ffffff;
             --soft: #f5f7fb;
+            --radius: 28px;
         }
 
         * { box-sizing: border-box; }
@@ -41,7 +42,7 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: minmax(300px, .85fr) minmax(420px, 680px);
-            gap: 48px;
+            gap: clamp(36px, 5vw, 76px);
             align-items: center;
             padding: 42px 0;
         }
@@ -63,7 +64,7 @@
             height: 48px;
             display: grid;
             place-items: center;
-            border-radius: 8px;
+            border-radius: 18px;
             color: #111827;
             background: var(--gold);
             box-shadow: 0 18px 38px rgba(245, 165, 36, .24);
@@ -99,7 +100,7 @@
             align-items: center;
             padding: 13px;
             border: 1px solid rgba(219, 228, 239, .16);
-            border-radius: 8px;
+            border-radius: 22px;
             background: rgba(255, 255, 255, .08);
             color: #e5edf8;
             backdrop-filter: blur(12px);
@@ -110,7 +111,7 @@
             height: 42px;
             display: grid;
             place-items: center;
-            border-radius: 8px;
+            border-radius: 18px;
             color: #101724;
             background: var(--gold);
         }
@@ -120,11 +121,11 @@
 
         .register-card {
             width: 100%;
-            max-height: calc(100vh - 64px);
+            max-height: calc(100vh - 52px);
             overflow-y: auto;
-            padding: 32px;
+            padding: clamp(30px, 4vw, 46px);
             border: 1px solid rgba(219, 228, 239, .92);
-            border-radius: 8px;
+            border-radius: var(--radius);
             background: rgba(255, 255, 255, .97);
             box-shadow: 0 28px 80px rgba(0, 0, 0, .34);
             backdrop-filter: blur(18px);
@@ -163,7 +164,7 @@
             min-height: 46px;
             padding: 12px 13px;
             border: 1px solid #cfd9e6;
-            border-radius: 8px;
+            border-radius: 18px;
             color: var(--ink);
             font: inherit;
             background: #ffffff;
@@ -202,7 +203,7 @@
             min-height: 116px;
             padding: 14px 12px;
             border: 1px solid #dbe4ef;
-            border-radius: 8px;
+            border-radius: 22px;
             background: #ffffff;
             cursor: pointer;
             text-align: left;
@@ -222,7 +223,7 @@
             display: grid;
             place-items: center;
             margin-bottom: 10px;
-            border-radius: 8px;
+            border-radius: 18px;
             color: white !important;
             background: var(--blue);
         }
@@ -257,7 +258,7 @@
             padding: 18px;
             border: 1px solid #cfe7e3;
             border-left: 4px solid var(--green);
-            border-radius: 8px;
+            border-radius: 24px;
             background: #f0fdfa;
         }
 
@@ -287,7 +288,7 @@
             justify-content: center;
             gap: 10px;
             border: 0;
-            border-radius: 8px;
+            border-radius: 18px;
             color: #111827;
             background: var(--gold);
             font: inherit;
@@ -313,7 +314,7 @@
         .success-box {
             margin-bottom: 20px;
             padding: 13px 15px;
-            border-radius: 8px;
+            border-radius: 18px;
             font-size: 14px;
         }
 
@@ -340,6 +341,8 @@
             .role-grid { grid-template-columns: 1fr; }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/kwdc-auth.css') }}">
+    <script src="{{ asset('js/kwdc-auth.js') }}" defer></script>
 </head>
 <body>
     <main class="auth-shell">
@@ -348,20 +351,11 @@
                 <span class="brand-mark"><i class="fas fa-warehouse"></i></span>
                 <span>KTM-WDC</span>
             </a>
-            <h1>Join the operating network.</h1>
-            <p>Create the right account for your role and enter the KTM-WDC portal for requests, dispatch, stock, invoices, partner work, and reporting.</p>
-            <div class="feature-list">
-                <div class="feature"><i class="fas fa-route"></i><div><strong>Dispatch-ready workflows</strong><span>Coordinate pickup, delivery, drivers, and live operations.</span></div></div>
-                <div class="feature"><i class="fas fa-boxes-stacked"></i><div><strong>Warehouse visibility</strong><span>Manage storage requests, stock, properties, and documents.</span></div></div>
-                <div class="feature"><i class="fas fa-file-invoice-dollar"></i><div><strong>Connected billing</strong><span>Keep invoices, payments, reminders, and reports linked.</span></div></div>
-            </div>
         </section>
 
         <section class="register-card">
             <div class="card-head">
-                <span>Account setup</span>
                 <h2>Create your account.</h2>
-                <p>Choose your role and fill in the details needed for secure portal access.</p>
             </div>
 
             @if(session('success'))
@@ -397,14 +391,9 @@
 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="date_of_birth"><i class="fas fa-calendar-day"></i>Date of Birth</label>
-                        <input type="date" name="date_of_birth" id="date_of_birth" value="{{ old('date_of_birth') }}" required>
-                        <div class="helper-text"><i class="fas fa-info-circle"></i>Used for account personalization.</div>
-                    </div>
-                    <div class="form-group">
                         <label for="phone"><i class="fas fa-phone"></i>Phone Number</label>
                         <input type="text" name="phone" id="phone" value="{{ old('phone') }}" placeholder="e.g. 9800000000" required>
-                        <div class="helper-text"><i class="fas fa-info-circle"></i>Used for operational updates.</div>
+                        <div class="helper-text"><i class="fas fa-info-circle"></i>For updates.</div>
                     </div>
                 </div>
 
@@ -417,7 +406,7 @@
                     <div class="form-group">
                         <label for="password"><i class="fas fa-lock"></i>Password</label>
                         <input type="password" name="password" id="password" placeholder="Min 8 characters" required>
-                        <div class="helper-text"><i class="fas fa-shield-alt"></i>Must be at least 8 characters.</div>
+                        <div class="helper-text"><i class="fas fa-shield-alt"></i>Minimum 8 characters.</div>
                     </div>
                     <div class="form-group">
                         <label for="password_confirmation"><i class="fas fa-check-circle"></i>Confirm Password</label>
@@ -428,101 +417,51 @@
                 <div class="form-group">
                     <label><i class="fas fa-user-tag"></i>I want to register as</label>
                     <div class="role-grid" id="roleSelector">
-                        <label class="role-option {{ old('role', 'client') == 'client' ? 'selected' : '' }}">
-                            <input type="radio" name="role" value="client" {{ old('role', 'client') == 'client' ? 'checked' : '' }}>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'client' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="client" {{ old('role', request('role', 'client')) == 'client' ? 'checked' : '' }}>
                             <span class="check-mark"><i class="fas fa-check"></i></span>
                             <i class="fas fa-user-circle"></i>
                             <span class="role-name">Client</span>
-                            <span class="role-desc">Request warehouse and services</span>
+                            <span class="role-desc">Request services</span>
                         </label>
-                        <label class="role-option {{ old('role') == 'driver' ? 'selected' : '' }}">
-                            <input type="radio" name="role" value="driver" {{ old('role') == 'driver' ? 'checked' : '' }}>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'driver' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="driver" {{ old('role', request('role', 'client')) == 'driver' ? 'checked' : '' }}>
                             <span class="check-mark"><i class="fas fa-check"></i></span>
                             <i class="fas fa-truck"></i>
                             <span class="role-name">Driver</span>
-                            <span class="role-desc">Transport and delivery</span>
+                            <span class="role-desc">Transport work</span>
                         </label>
-                        <label class="role-option {{ old('role') == 'property_owner' ? 'selected' : '' }}">
-                            <input type="radio" name="role" value="property_owner" {{ old('role') == 'property_owner' ? 'checked' : '' }}>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'property_owner' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="property_owner" {{ old('role', request('role', 'client')) == 'property_owner' ? 'checked' : '' }}>
                             <span class="check-mark"><i class="fas fa-check"></i></span>
                             <i class="fas fa-warehouse"></i>
                             <span class="role-name">Property Owner</span>
-                            <span class="role-desc">List warehouse space</span>
+                            <span class="role-desc">List space</span>
                         </label>
-                        <label class="role-option {{ old('role') == 'equipment_owner' ? 'selected' : '' }}">
-                            <input type="radio" name="role" value="equipment_owner" {{ old('role') == 'equipment_owner' ? 'checked' : '' }}>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'equipment_owner' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="equipment_owner" {{ old('role', request('role', 'client')) == 'equipment_owner' ? 'checked' : '' }}>
                             <span class="check-mark"><i class="fas fa-check"></i></span>
                             <i class="fas fa-tools"></i>
                             <span class="role-name">Equipment Owner</span>
-                            <span class="role-desc">Equipment rental</span>
+                            <span class="role-desc">Rental work</span>
                         </label>
-                        <label class="role-option {{ old('role') == 'security_agency' ? 'selected' : '' }}">
-                            <input type="radio" name="role" value="security_agency" {{ old('role') == 'security_agency' ? 'checked' : '' }}>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'security_agency' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="security_agency" {{ old('role', request('role', 'client')) == 'security_agency' ? 'checked' : '' }}>
                             <span class="check-mark"><i class="fas fa-check"></i></span>
                             <i class="fas fa-shield-alt"></i>
                             <span class="role-name">Security Agency</span>
-                            <span class="role-desc">Security services partner</span>
+                            <span class="role-desc">Security work</span>
                         </label>
                     </div>
-                    <div class="helper-text"><i class="fas fa-info-circle"></i>Choose the role that best fits your business.</div>
+                    <div class="helper-text"><i class="fas fa-info-circle"></i>Select one role.</div>
                 </div>
 
-                <div id="agencyFields" class="agency-fields {{ old('role') == 'security_agency' ? 'show' : '' }}">
-                    <h4><i class="fas fa-building"></i> Agency Details</h4>
+                <div id="agencyFields" class="agency-fields {{ old('role', request('role', 'client')) == 'security_agency' ? 'show' : '' }}">
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="agency_name"><i class="fas fa-signature"></i>Agency Name</label>
-                            <input type="text" name="agency_name" id="agency_name" value="{{ old('agency_name') }}" placeholder="e.g. Everest Security Solutions">
-                        </div>
-                        <div class="form-group">
-                            <label for="registration_number"><i class="fas fa-id-card"></i>Registration Number</label>
-                            <input type="text" name="registration_number" id="registration_number" value="{{ old('registration_number') }}" placeholder="Company registration #">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="license_number"><i class="fas fa-certificate"></i>License Number</label>
-                            <input type="text" name="license_number" id="license_number" value="{{ old('license_number') }}" placeholder="Security license #">
-                        </div>
-                        <div class="form-group">
-                            <label for="pan_vat_number"><i class="fas fa-file-invoice"></i>PAN / VAT Number</label>
-                            <input type="text" name="pan_vat_number" id="pan_vat_number" value="{{ old('pan_vat_number') }}" placeholder="PAN or VAT #">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="year_established"><i class="fas fa-calendar-alt"></i>Year Established</label>
-                            <input type="number" name="year_established" id="year_established" value="{{ old('year_established') }}" placeholder="e.g. 2015" min="1900" max="{{ date('Y') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="services_offered"><i class="fas fa-concierge-bell"></i>Services Offered</label>
-                            <input type="text" name="services_offered" id="services_offered" value="{{ old('services_offered') }}" placeholder="e.g. CCTV, Patrol, Access Control">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="agency_phone"><i class="fas fa-phone"></i>Agency Phone</label>
-                            <input type="text" name="phone" id="agency_phone" value="{{ old('phone') }}" placeholder="Primary contact number">
-                        </div>
-                        <div class="form-group">
-                            <label for="emergency_phone"><i class="fas fa-phone-alt"></i>Emergency Phone</label>
-                            <input type="text" name="emergency_phone" id="emergency_phone" value="{{ old('emergency_phone') }}" placeholder="24/7 emergency contact">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="certifications"><i class="fas fa-award"></i>Certifications</label>
-                        <input type="text" name="certifications" id="certifications" value="{{ old('certifications') }}" placeholder="e.g. ISO 9001, NSI Gold">
-                    </div>
-                    <div class="form-group">
-                        <label for="agency_address"><i class="fas fa-map-marker-alt"></i>Agency Address</label>
-                        <input type="text" name="address" id="agency_address" value="{{ old('address') }}" placeholder="Full address of agency">
+                        <div class="form-group"><label for="agency_name">Agency name</label><input id="agency_name" name="agency_name" maxlength="255" value="{{ old('agency_name') }}"></div>
+                        <div class="form-group"><label for="registration_number">Registration number</label><input id="registration_number" name="registration_number" maxlength="100" value="{{ old('registration_number') }}"></div>
                     </div>
                 </div>
-
-                <label class="terms-row">
-                    <input type="checkbox" name="terms" {{ old('terms') ? 'checked' : '' }} required>
-                    <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.</span>
-                </label>
 
                 <button type="submit" class="btn-register">
                     <i class="fas fa-user-plus"></i> Create Account
@@ -553,17 +492,23 @@
                 document.querySelectorAll('#agencyFields input, #agencyFields textarea').forEach(input => {
                     if (input.name && input.name !== 'phone' && input.name !== 'address') {
                         input.required = true;
+                        input.disabled = false;
                     }
                 });
             } else {
                 agencyFields.classList.remove('show');
                 document.querySelectorAll('#agencyFields input, #agencyFields textarea').forEach(input => {
                     input.required = false;
+                    input.disabled = true;
                 });
             }
         }
 
         document.addEventListener('DOMContentLoaded', toggleAgencyFields);
+        document.querySelectorAll('input[name="role"]').forEach(input => input.addEventListener('change', () => {
+            document.querySelectorAll('.role-option').forEach(option => option.classList.toggle('selected', option.querySelector('input').checked));
+            toggleAgencyFields();
+        }));
     </script>
 </body>
 </html>

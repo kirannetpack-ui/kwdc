@@ -28,7 +28,7 @@
                     <tbody>
                         @foreach($warehouseRequests as $request)
                         <tr>
-                            <td>{{ $loop->iteration }}</td>
+                            <td><a href="{{ route('warehouse-requests.show', $request->id) }}">#{{ $request->id }}</a></td>
                             <td>
                                 <strong>{{ $request->client->name ?? 'N/A' }}</strong>
                                 <br>

@@ -10,7 +10,8 @@ class ReminderController extends Controller
 {
     public function index(Request $request)
     {
-        $month = $request->date('month') ?? now()->startOfMonth();
+        $request->validate(['month' => ['nullable', 'date_format:Y-m-d']]);
+        $month = ($request->date('month') ?? now())->startOfMonth();
         $start = $month->copy()->startOfMonth();
         $end = $month->copy()->endOfMonth();
 

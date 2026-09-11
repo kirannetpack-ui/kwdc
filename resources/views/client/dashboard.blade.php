@@ -13,7 +13,7 @@
             <p class="text-gray-500 mt-1">Here's what's happening with your logistics today.</p>
         </div>
         <div class="text-right">
-            <p class="text-gray-600 text-sm">System Online</p>
+            <p class="text-gray-600 text-sm">Ready</p>
             <p class="text-xs text-gray-400 mt-1">{{ now()->format('F j, Y') }}</p>
         </div>
     </div>

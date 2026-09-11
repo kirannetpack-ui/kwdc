@@ -38,7 +38,7 @@
     <div class="flex justify-between items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Request Equipment</h1>
-            <p class="text-gray-500 mt-1">Let AI recommend the best equipment for your specific job requirements.</p>
+            <p class="text-gray-500 mt-1">Choose equipment, dates, and work location.</p>
         </div>
         <a href="{{ route('equipment-requests.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
             <i class="fas fa-arrow-left mr-2"></i>Back to Requests
@@ -99,8 +99,8 @@
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold flex items-center">
-                            <i class="fas fa-robot text-blue-500 mr-2"></i>
-                            AI Recommendation
+                        <i class="fas fa-wand-magic-sparkles text-blue-500 mr-2"></i>
+                            Recommendation
                         </h3>
                         <button type="button" id="recommendBtn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg transition">
                             <i class="fas fa-magic mr-1"></i> Suggest Model
@@ -108,7 +108,7 @@
                     </div>
                     <div id="ai-loading" class="hidden text-center py-3">
                         <div class="spinner-border text-blue-500" role="status"></div>
-                        <p class="text-sm text-gray-500 mt-1">AI is analyzing your requirements...</p>
+                        <p class="text-sm text-gray-500 mt-1">Checking the request...</p>
                     </div>
                     <div id="ai-results" class="space-y-3 hidden">
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
@@ -205,7 +205,7 @@
                         Work Site Visualization
                     </h3>
                     <div id="map" class="map-container"></div>
-                    <p class="text-xs text-gray-500 mt-2">The map auto-updates to show your work location.</p>
+                    <p id="mapStatus" class="text-xs text-gray-500 mt-2">Enter a location to place the marker.</p>
                 </div>
             </div>
 
@@ -268,14 +268,17 @@ function initMap() {
 
 async function geocodeAddress(address) {
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
-        if (!response.ok) throw new Error('Nominatim API error');
+        if (window.KwdcMaps) {
+            return await window.KwdcMaps.search(address);
+        }
+        const response = await fetch(`/maps/search?q=${encodeURIComponent(address)}&limit=1`);
+        if (!response.ok) throw new Error('Location lookup failed');
         const data = await response.json();
-        if (data && data.length > 0) {
-            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+        if (Array.isArray(data) && data.length > 0) {
+            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: data[0].display_name };
         }
     } catch (e) {
-        console.warn('Nominatim geocoding failed (fallback to mock):', e);
+        console.warn('Location lookup failed:', e);
     }
     return null;
 }
@@ -288,21 +291,41 @@ async function renderMapMarker() {
     }
 
     const address = document.getElementById('location').value;
+    const status = document.getElementById('mapStatus');
     if (!address.trim()) return;
 
-    let coords = await geocodeAddress(address);
+    if (status) status.textContent = 'Finding location...';
+    const coords = await geocodeAddress(address);
     if (!coords) {
-        coords = { lat: 27.7172 + (Math.random() - 0.5) * 0.1, lng: 85.3240 + (Math.random() - 0.5) * 0.1 };
+        if (status) status.textContent = 'Location not found. Try a nearby landmark or city.';
+        return;
     }
 
-    mapMarker = L.marker([coords.lat, coords.lng]).addTo(mapInstance)
-        .bindPopup(`<b>Work Location</b><br>${address}`);
+    const popup = document.createElement('div');
+    const title = document.createElement('strong');
+    title.textContent = 'Work Location';
+    const line = document.createElement('div');
+    line.textContent = coords.label || address;
+    popup.append(title, line);
+
+    mapMarker = L.marker([coords.lat, coords.lng]).addTo(mapInstance).bindPopup(popup);
     
     mapInstance.setView([coords.lat, coords.lng], 15);
+    if (status) status.textContent = coords.label || 'Location found.';
 }
 
 function setupAutoComplete() {
     const locationInput = document.getElementById('location');
+    if (!locationInput) return;
+
+    let lookupTimer = null;
+    const scheduleLookup = () => {
+        window.clearTimeout(lookupTimer);
+        lookupTimer = window.setTimeout(renderMapMarker, 650);
+    };
+    locationInput.addEventListener('input', scheduleLookup);
+    locationInput.addEventListener('change', renderMapMarker);
+
     if (locationInput && typeof google !== 'undefined' && google.maps) {
         const autocomplete = new google.maps.places.Autocomplete(locationInput);
         autocomplete.addListener('place_changed', function() { renderMapMarker(); });
@@ -329,7 +352,6 @@ function autoCalculateDuration() {
     }
 }
 
-// ------------------ AI EQUIPMENT RECOMMENDATION ------------------
 document.getElementById('recommendBtn').addEventListener('click', function() {
     const type = document.getElementById('equipment_type').value;
     const duration = document.getElementById('duration').value;
@@ -342,12 +364,11 @@ document.getElementById('recommendBtn').addEventListener('click', function() {
     const loading_site = document.getElementById('loading_site').value;
     const unloading_site = document.getElementById('unloading_site').value;
 
-    // ✅ NEW VALIDATION: ONLY requires Cargo details and at least 1 Site
     const hasCargo = commodity_name || weight || dimensions;
     const hasSite = loading_site || unloading_site;
 
     if (!hasCargo || !hasSite) {
-        alert('Please provide Cargo details (Commodity, Weight, Dimensions) and at least one Site (Loading or Unloading).');
+        alert('Please provide cargo details and at least one site.');
         return;
     }
 
@@ -384,21 +405,17 @@ document.getElementById('recommendBtn').addEventListener('click', function() {
     .then(data => {
         loadingDiv.classList.add('hidden');
 
-        // Force the result box to open
         resultsDiv.classList.remove('hidden');
         resultsDiv.style.display = 'block';
 
-        // Apply data or fallback
         if (data.success && data.recommendation) {
             const rec = data.recommendation;
             
             recModel.innerText = rec.recommended_model || 'Not found';
             
-            // Handle Hourly and Daily
             recPriceHour.innerText = rec.estimated_price_per_hour ? 'रू ' + parseInt(rec.estimated_price_per_hour).toLocaleString() : 'रू 0';
             recPriceDay.innerText = rec.estimated_price_per_day ? 'रू ' + parseInt(rec.estimated_price_per_day).toLocaleString() : 'रू 0';
             
-            // Update Sidebar with Daily rate
             if (rec.estimated_price_per_day) {
                 document.getElementById('daily_price_display').innerText = 'रू ' + parseInt(rec.estimated_price_per_day).toLocaleString();
                 const durationVal = parseInt(duration) || 1;
@@ -406,27 +423,25 @@ document.getElementById('recommendBtn').addEventListener('click', function() {
                 document.getElementById('duration_display').innerText = durationVal + ' days';
             }
 
-            recReason.innerText = rec.reason || 'AI suggests this model based on your cargo dimensions and weight.';
+            recReason.innerText = rec.reason || 'Matched from cargo size, weight, and site details.';
 
         } else {
-            // Fallback if server returns failure
-            recModel.innerText = 'AI Service Unavailable';
+            recModel.innerText = 'Recommendation unavailable';
             recPriceHour.innerText = 'रू 0';
             recPriceDay.innerText = 'रू 0';
-            recReason.innerText = 'Could not connect to the local AI (Ollama). Please ensure it is running.';
+            recReason.innerText = 'The recommendation service is not available right now.';
         }
     })
     .catch(error => {
         loadingDiv.classList.add('hidden');
         console.error('🔴 Fetch Error:', error);
         
-        // Force open and show error
         resultsDiv.classList.remove('hidden');
         resultsDiv.style.display = 'block';
         recModel.innerText = 'Connection Error';
         recPriceHour.innerText = 'रू 0';
         recPriceDay.innerText = 'रू 0';
-        recReason.innerText = 'Network error. Please check your connection and Laravel logs.';
+        recReason.innerText = 'Network error. Please try again.';
     });
 });
 
@@ -474,7 +489,9 @@ function showToast(message, type = 'info') {
         (type === 'success' ? 'bg-green-500 text-white' : 
          type === 'error' ? 'bg-red-500 text-white' : 
          'bg-blue-500 text-white');
-    toast.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle') + ' mr-2"></i>' + message;
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle') + ' mr-2';
+    toast.append(icon, document.createTextNode(message));
     document.body.appendChild(toast);
     setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
 }

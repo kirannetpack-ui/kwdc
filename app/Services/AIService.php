@@ -162,15 +162,18 @@ class AIService
     public function recommendDrivers(array $drivers, string $pickupAddress, float $distance, string $clientVehicleSelection): array
     {
         $driverList = "";
-        foreach ($drivers as $d) { $driverList .= "ID: {$d['id']}, Name: {$d['name']}, Distance: {$d['distance_km']}km, Rating: {$d['rating']}/5.0\n"; }
+        foreach ($drivers as $d) {
+            $distanceText = is_numeric($d['distance_km'] ?? null) ? $d['distance_km'].'km' : 'not measured';
+            $driverList .= "ID: {$d['id']}, Name: {$d['name']}, Distance: {$distanceText}, Rating: {$d['rating']}/5.0\n";
+        }
 
         $prompt = 'We have a pickup request at: \'' . addslashes($pickupAddress) . '\'. Total trip distance: ' . $distance . ' km.
         The client has manually selected this vehicle type: \'' . addslashes($clientVehicleSelection) . '\'.
         Available drivers:
         ' . $driverList . '
-        Analyze the distance and the available driver list.
+        Analyze the route distance and the available driver list.
         1. Recommend the best vehicle type for this trip (Choose EXACTLY from: Standard Van, Pickup, Truck 3 Ton, Truck 5 Ton, Heavy Truck). If the client\'s selection is reasonable, keep their choice. If not, suggest the better fit.
-        2. Rank the top 3 best drivers for this job based on distance and rating.
+        2. Rank the top 3 best drivers for this job based on measured proximity when present, then rating.
         Return a JSON object using this exact schema: {"recommended_vehicle": string, "drivers": [{"id": int, "reason": string}]}
         Return ONLY valid JSON.';
 
@@ -181,7 +184,12 @@ class AIService
         );
 
         if (!$result || !is_array($result) || !isset($result['drivers'])) {
-            usort($drivers, fn($a, $b) => $a['distance_km'] <=> $b['distance_km']);
+            usort($drivers, function ($a, $b) {
+                $aDistance = is_numeric($a['distance_km'] ?? null) ? (float) $a['distance_km'] : INF;
+                $bDistance = is_numeric($b['distance_km'] ?? null) ? (float) $b['distance_km'] : INF;
+
+                return [$aDistance, -((float) ($a['rating'] ?? 0))] <=> [$bDistance, -((float) ($b['rating'] ?? 0))];
+            });
             return ['recommended_vehicle' => $clientVehicleSelection, 'drivers' => array_slice($drivers, 0, 3)];
         }
 

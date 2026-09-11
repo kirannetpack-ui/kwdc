@@ -13,7 +13,8 @@ class ProductionPreflight extends Command
     public function handle(): int
     {
         $failures = [];
-        $phaseOneDemo = filter_var(env('PHASE_ONE_DEMO', false), FILTER_VALIDATE_BOOLEAN);
+        $phaseOneDemo = (bool) config('kwdc.demo');
+        $this->requireFalse($failures, 'PHASE_ONE_DEMO', $phaseOneDemo);
 
         $this->requireExact($failures, 'APP_ENV', config('app.env'), 'production');
         $this->requireFalse($failures, 'APP_DEBUG', (bool) config('app.debug'));
@@ -27,6 +28,7 @@ class ProductionPreflight extends Command
 
         $this->validateDatabase($failures);
         $this->validateMail($failures, $phaseOneDemo);
+        $this->validateMaps($failures, $phaseOneDemo);
         $this->validatePayments($failures, $phaseOneDemo);
 
         if ($failures !== []) {
@@ -88,6 +90,27 @@ class ProductionPreflight extends Command
         $this->requireFilled($failures, 'ESEWA_SECRET_KEY', config('payment.esewa.secret_key'));
         $this->requireHttpsUrl($failures, 'ESEWA_PAYMENT_URL', config('payment.esewa.payment_url'));
         $this->requireHttpsUrl($failures, 'ESEWA_VERIFICATION_URL', config('payment.esewa.verification_url'));
+    }
+
+    private function validateMaps(array &$failures, bool $phaseOneDemo): void
+    {
+        if ($phaseOneDemo) {
+            return;
+        }
+
+        $geocoderUrl = (string) config('maps.geocoder_url');
+        $routerUrl = (string) config('maps.router_url');
+
+        $this->requireHttpsUrl($failures, 'MAP_GEOCODER_URL', $geocoderUrl);
+        $this->requireHttpsUrl($failures, 'MAP_ROUTER_URL', $routerUrl);
+
+        if (str_contains($geocoderUrl, 'photon.komoot.io')) {
+            $failures[] = 'MAP_GEOCODER_URL must use a dedicated production geocoder, not the public Photon demo endpoint.';
+        }
+
+        if (str_contains($routerUrl, 'router.project-osrm.org')) {
+            $failures[] = 'MAP_ROUTER_URL must use a dedicated production router, not the public OSRM demo endpoint.';
+        }
     }
 
     private function requireFilled(array &$failures, string $name, mixed $value): void

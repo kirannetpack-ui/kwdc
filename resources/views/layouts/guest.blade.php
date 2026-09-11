@@ -16,6 +16,7 @@
             --blue: #2563eb;
             --paper: #ffffff;
             --soft: #f6f8fb;
+            --radius: 30px;
         }
 
         * { box-sizing: border-box; }
@@ -26,9 +27,9 @@
             color: var(--ink);
             font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background:
-                radial-gradient(circle at 12% 12%, rgba(245, 165, 36, .16), transparent 300px),
-                radial-gradient(circle at 88% 18%, rgba(37, 99, 235, .13), transparent 340px),
-                linear-gradient(135deg, #101724 0%, #172236 48%, #eef3f8 48%, #f7f9fc 100%);
+                radial-gradient(circle at 12% 12%, rgba(245, 165, 36, .18), transparent 340px),
+                radial-gradient(circle at 88% 16%, rgba(37, 99, 235, .14), transparent 420px),
+                linear-gradient(135deg, #0f172a 0%, #152033 48%, #f5f7fb 48%, #fbfcfe 100%);
         }
 
         a { color: inherit; }
@@ -39,7 +40,7 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: minmax(320px, .92fr) minmax(360px, 520px);
-            gap: 56px;
+            gap: clamp(36px, 6vw, 86px);
             align-items: center;
             padding: 48px 0;
         }
@@ -62,7 +63,7 @@
             height: 50px;
             display: grid;
             place-items: center;
-            border-radius: 10px;
+            border-radius: 18px;
             color: #111827;
             background: var(--gold);
             box-shadow: 0 18px 36px rgba(245, 165, 36, .24);
@@ -107,7 +108,7 @@
             display: grid;
             place-items: center;
             margin-bottom: 12px;
-            border-radius: 8px;
+            border-radius: 16px;
             color: #101724;
             background: var(--gold);
         }
@@ -119,9 +120,9 @@
             width: 100%;
             padding: clamp(28px, 4vw, 44px);
             border: 1px solid rgba(219, 228, 239, .95);
-            border-radius: 14px;
+            border-radius: var(--radius);
             background: rgba(255, 255, 255, .98);
-            box-shadow: 0 28px 80px rgba(15, 23, 42, .24);
+            box-shadow: 0 34px 100px rgba(15, 23, 42, .24);
         }
 
         .guest-card h1,
@@ -151,7 +152,7 @@
             width: 100%;
             min-height: 48px;
             border: 1px solid #cfd9e6;
-            border-radius: 10px;
+            border-radius: 18px;
             padding: 12px 14px;
             color: var(--ink);
             font: inherit;
@@ -169,7 +170,7 @@
         .guest-card button,
         .guest-card .inline-flex {
             min-height: 46px;
-            border-radius: 10px !important;
+            border-radius: 18px !important;
             font: inherit;
             font-weight: 900 !important;
         }
@@ -210,9 +211,11 @@
         @media (max-width: 620px) {
             .guest-wrap { width: min(100% - 28px, 1160px); }
             .mini-grid { grid-template-columns: 1fr; }
-            .guest-card { border-radius: 12px; }
+            .guest-card { border-radius: 24px; }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/kwdc-auth.css') }}">
+    <script src="{{ asset('js/kwdc-auth.js') }}" defer></script>
 </head>
 <body>
     <main class="guest-wrap">
@@ -221,13 +224,6 @@
                 <span class="brand-icon"><i class="fas fa-warehouse"></i></span>
                 <span>KTM-WDC</span>
             </a>
-            <h1>Secure logistics access for every team.</h1>
-            <p>Warehouse requests, dispatch, invoices, documents, and partner work stay connected behind a private portal.</p>
-            <div class="mini-grid" aria-label="Portal highlights">
-                <div class="mini-card"><i class="fas fa-key"></i><strong>Fast activation</strong><span>Simple code entry and account verification.</span></div>
-                <div class="mini-card"><i class="fas fa-user-shield"></i><strong>Role access</strong><span>Each team sees the work meant for them.</span></div>
-                <div class="mini-card"><i class="fas fa-route"></i><strong>Operations</strong><span>Requests, dispatch, stock, and billing together.</span></div>
-            </div>
         </section>
 
         <section class="guest-card">

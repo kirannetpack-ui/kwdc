@@ -13,9 +13,9 @@
                         <i class="fas fa-clock text-warning" style="font-size: 64px;"></i>
                     </div>
                     <h1 class="display-1 fw-bold text-warning">419</h1>
-                    <h2 class="mb-4">Page Expired</h2>
+                    <h2 class="mb-4">Page expired</h2>
                     <p class="text-muted mb-4">
-                        Your session has expired. Please refresh the page and try again.
+                        Your secure session expired. Refresh the page to get a new form token and try again.
                     </p>
                     <div>
                         <a href="{{ url()->current() }}" class="btn btn-orange">
@@ -36,8 +36,8 @@
         background: #f59e0b;
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
+        padding: 12px 22px;
+        border-radius: 18px;
         transition: all 0.3s ease;
     }
     .btn-orange:hover {

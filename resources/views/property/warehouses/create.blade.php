@@ -974,7 +974,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function reverseGeocode(lat, lng) {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+    const url = `/maps/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
     
     fetch(url)
         .then(response => response.json())
@@ -988,7 +988,7 @@ function reverseGeocode(lat, lng) {
 }
 
 function geocodeAddress(address) {
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+    const url = `/maps/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
     
     fetch(url)
         .then(response => response.json())

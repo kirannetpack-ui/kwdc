@@ -301,10 +301,26 @@ public function search(Request $request, AIService $aiService)
     {
         $user = Auth::user();
 
-        if ($user->role == 'admin') {
-            $warehouse = Warehouse::with(['user', 'warehouseRequests'])->findOrFail($id);
+        if ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin') {
+            $warehouse = Warehouse::with(['user', 'owner', 'warehouseRequests.client'])->findOrFail($id);
+        } elseif ($user->isPropertyOwner() || ($user->is_property_owner ?? false) || $user->role === 'property_owner') {
+            $warehouse = Warehouse::where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)->orWhere('owner_id', $user->id);
+            })->with(['user', 'owner', 'warehouseRequests.client'])->findOrFail($id);
+            $requests = WarehouseRequest::where('warehouse_id', $id)
+                ->with('client')
+                ->orderBy('created_at', 'desc')
+                ->get();
+            return view('property.warehouses.show', compact('warehouse', 'requests'));
         } else {
-            $warehouse = Warehouse::where('user_id', $user->id)->with('warehouseRequests')->findOrFail($id);
+            // Client / Driver: Can view approved warehouses, or warehouses where user has a request
+            $warehouse = Warehouse::where(function ($q) use ($user) {
+                $q->where('status', 'approved')
+                  ->orWhere('is_approved', true)
+                  ->orWhereHas('warehouseRequests', function ($rq) use ($user) {
+                      $rq->where('client_id', $user->id);
+                  });
+            })->with(['user', 'owner'])->findOrFail($id);
         }
 
         $requests = WarehouseRequest::where('warehouse_id', $id)
@@ -312,7 +328,7 @@ public function search(Request $request, AIService $aiService)
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('property.warehouses.show', compact('warehouse', 'requests'));
+        return view('warehouses.show', compact('warehouse', 'requests'));
     }
 
     /**

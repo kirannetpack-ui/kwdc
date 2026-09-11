@@ -18,6 +18,10 @@ class AiVoiceController extends Controller
 
    public function voiceAssistant(Request $request)
 {
+    $request->validate([
+        'message' => ['required', 'string', 'max:4000'],
+        'language' => ['nullable', 'in:en,np'],
+    ]);
     try {
         $user = Auth::user();
         $message = $request->input('message');

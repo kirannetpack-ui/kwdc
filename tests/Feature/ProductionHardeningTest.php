@@ -448,6 +448,8 @@ class ProductionHardeningTest extends TestCase
         Config::set('mail.mailers.smtp.username', 'mail-user');
         Config::set('mail.mailers.smtp.password', 'mail-password');
         Config::set('mail.from.address', 'no-reply@ktm-wdc.example');
+        Config::set('maps.geocoder_url', 'https://maps.ktm-wdc.example/geocoder');
+        Config::set('maps.router_url', 'https://maps.ktm-wdc.example/router');
         Config::set('payment.khalti.public_key', 'khalti-public');
         Config::set('payment.khalti.secret_key', 'khalti-secret');
         Config::set('payment.khalti.base_url', 'https://a.khalti.com/api/v2/');

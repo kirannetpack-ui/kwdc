@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->alias([
+            'account.ready' => \App\Http\Middleware\EnsureAccountReady::class,
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
             'driver' => \App\Http\Middleware\DriverMiddleware::class,
             'equipment.owner' => \App\Http\Middleware\EquipmentOwnerMiddleware::class,

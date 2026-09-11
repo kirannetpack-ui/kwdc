@@ -40,6 +40,7 @@
     }
 
     function prefetch(link) {
+        if (link?.dataset.prefetch !== 'true') return;
         if (!isSmoothLink(link)) return;
 
         const url = new URL(link.href, window.location.href);
@@ -55,11 +56,11 @@
         document.head.appendChild(tag);
     }
 
-    function markSubmitting(form) {
+    function markSubmitting(form, submitter) {
         if (!form || form.dataset.submitting === 'true') return;
 
         form.dataset.submitting = 'true';
-        const submitter = form.querySelector('[type="submit"], button:not([type]), button[type="button"].submit');
+        submitter ||= form.querySelector('[type="submit"]');
         if (submitter) {
             submitter.dataset.originalHtml = submitter.innerHTML;
             submitter.classList.add('kwdc-submit-busy');
@@ -85,25 +86,37 @@
 
         document.addEventListener('click', function (event) {
             const link = event.target.closest?.('a[href]');
-            if (!isPlainLeftClick(event) || !isSmoothLink(link)) return;
+            if (event.defaultPrevented || !isPlainLeftClick(event) || !isSmoothLink(link)) return;
 
             startLoading();
         });
 
         document.addEventListener('submit', function (event) {
             const form = event.target;
-            if (!form || form.dataset.noSmooth === 'true') return;
+            if (event.defaultPrevented || !form || form.dataset.noSmooth === 'true') return;
+            if (form.dataset.submitting === 'true') {
+                event.preventDefault();
+                return;
+            }
 
-            markSubmitting(form);
+            markSubmitting(form, event.submitter);
             startLoading();
-        }, true);
+        });
 
         document.querySelectorAll('[autofocus]').forEach((element) => {
             window.setTimeout(() => element.focus(), 50);
         });
     });
 
-    window.addEventListener('pageshow', stopLoading);
+    window.addEventListener('pageshow', function () {
+        document.querySelectorAll('[data-submitting]').forEach(form => delete form.dataset.submitting);
+        document.querySelectorAll('.kwdc-submit-busy').forEach(button => {
+            if (button.dataset.originalHtml) button.innerHTML = button.dataset.originalHtml;
+            button.classList.remove('kwdc-submit-busy');
+            button.removeAttribute('aria-busy');
+        });
+        stopLoading();
+    });
     window.addEventListener('beforeunload', function () {
         if (Date.now() - startedAt > 300) {
             startLoading();

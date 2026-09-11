@@ -13,6 +13,13 @@ class EquipmentRequest extends Model
 
     protected $fillable = [
         'client_id',
+        'location',
+        'special_requirements',
+        'preferred_brands',
+        'budget_range',
+        'quoted_price',
+        'assigned_equipment_id',
+        'notes',
         'equipment_id',
         'owner_id',
         'title',
@@ -34,6 +41,8 @@ class EquipmentRequest extends Model
     ];
 
     protected $casts = [
+        'preferred_brands' => 'array',
+        'quoted_price' => 'decimal:2',
         'start_date' => 'date',
         'end_date' => 'date',
         'approved_at' => 'datetime',
@@ -55,6 +64,11 @@ class EquipmentRequest extends Model
     public function equipment()
     {
         return $this->belongsTo(Equipment::class);
+    }
+
+    public function assignedEquipment()
+    {
+        return $this->belongsTo(Equipment::class, 'assigned_equipment_id');
     }
 
     public function owner()

@@ -544,6 +544,453 @@ table th {
     }
 }
 
+.kwdc-app-shell .kwdc-dashboard-shell .kwdc-hero {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 30px !important;
+    box-shadow: 0 22px 70px rgba(15, 23, 42, 0.08) !important;
+    padding: clamp(24px, 3vw, 34px) !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-shell .kwdc-hero h2 {
+    color: #111827 !important;
+    opacity: 1 !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-shell .kwdc-hero p {
+    color: #64748b !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-shell .kwdc-system-pill {
+    color: #047857 !important;
+    background: #ecfdf5 !important;
+    border-color: #bbf7d0 !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-shell .kwdc-stat-card {
+    min-height: 150px !important;
+    padding: 22px !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-shell .kwdc-stat-value {
+    font-size: clamp(28px, 2.2vw, 36px) !important;
+    overflow-wrap: anywhere;
+}
+
+/* Premium v2 product polish */
+:root {
+    --kwdc-v2-ink: #101828;
+    --kwdc-v2-text: #223047;
+    --kwdc-v2-muted: #667085;
+    --kwdc-v2-line: #e2e8f0;
+    --kwdc-v2-soft: #f6f8fb;
+    --kwdc-v2-gold: #f4a51c;
+    --kwdc-v2-green: #0f766e;
+    --kwdc-v2-blue: #3157d5;
+    --kwdc-v2-violet: #7c3aed;
+    --kwdc-v2-radius: 28px;
+    --kwdc-v2-radius-lg: 36px;
+    --kwdc-v2-shadow: 0 24px 80px rgba(16, 24, 40, 0.10);
+    --kwdc-v2-shadow-soft: 0 14px 40px rgba(16, 24, 40, 0.07);
+}
+
+body.kwdc-app-shell {
+    background:
+        radial-gradient(circle at 10% 2%, rgba(244, 165, 28, .11), transparent 360px),
+        radial-gradient(circle at 92% 6%, rgba(49, 87, 213, .10), transparent 400px),
+        linear-gradient(180deg, #fbfcfe 0%, #f2f5f9 100%) !important;
+}
+
+.kwdc-app-shell .main-content {
+    background: transparent !important;
+}
+
+.kwdc-app-shell .page-content {
+    width: 100%;
+    max-width: 1580px !important;
+    padding: clamp(30px, 3.2vw, 54px) !important;
+}
+
+.kwdc-app-shell .container,
+.kwdc-app-shell .container-fluid,
+.kwdc-app-shell .container-lg,
+.kwdc-app-shell .container-md,
+.kwdc-app-shell .container-sm,
+.kwdc-app-shell .container-xl,
+.kwdc-app-shell .container-xxl {
+    max-width: 100% !important;
+}
+
+.kwdc-app-shell .page-content > .container,
+.kwdc-app-shell .page-content > .container-fluid,
+.kwdc-app-shell .page-content > div[class*="container"] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+.kwdc-app-shell .top-bar {
+    min-height: 88px;
+    margin: 18px 22px 0;
+    border-radius: 32px !important;
+    background: rgba(255, 255, 255, .84) !important;
+    box-shadow: 0 18px 56px rgba(16, 24, 40, .08) !important;
+}
+
+.kwdc-app-shell .top-bar h2,
+.kwdc-app-shell .top-bar .h2 {
+    color: var(--kwdc-v2-ink) !important;
+    font-size: clamp(26px, 2.4vw, 38px) !important;
+    font-weight: 900 !important;
+}
+
+.kwdc-app-shell .sidebar {
+    background:
+        radial-gradient(circle at 32px 22px, rgba(244, 165, 28, .16), transparent 190px),
+        linear-gradient(180deg, #111827 0%, #0b1220 100%) !important;
+}
+
+.kwdc-sidebar-brand,
+.kwdc-sidebar-user {
+    border-radius: 30px !important;
+}
+
+.kwdc-app-shell .sidebar-link {
+    min-height: 50px;
+    border-radius: 23px !important;
+    font-size: 14px !important;
+}
+
+.kwdc-app-shell .sidebar-link i {
+    width: 36px !important;
+    height: 36px !important;
+    display: inline-grid !important;
+    place-items: center;
+    border-radius: 16px !important;
+}
+
+.kwdc-app-shell h1,
+.kwdc-app-shell h2,
+.kwdc-app-shell h3,
+.kwdc-app-shell h4,
+.kwdc-app-shell h5,
+.kwdc-app-shell h6 {
+    color: var(--kwdc-v2-ink);
+    letter-spacing: 0 !important;
+}
+
+.kwdc-app-shell p {
+    color: inherit;
+}
+
+.kwdc-app-shell .card,
+.kwdc-app-shell .stat-card,
+.kwdc-app-shell .stats-card,
+.kwdc-app-shell .dashboard-card,
+.kwdc-app-shell .content-card,
+.kwdc-app-shell .kwdc-panel,
+.kwdc-app-shell .kwdc-stat-card,
+.kwdc-app-shell .bg-white.rounded,
+.kwdc-app-shell .bg-white.rounded-lg,
+.kwdc-app-shell .bg-white.rounded-xl,
+.kwdc-app-shell .bg-white.rounded-2xl,
+.kwdc-app-shell .bg-white.shadow,
+.kwdc-app-shell .bg-white.shadow-sm,
+.kwdc-app-shell .bg-white.shadow-md,
+.kwdc-app-shell .bg-white.shadow-lg {
+    border: 1px solid var(--kwdc-v2-line) !important;
+    border-radius: var(--kwdc-v2-radius) !important;
+    background: rgba(255, 255, 255, .94) !important;
+    box-shadow: var(--kwdc-v2-shadow-soft) !important;
+}
+
+.kwdc-app-shell .card:hover,
+.kwdc-app-shell .dashboard-card:hover,
+.kwdc-app-shell .content-card:hover,
+.kwdc-app-shell .kwdc-panel:hover,
+.kwdc-app-shell .kwdc-stat-card:hover,
+.kwdc-app-shell .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--kwdc-v2-shadow) !important;
+}
+
+.kwdc-app-shell .card,
+.kwdc-app-shell .dashboard-card,
+.kwdc-app-shell .content-card,
+.kwdc-app-shell .kwdc-panel,
+.kwdc-app-shell .kwdc-stat-card,
+.kwdc-app-shell .card-hover {
+    transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+}
+
+.kwdc-app-shell .card-body,
+.kwdc-app-shell .kwdc-panel,
+.kwdc-app-shell .bg-white.rounded,
+.kwdc-app-shell .bg-white.rounded-lg,
+.kwdc-app-shell .bg-white.rounded-xl,
+.kwdc-app-shell .bg-white.rounded-2xl {
+    padding: clamp(24px, 2.8vw, 38px) !important;
+}
+
+.kwdc-app-shell .card-header,
+.kwdc-app-shell .card-footer,
+.kwdc-app-shell .modal-header,
+.kwdc-app-shell .modal-footer {
+    padding: 22px 28px !important;
+    background: rgba(248, 250, 252, .92) !important;
+}
+
+.kwdc-app-shell .row,
+.kwdc-app-shell .grid {
+    row-gap: clamp(20px, 2.4vw, 32px) !important;
+}
+
+.kwdc-app-shell .space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top: 14px !important; }
+.kwdc-app-shell .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 18px !important; }
+.kwdc-app-shell .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 26px !important; }
+
+.kwdc-app-shell label,
+.kwdc-app-shell .form-label {
+    color: #344054 !important;
+    font-size: 13px !important;
+    font-weight: 850 !important;
+}
+
+.kwdc-app-shell input,
+.kwdc-app-shell select,
+.kwdc-app-shell textarea,
+.kwdc-app-shell .form-control,
+.kwdc-app-shell .form-select,
+.kwdc-app-shell .input-group-text {
+    min-height: 54px;
+    border-radius: 21px !important;
+    border-color: #d5deeb !important;
+    background-color: #ffffff !important;
+    color: var(--kwdc-v2-ink) !important;
+    box-shadow: inset 0 1px 0 rgba(16, 24, 40, .02);
+}
+
+.kwdc-app-shell textarea,
+.kwdc-app-shell textarea.form-control {
+    min-height: 126px;
+}
+
+.kwdc-app-shell input::placeholder,
+.kwdc-app-shell textarea::placeholder {
+    color: #98a2b3;
+}
+
+.kwdc-app-shell input:focus,
+.kwdc-app-shell select:focus,
+.kwdc-app-shell textarea:focus,
+.kwdc-app-shell .form-control:focus,
+.kwdc-app-shell .form-select:focus {
+    border-color: var(--kwdc-v2-gold) !important;
+    box-shadow: 0 0 0 5px rgba(244, 165, 28, .16), 0 12px 28px rgba(16, 24, 40, .08) !important;
+}
+
+.kwdc-app-shell .btn,
+.kwdc-app-shell button[type="submit"],
+.kwdc-app-shell a.btn,
+.kwdc-app-shell a[class*="px-4"],
+.kwdc-app-shell button[class*="px-4"],
+.kwdc-app-shell a[class*="px-6"],
+.kwdc-app-shell button[class*="px-6"] {
+    min-height: 48px;
+    border-radius: 21px !important;
+    font-weight: 850 !important;
+}
+
+.kwdc-app-shell .btn-primary,
+.kwdc-app-shell .btn-orange,
+.kwdc-app-shell .bg-orange-500,
+.kwdc-app-shell .bg-yellow-500 {
+    color: #111827 !important;
+    border-color: var(--kwdc-v2-gold) !important;
+    background: linear-gradient(135deg, #ffd166, var(--kwdc-v2-gold)) !important;
+}
+
+.kwdc-app-shell .btn-secondary,
+.kwdc-app-shell .bg-gray-500,
+.kwdc-app-shell .bg-gray-600 {
+    color: #ffffff !important;
+    border-color: #344054 !important;
+    background: #344054 !important;
+}
+
+.kwdc-app-shell .btn-success,
+.kwdc-app-shell .bg-green-500,
+.kwdc-app-shell .bg-teal-500 {
+    color: #ffffff !important;
+    border-color: var(--kwdc-v2-green) !important;
+    background: var(--kwdc-v2-green) !important;
+}
+
+.kwdc-app-shell .btn-info,
+.kwdc-app-shell .bg-blue-500 {
+    color: #ffffff !important;
+    border-color: var(--kwdc-v2-blue) !important;
+    background: var(--kwdc-v2-blue) !important;
+}
+
+.kwdc-app-shell .table-responsive,
+.kwdc-app-shell .overflow-x-auto,
+.kwdc-app-shell .bg-white:has(table) {
+    border: 1px solid var(--kwdc-v2-line) !important;
+    border-radius: 28px !important;
+    background: rgba(255, 255, 255, .94) !important;
+    box-shadow: var(--kwdc-v2-shadow-soft) !important;
+    overflow: auto !important;
+}
+
+.kwdc-app-shell table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.kwdc-app-shell table th,
+.kwdc-app-shell .table th {
+    padding: 18px 22px !important;
+    color: #667085 !important;
+    background: #f8fafc !important;
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    letter-spacing: .06em !important;
+}
+
+.kwdc-app-shell table td,
+.kwdc-app-shell .table td {
+    padding: 18px 22px !important;
+    color: #2f3b4f !important;
+}
+
+.kwdc-app-shell tbody tr:hover {
+    background: rgba(244, 165, 28, .06) !important;
+}
+
+.kwdc-app-shell .badge,
+.kwdc-app-shell .status-badge,
+.kwdc-app-shell .kwdc-status-badge,
+.kwdc-app-shell [class*="status-"] {
+    border-radius: 999px !important;
+    font-weight: 850 !important;
+}
+
+.kwdc-app-shell .alert {
+    border-radius: 24px !important;
+    border-width: 1px !important;
+    box-shadow: var(--kwdc-v2-shadow-soft);
+}
+
+.kwdc-app-shell .map-container,
+.kwdc-app-shell #map,
+.kwdc-app-shell #warehouseCreateMap,
+.kwdc-app-shell .kwdc-location-map,
+.kwdc-app-shell .leaflet-container {
+    min-height: 360px;
+    border-radius: 28px !important;
+    overflow: hidden;
+}
+
+.kwdc-app-shell .leaflet-container {
+    border: 1px solid #d8e2ee;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .65);
+}
+
+.kwdc-app-shell .leaflet-control-zoom a {
+    border-radius: 14px !important;
+}
+
+.kwdc-app-shell .driver-card,
+.kwdc-app-shell .warehouse-card,
+.kwdc-app-shell .stop-card,
+.kwdc-app-shell [class*="bg-gray-50"].rounded-lg,
+.kwdc-app-shell [class*="border"].rounded-lg {
+    border-radius: 24px !important;
+    border-color: #e3e9f2 !important;
+    background: #ffffff !important;
+}
+
+.kwdc-app-shell .stop-card {
+    padding: 22px !important;
+}
+
+.kwdc-app-shell .bg-gradient-to-r,
+.kwdc-app-shell [class*="from-orange-500"] {
+    border-radius: 30px !important;
+    background:
+        radial-gradient(circle at 15% 12%, rgba(255, 255, 255, .22), transparent 210px),
+        linear-gradient(135deg, #111827, #19443f 52%, #f4a51c) !important;
+    box-shadow: 0 24px 70px rgba(16, 24, 40, .16) !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-intro,
+.kwdc-app-shell .kwdc-hero {
+    border-radius: 38px !important;
+    background:
+        radial-gradient(circle at 14% 18%, rgba(244, 165, 28, .24), transparent 340px),
+        radial-gradient(circle at 88% 12%, rgba(49, 87, 213, .20), transparent 380px),
+        linear-gradient(135deg, #111827, #172033 58%, #0f3f3a) !important;
+}
+
+.kwdc-app-shell .kwdc-action {
+    min-height: 76px;
+    border-radius: 24px !important;
+    background: #ffffff !important;
+}
+
+.kwdc-app-shell .kwdc-action:hover {
+    color: #915900 !important;
+    border-color: var(--kwdc-v2-gold) !important;
+    background: #fff8e7 !important;
+}
+
+.kwdc-app-shell .kwdc-assistant-panel {
+    border-radius: 32px !important;
+}
+
+.kwdc-app-shell .kwdc-assistant-launch {
+    width: 68px !important;
+    height: 68px !important;
+    background: linear-gradient(135deg, #ffd166, var(--kwdc-v2-gold)) !important;
+    color: #111827 !important;
+}
+
+@media (max-width: 768px) {
+    .kwdc-app-shell .top-bar {
+        margin: 12px 12px 0;
+        border-radius: 26px !important;
+    }
+
+    .kwdc-app-shell .page-content {
+        padding: 20px 14px 30px !important;
+    }
+
+    .kwdc-app-shell .grid[class*="grid-cols-2"],
+    .kwdc-app-shell .grid[class*="grid-cols-3"],
+    .kwdc-app-shell .grid[class*="grid-cols-4"],
+    .kwdc-app-shell .grid[class*="md:grid-cols-2"],
+    .kwdc-app-shell .grid[class*="md:grid-cols-4"],
+    .kwdc-app-shell .grid[class*="lg:grid-cols-3"] {
+        grid-template-columns: 1fr !important;
+    }
+
+    .kwdc-app-shell .card-body,
+    .kwdc-app-shell .kwdc-panel,
+    .kwdc-app-shell .bg-white.rounded,
+    .kwdc-app-shell .bg-white.rounded-lg,
+    .kwdc-app-shell .bg-white.rounded-xl,
+    .kwdc-app-shell .bg-white.rounded-2xl {
+        padding: 20px !important;
+    }
+
+    .kwdc-app-shell .btn,
+    .kwdc-app-shell button[type="submit"],
+    .kwdc-app-shell a.btn {
+        width: 100%;
+    }
+}
+
 /* Navigation and usability refinements */
 .kwdc-app-shell .sidebar nav {
     padding-bottom: 28px;
@@ -864,5 +1311,441 @@ form label,
 
     .notification-dropdown {
         width: calc(100vw - 24px) !important;
+    }
+}
+
+/* Premium local redesign pass */
+:root {
+    --kwdc-premium-ink: #111827;
+    --kwdc-premium-text: #182235;
+    --kwdc-premium-muted: #667085;
+    --kwdc-premium-line: #e4eaf2;
+    --kwdc-premium-soft: #f6f8fb;
+    --kwdc-premium-panel: rgba(255, 255, 255, 0.92);
+    --kwdc-premium-gold: #f4a51c;
+    --kwdc-premium-green: #0f766e;
+    --kwdc-premium-blue: #3157d5;
+    --kwdc-premium-radius-sm: 16px;
+    --kwdc-premium-radius: 24px;
+    --kwdc-premium-radius-lg: 32px;
+    --kwdc-premium-shadow: 0 22px 70px rgba(17, 24, 39, 0.10);
+    --kwdc-premium-shadow-soft: 0 10px 30px rgba(17, 24, 39, 0.07);
+}
+
+body.kwdc-app-shell {
+    color: var(--kwdc-premium-text);
+    background:
+        radial-gradient(circle at 8% -10%, rgba(244, 165, 28, 0.12), transparent 360px),
+        radial-gradient(circle at 92% 0%, rgba(49, 87, 213, 0.10), transparent 380px),
+        linear-gradient(180deg, #fafbfe 0%, #f2f5f9 100%) !important;
+}
+
+.kwdc-app-shell .main-content {
+    background: transparent !important;
+}
+
+.kwdc-app-shell .page-content {
+    max-width: 1520px !important;
+    padding: clamp(28px, 3vw, 48px) !important;
+}
+
+.kwdc-app-shell .page-content > * + * {
+    margin-top: clamp(20px, 2.4vw, 34px);
+}
+
+.kwdc-app-shell .sidebar {
+    width: 304px !important;
+    padding: 14px 12px;
+    background:
+        linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(8, 13, 24, 0.98)),
+        #0f172a !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 20px 0 60px rgba(15, 23, 42, 0.24) !important;
+}
+
+.kwdc-app-shell .main-content {
+    margin-left: 304px !important;
+}
+
+.kwdc-sidebar-brand,
+.kwdc-sidebar-user {
+    margin: 0 0 12px;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 26px;
+    background: rgba(255, 255, 255, 0.055) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.kwdc-brand-icon,
+.kwdc-user-avatar {
+    border-radius: 18px !important;
+}
+
+.kwdc-app-shell .sidebar-link {
+    min-height: 48px;
+    margin: 6px 4px !important;
+    padding: 10px 12px !important;
+    border-radius: 20px !important;
+    color: #c8d2e3 !important;
+    white-space: normal !important;
+    line-height: 1.22;
+}
+
+.kwdc-app-shell .sidebar-link i {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 14px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.kwdc-app-shell .sidebar-link:hover,
+.kwdc-app-shell .sidebar-link.active {
+    color: #ffffff !important;
+    border-color: rgba(244, 165, 28, 0.30) !important;
+    background: rgba(255, 255, 255, 0.10) !important;
+    box-shadow: inset 0 0 0 1px rgba(244, 165, 28, 0.10), 0 10px 30px rgba(0, 0, 0, 0.18) !important;
+}
+
+.kwdc-app-shell .sidebar-link.active {
+    box-shadow: inset 4px 0 0 var(--kwdc-premium-gold), 0 12px 34px rgba(0, 0, 0, 0.20) !important;
+}
+
+.kwdc-app-shell .sidebar-link:hover i,
+.kwdc-app-shell .sidebar-link.active i {
+    color: #111827 !important;
+    background: var(--kwdc-premium-gold) !important;
+}
+
+.kwdc-app-shell .section-header {
+    padding: 22px 12px 8px !important;
+    color: #92a0b8 !important;
+    font-size: 11px !important;
+    letter-spacing: .11em !important;
+}
+
+.kwdc-app-shell .top-bar {
+    min-height: 84px;
+    margin: 18px 18px 0;
+    padding: 18px 26px !important;
+    border: 1px solid rgba(228, 234, 242, 0.86) !important;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, 0.82) !important;
+    box-shadow: 0 18px 50px rgba(17, 24, 39, 0.08) !important;
+    backdrop-filter: blur(22px);
+}
+
+.kwdc-app-shell .top-bar h2 {
+    font-size: clamp(25px, 2.3vw, 36px) !important;
+    font-weight: 900 !important;
+}
+
+.kwdc-app-shell .card,
+.kwdc-app-shell .stat-card,
+.kwdc-app-shell .stats-card,
+.kwdc-app-shell .dashboard-card,
+.kwdc-app-shell .content-card,
+.kwdc-app-shell .kwdc-panel,
+.kwdc-app-shell .kwdc-stat-card,
+.kwdc-app-shell .bg-white.rounded,
+.kwdc-app-shell .bg-white.rounded-lg,
+.kwdc-app-shell .bg-white.rounded-xl,
+.kwdc-app-shell .bg-white.rounded-2xl,
+.kwdc-app-shell .bg-white.shadow,
+.kwdc-app-shell .bg-white.shadow-sm,
+.kwdc-app-shell .bg-white.shadow-md,
+.kwdc-app-shell .bg-white.shadow-lg {
+    border: 1px solid var(--kwdc-premium-line) !important;
+    border-radius: var(--kwdc-premium-radius) !important;
+    background: var(--kwdc-premium-panel) !important;
+    box-shadow: var(--kwdc-premium-shadow-soft) !important;
+    overflow: hidden;
+}
+
+.kwdc-app-shell .card:hover,
+.kwdc-app-shell .content-card:hover,
+.kwdc-app-shell .dashboard-card:hover,
+.kwdc-app-shell .kwdc-panel:hover,
+.kwdc-app-shell .kwdc-stat-card:hover {
+    box-shadow: var(--kwdc-premium-shadow) !important;
+}
+
+.kwdc-app-shell .card-body,
+.kwdc-app-shell .kwdc-panel,
+.kwdc-app-shell .bg-white.rounded-lg,
+.kwdc-app-shell .bg-white.rounded-xl,
+.kwdc-app-shell .bg-white.rounded-2xl {
+    padding: clamp(22px, 2.4vw, 34px) !important;
+}
+
+.kwdc-app-shell .card-header,
+.kwdc-app-shell .card-footer,
+.kwdc-app-shell .modal-header,
+.kwdc-app-shell .modal-footer {
+    padding: 20px 26px !important;
+    border-color: var(--kwdc-premium-line) !important;
+    background: rgba(248, 250, 252, 0.90) !important;
+}
+
+.kwdc-app-shell .grid,
+.kwdc-app-shell .row {
+    row-gap: clamp(18px, 2vw, 28px) !important;
+}
+
+.kwdc-app-shell .kwdc-dashboard-shell,
+.kwdc-app-shell .kwdc-activity-list,
+.kwdc-app-shell form {
+    gap: clamp(16px, 2vw, 24px);
+}
+
+.kwdc-app-shell .kwdc-hero {
+    border: 0 !important;
+    border-radius: 34px !important;
+    padding: clamp(30px, 4vw, 52px) !important;
+    background:
+        linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(27, 38, 59, 0.94)),
+        #111827 !important;
+    box-shadow: 0 28px 80px rgba(17, 24, 39, 0.18);
+}
+
+.kwdc-app-shell .kwdc-stat-card {
+    min-height: 172px !important;
+    padding: 26px !important;
+}
+
+.kwdc-app-shell .kwdc-stat-icon {
+    width: 54px !important;
+    height: 54px !important;
+    border-radius: 20px !important;
+}
+
+.kwdc-app-shell .kwdc-stat-value {
+    font-size: clamp(30px, 3vw, 42px) !important;
+}
+
+.kwdc-app-shell .kwdc-quick-grid {
+    gap: 16px !important;
+}
+
+.kwdc-app-shell .kwdc-action,
+.kwdc-app-shell .kwdc-activity-item {
+    min-height: 68px;
+    border-radius: 20px !important;
+    border-color: #e8edf5 !important;
+    background: #ffffff !important;
+}
+
+.kwdc-app-shell .table-responsive,
+.kwdc-app-shell .overflow-x-auto,
+.kwdc-app-shell .bg-white:has(table) {
+    border-radius: 24px !important;
+    border: 1px solid var(--kwdc-premium-line) !important;
+    box-shadow: var(--kwdc-premium-shadow-soft) !important;
+}
+
+.kwdc-app-shell table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+.kwdc-app-shell table th,
+.kwdc-app-shell .table th {
+    padding: 18px 20px !important;
+    color: #5a6981 !important;
+    background: #f8fafc !important;
+}
+
+.kwdc-app-shell table td,
+.kwdc-app-shell .table td {
+    padding: 18px 20px !important;
+    color: #26364d;
+}
+
+.kwdc-app-shell tbody tr:hover {
+    background: rgba(244, 165, 28, 0.06) !important;
+}
+
+.kwdc-app-shell input,
+.kwdc-app-shell select,
+.kwdc-app-shell textarea,
+.kwdc-app-shell .form-control,
+.kwdc-app-shell .form-select,
+.kwdc-app-shell .input-group-text {
+    min-height: 50px;
+    border-radius: 18px !important;
+    border-color: #d5deeb !important;
+}
+
+.kwdc-app-shell textarea,
+.kwdc-app-shell textarea.form-control {
+    min-height: 118px;
+}
+
+.kwdc-app-shell .form-control:focus,
+.kwdc-app-shell .form-select:focus,
+.kwdc-app-shell input:focus,
+.kwdc-app-shell select:focus,
+.kwdc-app-shell textarea:focus {
+    border-color: var(--kwdc-premium-gold) !important;
+    box-shadow: 0 0 0 5px rgba(244, 165, 28, 0.16) !important;
+}
+
+.kwdc-app-shell .btn,
+.kwdc-app-shell button[type="submit"],
+.kwdc-app-shell a.btn,
+.kwdc-app-shell a[class*="px-4"],
+.kwdc-app-shell button[class*="px-4"],
+.kwdc-app-shell a[class*="px-6"],
+.kwdc-app-shell button[class*="px-6"] {
+    min-height: 46px;
+    border-radius: 18px !important;
+    padding-inline: 18px;
+}
+
+.kwdc-app-shell .btn-primary,
+.kwdc-app-shell .btn-orange,
+.kwdc-app-shell .bg-orange-500,
+.kwdc-app-shell .bg-yellow-500 {
+    color: #111827 !important;
+    border-color: var(--kwdc-premium-gold) !important;
+    background: var(--kwdc-premium-gold) !important;
+    box-shadow: 0 16px 34px rgba(244, 165, 28, 0.22) !important;
+}
+
+.kwdc-app-shell .btn-primary:hover,
+.kwdc-app-shell .btn-orange:hover,
+.kwdc-app-shell .bg-orange-500:hover,
+.kwdc-app-shell .bg-yellow-500:hover {
+    color: #111827 !important;
+    background: #ffc252 !important;
+    transform: translateY(-1px);
+}
+
+.kwdc-app-shell .badge,
+.kwdc-app-shell .status-badge,
+.kwdc-app-shell .kwdc-status-badge,
+.kwdc-app-shell [class*="status-"] {
+    border-radius: 999px !important;
+    padding: 7px 12px !important;
+}
+
+.kwdc-app-shell .dropdown-menu,
+.kwdc-app-shell .notification-dropdown,
+.kwdc-app-shell .modal-content {
+    border-radius: 24px !important;
+    border: 1px solid var(--kwdc-premium-line) !important;
+    box-shadow: 0 28px 90px rgba(17, 24, 39, 0.20) !important;
+    overflow: hidden;
+}
+
+.kwdc-assistant-panel {
+    border-radius: 28px !important;
+    border-color: var(--kwdc-premium-line) !important;
+    box-shadow: 0 28px 90px rgba(17, 24, 39, 0.22) !important;
+}
+
+.kwdc-assistant-header {
+    border-radius: 0 !important;
+    background: #111827 !important;
+}
+
+.kwdc-assistant-bubble,
+.kwdc-quick-action,
+.kwdc-assistant-input-row,
+.kwdc-assistant-mic,
+.kwdc-assistant-send {
+    border-radius: 18px !important;
+}
+
+.kwdc-assistant-launch {
+    width: 66px !important;
+    height: 66px !important;
+    box-shadow: 0 18px 40px rgba(244, 165, 28, 0.34) !important;
+}
+
+.kwdc-empty-state,
+.text-center.text-gray-500,
+td[colspan] {
+    padding: 28px !important;
+    color: var(--kwdc-premium-muted) !important;
+}
+
+@media (max-width: 768px) {
+    .kwdc-app-shell .sidebar {
+        width: min(304px, calc(100vw - 28px)) !important;
+    }
+
+    .kwdc-app-shell .main-content {
+        margin-left: 0 !important;
+    }
+
+    .kwdc-app-shell .top-bar {
+        margin: 12px 12px 0;
+        padding-left: 70px !important;
+        border-radius: 24px;
+    }
+
+    .kwdc-app-shell .page-content {
+        padding: 20px 14px 28px !important;
+    }
+
+    .kwdc-app-shell .card-body,
+    .kwdc-app-shell .kwdc-panel,
+    .kwdc-app-shell .bg-white.rounded-lg,
+    .kwdc-app-shell .bg-white.rounded-xl,
+    .kwdc-app-shell .bg-white.rounded-2xl {
+        padding: 20px !important;
+    }
+}
+
+/* ==========================================================================
+   KWDC Clickable Table Rows & Detail Polish
+   ========================================================================== */
+tr[data-record-url],
+.kwdc-clickable-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+tr[data-record-url]:hover,
+.kwdc-clickable-row:hover {
+    background-color: rgba(249, 115, 22, 0.04) !important;
+}
+
+tr[data-record-url]:focus-visible,
+.kwdc-clickable-row:focus-visible {
+    outline: 2px solid #ea580c;
+    outline-offset: -2px;
+}
+
+/* Map Containers */
+.kwdc-map-surface {
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+}
+
+.leaflet-container {
+    font-family: inherit !important;
+}
+
+.leaflet-popup-content-wrapper {
+    border-radius: 14px !important;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12) !important;
+    font-size: 13px !important;
+}
+
+/* Rounded Surfaces & Detail Grids */
+.kwdc-surface-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+    padding: 24px;
+}
+
+@media (min-width: 768px) {
+    .kwdc-surface-card {
+        padding: 32px;
     }
 }

@@ -202,7 +202,7 @@
     // Geocoding
     async function geocodeAddress(address) {
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)},Nepal&format=json&limit=1`);
+            const res = await fetch(`/maps/search?q=${encodeURIComponent(address)},Nepal&format=json&limit=1`);
             const data = await res.json();
             if (data && data.length > 0) {
                 return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
@@ -213,7 +213,7 @@
     
     async function reverseGeocode(lat, lng, fieldId) {
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+            const res = await fetch(`/maps/reverse?lat=${lat}&lon=${lng}&format=json`);
             const data = await res.json();
             if (data.display_name) {
                 document.getElementById(fieldId).value = data.display_name;

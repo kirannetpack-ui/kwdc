@@ -5,6 +5,16 @@
 @include('components.birthday-wish')
 
 @section('content')
+<div class="kwdc-simple-dashboard">
+<section class="kwdc-dashboard-intro">
+    <div>
+        <span>Overview</span>
+        <h2>Clean operations.</h2>
+        <p>Key work, separated clearly.</p>
+    </div>
+    <a href="{{ route('tracking.index') }}" class="kwdc-intro-action"><i class="fas fa-location-dot"></i> Live tracking</a>
+</section>
+
 <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
     <!-- Total Orders -->
     <div class="bg-white rounded-xl shadow-md p-6 card-hover">
@@ -62,7 +72,7 @@
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
     <!-- Recent Orders -->
     <div class="bg-white rounded-xl shadow-md p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">📦 Recent Orders</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-box text-orange-500 mr-2"></i>Recent Orders</h3>
         @if(isset($recentOrders) && count($recentOrders) > 0)
             @foreach($recentOrders as $order)
             <div class="border-b border-gray-100 py-3 last:border-0">
@@ -84,7 +94,7 @@
 
     <!-- Quick Actions -->
     <div class="bg-white rounded-xl shadow-md p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">⚡ Quick Actions</h3>
+        <h3 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-bolt text-orange-500 mr-2"></i>Quick Actions</h3>
         <div class="grid grid-cols-1 gap-3">
             @if(Auth::user()->is_client || Auth::user()->role == 'client')
             <a href="{{ route('my-requests.create') }}" class="block p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
@@ -120,8 +130,62 @@
         </div>
     </div>
 </div>
+</div>
 
 <style>
+    .kwdc-simple-dashboard {
+        display: grid;
+        gap: 28px;
+    }
+    .kwdc-dashboard-intro {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 22px;
+        padding: clamp(28px, 4vw, 46px);
+        border-radius: 34px;
+        color: #ffffff;
+        background:
+            radial-gradient(circle at 12% 10%, rgba(245, 165, 36, .22), transparent 320px),
+            linear-gradient(135deg, #111827, #1c2940);
+        box-shadow: 0 28px 80px rgba(17, 24, 39, .18);
+    }
+    .kwdc-dashboard-intro span {
+        display: inline-flex;
+        margin-bottom: 10px;
+        color: #ffd166;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: .10em;
+        text-transform: uppercase;
+    }
+    .kwdc-dashboard-intro h2 {
+        margin: 0;
+        color: #ffffff !important;
+        font-size: clamp(30px, 4vw, 48px);
+        line-height: 1;
+        font-weight: 900;
+    }
+    .kwdc-dashboard-intro p {
+        max-width: 760px;
+        margin: 12px 0 0;
+        color: #d8e2ee !important;
+        line-height: 1.7;
+    }
+    .kwdc-intro-action {
+        min-height: 50px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 0 20px;
+        border-radius: 999px;
+        color: #111827;
+        background: #f5a524;
+        font-weight: 900;
+        text-decoration: none;
+        white-space: nowrap;
+    }
     .card-hover {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -141,5 +205,12 @@
     .status-assigned { background: #dbeafe; color: #2563eb; }
     .status-delivered { background: #d1fae5; color: #059669; }
     .status-on_the_way { background: #fed7aa; color: #ea580c; }
+
+    @media (max-width: 780px) {
+        .kwdc-dashboard-intro {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+    }
 </style>
 @endsection

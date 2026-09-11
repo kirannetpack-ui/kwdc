@@ -17,6 +17,7 @@
             --green: #0f766e;
             --blue: #2563eb;
             --paper: #ffffff;
+            --radius: 28px;
         }
 
         * { box-sizing: border-box; }
@@ -40,7 +41,7 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: minmax(300px, 1fr) minmax(330px, 430px);
-            gap: 56px;
+            gap: clamp(36px, 6vw, 84px);
             align-items: center;
             padding: 42px 0;
         }
@@ -62,7 +63,7 @@
             height: 48px;
             display: grid;
             place-items: center;
-            border-radius: 8px;
+            border-radius: 18px;
             color: #111827;
             background: var(--gold);
             box-shadow: 0 18px 38px rgba(245, 165, 36, .24);
@@ -92,7 +93,7 @@
             margin-top: 34px;
             overflow: hidden;
             border: 1px solid rgba(219, 228, 239, .18);
-            border-radius: 8px;
+            border-radius: 28px;
             background: rgba(219, 228, 239, .18);
         }
 
@@ -108,9 +109,9 @@
 
         .auth-card {
             width: 100%;
-            padding: 34px;
+            padding: clamp(30px, 4vw, 44px);
             border: 1px solid rgba(219, 228, 239, .92);
-            border-radius: 8px;
+            border-radius: var(--radius);
             background: rgba(255, 255, 255, .97);
             box-shadow: 0 28px 80px rgba(0, 0, 0, .34);
             backdrop-filter: blur(18px);
@@ -144,7 +145,7 @@
             min-height: 46px;
             padding: 12px 14px 12px 40px;
             border: 1px solid #cfd9e6;
-            border-radius: 8px;
+            border-radius: 18px;
             color: var(--ink);
             font: inherit;
             background: #ffffff;
@@ -180,7 +181,7 @@
             justify-content: center;
             gap: 10px;
             border: 0;
-            border-radius: 8px;
+            border-radius: 18px;
             color: #111827;
             background: var(--gold);
             font: inherit;
@@ -206,7 +207,7 @@
             margin-bottom: 20px;
             padding: 13px 15px;
             border: 1px solid #fecaca;
-            border-radius: 8px;
+            border-radius: 18px;
             color: #991b1b;
             background: #fef2f2;
             font-size: 14px;
@@ -232,6 +233,8 @@
             .form-options { flex-direction: column; align-items: flex-start; }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/kwdc-auth.css') }}">
+    <script src="{{ asset('js/kwdc-auth.js') }}" defer></script>
 </head>
 <body>
     <main class="auth-shell">
@@ -240,20 +243,11 @@
                 <span class="brand-mark"><i class="fas fa-warehouse"></i></span>
                 <span>KTM-WDC</span>
             </a>
-            <h1>Run warehouse work from one secure portal.</h1>
-            <p>Access requests, dispatch orders, pickup jobs, documents, stock, invoices, reminders, and partner workflows without jumping between tools.</p>
-            <div class="proof-grid" aria-label="Platform highlights">
-                <div class="proof"><strong>Live</strong><span>Phase one portal published and ready to review.</span></div>
-                <div class="proof"><strong>Roles</strong><span>Client, admin, driver, property, equipment, and security access.</span></div>
-                <div class="proof"><strong>Secure</strong><span>Private documents, sessions, and billing flows.</span></div>
-            </div>
         </section>
 
         <section class="auth-card">
             <div class="card-head">
-                <span>Portal access</span>
                 <h2>Welcome back.</h2>
-                <p>Sign in to continue managing KTM-WDC operations.</p>
             </div>
 
             @if($errors->any())
@@ -282,6 +276,7 @@
                     <div class="input-wrap">
                         <i class="fas fa-lock"></i>
                         <input type="password" name="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                        <button type="button" class="password-toggle" aria-label="Show password" aria-pressed="false" data-password-toggle="password"><i class="fas fa-eye" aria-hidden="true"></i></button>
                     </div>
                 </div>
 

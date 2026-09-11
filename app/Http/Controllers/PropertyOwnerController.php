@@ -79,10 +79,8 @@ class PropertyOwnerController extends Controller
             $q->where('user_id', Auth::id());
         })->findOrFail($id);
         
-        $request->status = 'approved';
-        $request->approved_at = now();
-        $request->approved_by = Auth::id();
-        $request->save();
+        $updated = WarehouseRequest::whereKey($request->id)->where('status', 'pending')->update(['status' => 'approved']);
+        abort_unless($updated, 409, 'This request has already been reviewed.');
         
         return redirect()->back()->with('success', 'Warehouse request approved successfully!');
     }
@@ -96,8 +94,8 @@ class PropertyOwnerController extends Controller
             $q->where('user_id', Auth::id());
         })->findOrFail($id);
         
-        $request->status = 'rejected';
-        $request->save();
+        $updated = WarehouseRequest::whereKey($request->id)->where('status', 'pending')->update(['status' => 'rejected']);
+        abort_unless($updated, 409, 'This request has already been reviewed.');
         
         return redirect()->back()->with('success', 'Warehouse request rejected.');
     }

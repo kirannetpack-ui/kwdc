@@ -19,9 +19,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastRecognitionError = null;
     let recognitionStartedAt = 0;
     let lastAssistantNotice = '';
-    const historyKey = 'kwdcAssistantHistory';
+    const userScope = document.querySelector('meta[name="user-id"]')?.content || 'guest';
+    const historyKey = 'kwdcAssistantHistory:' + userScope;
     const openKey = 'kwdcAssistantOpen';
-    const contextKey = 'kwdcAssistantContext';
+    const contextKey = 'kwdcAssistantContext:' + userScope;
     const maxHistoryItems = 60;
 
     function readHistory() {
@@ -705,6 +706,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams(data.data || {});
         const targetUrl = params.toString() ? `${data.url}?${params.toString()}` : data.url;
         const target = new URL(targetUrl, window.location.origin);
+        if (target.origin !== window.location.origin) {
+            addAssistantNotice('That action points outside this workspace.');
+            return false;
+        }
 
         setAssistantOpen(true);
         writeAssistantContext({
@@ -744,6 +749,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
             },
             body: JSON.stringify({ message: text, language: language })
@@ -800,6 +806,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function handleAssistantInput(text) {
+        const command = text.trim().toLowerCase().replace(/[.!?]+$/, '');
+        const decision = command.match(/^(approve|reject)(?: this| the)?(?: request)?$/);
+        const save = /^(save|submit)(?: this| the)?(?: form| reminder| request)?$/.test(command);
+        if (decision || save) {
+            const forms = Array.from(document.querySelectorAll('.main-content form'))
+                .filter(form => form.offsetWidth > 0 && form.method.toLowerCase() === 'post');
+            const button = decision ? forms.flatMap(form => Array.from(form.querySelectorAll('button[name="decision"]')))
+                .find(button => button.value === (decision[1] === 'approve' ? 'approved' : 'rejected')) : null;
+            const form = button?.form || (save && forms.length === 1 ? forms[0] : null)
+                || (save ? document.getElementById('reminder-editor') : null);
+            addMessage(text, 'user');
+            if (!form) {
+                addAssistantNotice('Open the request or form you want to act on first.');
+            } else if (form.reportValidity()) {
+                addAssistantNotice('Submitting. The page will show whether it succeeded.');
+                form.requestSubmit(button || undefined);
+            } else {
+                addAssistantNotice('Complete the highlighted fields first.');
+            }
+            if (textInput) textInput.disabled = false;
+            if (sendBtn) sendBtn.disabled = false;
+            return;
+        }
         if (tryCurrentPageFill(text)) {
             if (textInput) textInput.disabled = false;
             if (sendBtn) sendBtn.disabled = false;
@@ -919,18 +948,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleBtn.disabled = true;
                 statusEl.textContent = 'Checking microphone...';
 
-                const hasMicAccess = await ensureMicrophoneAccess();
-                toggleBtn.disabled = false;
-                if (!hasMicAccess) {
-                    textInput?.focus();
-                    return;
-                }
-
                 try {
+                    // Start within the click gesture; an awaited permission probe can lose activation.
                     recognition.start();
                 } catch (error) {
                     console.error('Recognition start failed:', error);
                     statusEl.textContent = 'Could not start mic. Type below.';
+                } finally {
+                    toggleBtn.disabled = false;
                 }
             } else {
                 recognition.stop();

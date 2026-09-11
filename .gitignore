@@ -29,3 +29,6 @@ bootstrap/cache/
 /archive/root-junk/login.html
 /archive/root-junk/*.bak
 /tools/composer.phar
+
+database/*.sqlite
+database/database.sqlite

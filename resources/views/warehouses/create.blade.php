@@ -188,6 +188,19 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div class="kwdc-map-panel mt-2">
+                                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                                    <div>
+                                        <strong>Map Preview</strong>
+                                        <small class="d-block text-muted">Search by address, click the map, or drag the pin.</small>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" id="locateWarehouseBtn">
+                                        <i class="fas fa-location-crosshairs me-1"></i>Use my location
+                                    </button>
+                                </div>
+                                <div id="warehouseCreateMap" class="kwdc-location-map"></div>
+                            </div>
                         </div>
 
                         <!-- ============================================================ -->
@@ -332,14 +345,129 @@
         background: #d97706;
         border-color: #d97706;
     }
+    .kwdc-map-panel {
+        border: 1px solid #e4eaf2;
+        border-radius: 24px;
+        padding: 18px;
+        background: #ffffff;
+    }
+    .kwdc-location-map {
+        height: 360px;
+        min-height: 320px;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid #dbe4ef;
+        background: #eef2f7;
+        z-index: 1;
+    }
 </style>
 @endpush
 
 @push('scripts')
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const verifyBtn = document.getElementById('verifyKatahoBtn');
     const katahoCodeInput = document.getElementById('kataho_code');
+    const latInput = document.getElementById('latitude');
+    const lngInput = document.getElementById('longitude');
+    const mapEl = document.getElementById('warehouseCreateMap');
+    const addressFields = [
+        document.querySelector('[name="address"]'),
+        document.querySelector('[name="city"]'),
+        document.querySelector('[name="location"]')
+    ].filter(Boolean);
+    let warehouseMap = null;
+    let warehouseMarker = null;
+    let locationRevision = 0;
+
+    function setWarehousePoint(lat, lng, zoom = 16) {
+        if (!warehouseMap) return;
+        if (!Number.isFinite(Number(lat)) || !Number.isFinite(Number(lng)) || Math.abs(lat) > 90 || Math.abs(lng) > 180) return;
+        locationRevision++;
+        latInput.value = Number(lat).toFixed(8);
+        lngInput.value = Number(lng).toFixed(8);
+        if (warehouseMarker) {
+            warehouseMarker.setLatLng([lat, lng]);
+        } else {
+            warehouseMarker = L.marker([lat, lng], { draggable: true }).addTo(warehouseMap);
+            warehouseMarker.on('dragend', function(event) {
+                const point = event.target.getLatLng();
+                setWarehousePoint(point.lat, point.lng, warehouseMap.getZoom());
+            });
+        }
+        warehouseMap.setView([lat, lng], zoom);
+    }
+
+    async function geocodeWarehouse() {
+        const revision = ++locationRevision;
+        const query = addressFields.map(field => field.value.trim()).filter(Boolean).join(', ');
+        latInput.value = '';
+        lngInput.value = '';
+        if (warehouseMarker) { warehouseMap.removeLayer(warehouseMarker); warehouseMarker = null; }
+        if (query.length < 4) return;
+        try {
+            const point = await KwdcMaps.search(query);
+            if (revision !== locationRevision) return;
+            if (point) setWarehousePoint(point.lat, point.lng);
+            else mapEl.setAttribute('aria-label', 'Location not found. Choose a point on the map.');
+        } catch (error) {
+            console.warn('Warehouse geocoding failed:', error);
+        }
+    }
+
+    function debounce(callback, wait = 700) {
+        let timeout;
+        return function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(callback, wait);
+        };
+    }
+
+    if (mapEl && typeof L !== 'undefined') {
+        const startLat = parseFloat(latInput.value) || 27.7172;
+        const startLng = parseFloat(lngInput.value) || 85.3240;
+        warehouseMap = L.map(mapEl).setView([startLat, startLng], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(warehouseMap);
+
+        if (latInput.value && lngInput.value) {
+            setWarehousePoint(startLat, startLng, 15);
+        }
+
+        warehouseMap.on('click', function(event) {
+            setWarehousePoint(event.latlng.lat, event.latlng.lng);
+        });
+
+        addressFields.forEach(field => {
+            field.addEventListener('input', debounce(geocodeWarehouse));
+            field.addEventListener('blur', geocodeWarehouse);
+        });
+
+        latInput.addEventListener('change', function() {
+            const lat = parseFloat(latInput.value);
+            const lng = parseFloat(lngInput.value);
+            if (!Number.isNaN(lat) && !Number.isNaN(lng)) setWarehousePoint(lat, lng);
+        });
+        lngInput.addEventListener('change', function() {
+            const lat = parseFloat(latInput.value);
+            const lng = parseFloat(lngInput.value);
+            if (!Number.isNaN(lat) && !Number.isNaN(lng)) setWarehousePoint(lat, lng);
+        });
+
+        document.getElementById('locateWarehouseBtn')?.addEventListener('click', function() {
+            if (!navigator.geolocation) return;
+            navigator.geolocation.getCurrentPosition(function(position) {
+                setWarehousePoint(position.coords.latitude, position.coords.longitude);
+            }, function() {
+                const message = document.createElement('p');
+                message.setAttribute('role', 'status');
+                message.textContent = 'Location access is unavailable. Enter an address or choose a point on the map.';
+                mapEl.after(message);
+            }, {timeout: 10000});
+        });
+    }
     
     if (verifyBtn) {
         verifyBtn.addEventListener('click', function() {
@@ -381,6 +509,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                     if (data.location?.longitude) {
                         document.getElementById('longitude').value = data.location.longitude;
+                    }
+                    if (data.location?.latitude && data.location?.longitude) {
+                        setWarehousePoint(data.location.latitude, data.location.longitude);
                     }
                 } else {
                     alertDiv.className = 'alert alert-danger';

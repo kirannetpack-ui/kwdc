@@ -73,7 +73,7 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
+Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register'])->middleware('throttle:5,1');
 Route::get('/activate', [ActivationController::class, 'show'])->name('activation.notice');
 Route::post('/activate', [ActivationController::class, 'activate'])
     ->name('activation.verify')
@@ -96,13 +96,16 @@ Route::post('/email/verification-notification', [EmailVerificationNotificationCo
     ->name('verification.send');
 
 // Home & Dashboard – only ONE should have name 'dashboard'
-Route::get('/home', [HomeController::class, 'index'])->name('home');  // renamed to 'home'
-Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');  // main dashboard
+Route::get('/home', [HomeController::class, 'index'])->middleware(['auth', 'account.ready'])->name('home');
+Route::get('/dashboard', [DashboardController::class, 'index'])->middleware(['auth', 'account.ready'])->name('dashboard');
 
 // ================================================================
 // 3. PROTECTED ROUTES (Authentication required)
 // ================================================================
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'account.ready'])->group(function () {
+    Route::get('/maps/search', [\App\Http\Controllers\MapController::class, 'search'])->middleware('throttle:60,1')->name('maps.search');
+    Route::get('/maps/reverse', [\App\Http\Controllers\MapController::class, 'reverse'])->middleware('throttle:60,1')->name('maps.reverse');
+    Route::post('/maps/route', [\App\Http\Controllers\MapController::class, 'route'])->middleware('throttle:30,1')->name('maps.route');
 
     // ==================== VOICE ASSISTANT ====================
     Route::post('/ai/voice-assistant', [AiVoiceController::class, 'voiceAssistant'])->name('ai.voice.assistant');
@@ -176,6 +179,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // ==================== REMINDER CALENDAR ====================
+    Route::get('/warehouse-requests/{id}', [\App\Http\Controllers\WarehouseRequestDetailController::class, 'show'])->name('warehouse-requests.show');
+    Route::post('/warehouse-requests/{id}/decision', [\App\Http\Controllers\WarehouseRequestDetailController::class, 'decide'])->name('warehouse-requests.decide');
     Route::resource('reminders', ReminderController::class)->only(['index', 'store', 'update', 'destroy']);
 
     // ==================== TRACKING ====================
@@ -249,6 +254,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/store', [PickupRequestController::class, 'store'])->name('store');
         Route::post('/calculate-price', [PickupRequestController::class, 'calculatePriceAjax'])->name('calculate-price');
         Route::get('/{id}', [PickupRequestController::class, 'show'])->name('show');
+        Route::post('/{id}/status', [PickupRequestController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{id}/cancel', [PickupRequestController::class, 'cancel'])->name('cancel');
     });
 
     // ==================== INVOICES ====================
@@ -543,7 +550,7 @@ Route::resource('security/incidents', SecurityIncidentController::class)
 // ================================================================
 // 5. REPORTS (Outside auth group, but with auth+admin middleware)
 // ================================================================
-Route::prefix('reports')->middleware(['auth', 'admin'])->name('reports.')->group(function () {
+Route::prefix('reports')->middleware(['auth', 'account.ready', 'admin'])->name('reports.')->group(function () {
     Route::get('/', [ReportController::class, 'index'])->name('index');
     Route::post('/export', [ReportController::class, 'export'])->name('export');
 });
