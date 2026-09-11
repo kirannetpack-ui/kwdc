@@ -90,6 +90,7 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
 
     // ==================== VOICE ASSISTANT ====================
     Route::post('/ai/voice-assistant', [AiVoiceController::class, 'voiceAssistant'])->name('ai.voice.assistant');
+    Route::post('/ai/transcribe', [AiVoiceController::class, 'transcribe'])->name('ai.transcribe');
 
     Route::get('/private-documents/{path}', [PrivateDocumentController::class, 'show'])
         ->where('path', '.*')

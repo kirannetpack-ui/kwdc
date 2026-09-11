@@ -354,6 +354,72 @@ class EnhancedAIService
     }
 
     /**
+     * Transcribe audio using Google Gemini multimodal capabilities
+     */
+    public function transcribeAudio(string $base64Audio, string $mimeType = 'audio/webm', string $language = 'en'): ?string
+    {
+        $apiKey = config('services.gemini.api_key');
+        if (!$apiKey) {
+            Log::warning('Gemini API key missing for audio transcription');
+            return null;
+        }
+
+        $models = array_unique([
+            config('services.gemini.model', 'gemini-3.5-flash'),
+            'gemini-3.5-flash',
+            'gemini-3.5-flash-lite',
+        ]);
+
+        $prompt = $language === 'np'
+            ? 'तपाईं एक सटीक अडियो ट्रान्सक्राइबिङ सहायक हुनुहुन्छ। यो अडियो सुन्नुहोस् र बोलिएका शब्दहरूलाई शुद्ध नेपाली देवनागरी वा अंग्रेजीमा जस्ताको तस्तै ट्रान्सक्राइब गर्नुहोस्। कुनै अतिरिक्त टिप्पणी, अभिवादन वा स्पष्टीकरण नदिनुहोस्। यदि कुनै आवाज छैन भने खाली छोड्नुहोस्।'
+            : 'You are an accurate audio transcriber for Kathmandu Logistics. Transcribe the spoken words in this audio exactly as spoken (English or Nepali). Return ONLY the transcribed text. Do not add quotes, commentary, markdown, or timestamps. If no clear speech is heard, return an empty string.';
+
+        foreach ($models as $model) {
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey);
+
+                $response = Http::withoutVerifying()->timeout(15)->post($url, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                [
+                                    'inline_data' => [
+                                        'mime_type' => $mimeType,
+                                        'data' => $base64Audio,
+                                    ]
+                                ],
+                                [
+                                    'text' => $prompt,
+                                ]
+                            ]
+                        ]
+                    ]
+                ]);
+
+                if ($response->failed()) {
+                    Log::warning("Gemini audio transcription failed on {$model}: " . $response->status());
+                    continue;
+                }
+
+                $data = $response->json();
+                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+                if ($text !== null) {
+                    $cleaned = trim(preg_replace('/^["\']|["\']$/', '', trim($text)));
+                    if (strcasecmp($cleaned, 'silent') === 0 || strcasecmp($cleaned, 'none') === 0) {
+                        return '';
+                    }
+                    return $cleaned;
+                }
+            } catch (\Throwable $e) {
+                Log::error("Gemini transcribe error on {$model}: " . $e->getMessage());
+                continue;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Health Check - Verify API connectivity
      */
     public function healthCheck(): array

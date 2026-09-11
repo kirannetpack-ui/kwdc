@@ -44,4 +44,44 @@ class AiVoiceController extends Controller
     }
 }
 
+    public function transcribe(Request $request, \App\Services\EnhancedAIService $aiService)
+    {
+        $request->validate([
+            'audio' => ['required', 'string'],
+            'mime_type' => ['nullable', 'string', 'max:60'],
+            'language' => ['nullable', 'in:en,np'],
+        ]);
+
+        try {
+            $rawAudio = $request->input('audio');
+            if (preg_match('/^data:([^;]+);base64,(.+)$/', $rawAudio, $matches)) {
+                $mimeType = $matches[1];
+                $base64 = $matches[2];
+            } else {
+                $mimeType = $request->input('mime_type', 'audio/webm');
+                $base64 = $rawAudio;
+            }
+
+            $language = $request->input('language', 'en');
+            $transcript = $aiService->transcribeAudio($base64, $mimeType, $language);
+
+            Log::info('🎤 Audio transcribed via Gemini', [
+                'user' => Auth::id(),
+                'transcript' => $transcript,
+                'lang' => $language,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'transcript' => $transcript ?? '',
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('❌ Audio transcription controller error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to transcribe audio.',
+                'transcript' => '',
+            ], 500);
+        }
+    }
 }

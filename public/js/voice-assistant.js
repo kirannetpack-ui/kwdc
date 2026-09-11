@@ -181,7 +181,8 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.addEventListener('click', function() {
             chatWindow.style.display = 'none';
             if (isListening) {
-                recognition?.stop();
+                if (typeof stopMediaRecorderVoice === 'function') stopMediaRecorderVoice();
+                try { recognition?.stop(); } catch(e) {}
                 setListeningUi(false);
             }
             stopSpeaking();
@@ -203,7 +204,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (container && !container.contains(e.target)) {
                 chatWindow.style.display = 'none';
                 if (isListening) {
-                    recognition?.stop();
+                    if (typeof stopMediaRecorderVoice === 'function') stopMediaRecorderVoice();
+                    try { recognition?.stop(); } catch(e) {}
                     setListeningUi(false);
                 }
                 stopSpeaking();
@@ -1016,16 +1018,169 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     };
 
+    // ===== MEDIARECORDER GEMINI VOICE ENGINE (Resilient fallback for HTTP / network blocks) =====
+    let useMediaRecorderMode = false;
+    let mediaRecorder = null;
+    let mediaChunks = [];
+    let mediaStream = null;
+    let mediaTimeout = null;
+
+    function getSupportedMimeType() {
+        const types = [
+            'audio/webm;codecs=opus',
+            'audio/webm',
+            'audio/ogg;codecs=opus',
+            'audio/mp4',
+            'audio/wav'
+        ];
+        for (const t of types) {
+            if (window.MediaRecorder && MediaRecorder.isTypeSupported(t)) {
+                return t;
+            }
+        }
+        return '';
+    }
+
+    async function startMediaRecorderVoice() {
+        if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+            statusEl.textContent = 'Voice recording not supported in this browser.';
+            textInput?.focus();
+            return;
+        }
+
+        try {
+            stopSpeaking();
+            statusEl.textContent = 'Opening microphone...';
+            mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+            const mimeType = getSupportedMimeType();
+            mediaRecorder = mimeType ? new MediaRecorder(mediaStream, { mimeType }) : new MediaRecorder(mediaStream);
+            mediaChunks = [];
+
+            mediaRecorder.ondataavailable = function(e) {
+                if (e.data && e.data.size > 0) {
+                    mediaChunks.push(e.data);
+                }
+            };
+
+            mediaRecorder.onstop = async function() {
+                setListeningUi(false, 'Transcribing with Gemini...');
+                if (mediaTimeout) {
+                    clearTimeout(mediaTimeout);
+                    mediaTimeout = null;
+                }
+
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                    mediaStream = null;
+                }
+
+                if (mediaChunks.length === 0) {
+                    statusEl.textContent = 'No voice recorded. Tap mic to retry.';
+                    return;
+                }
+
+                const resolvedMime = mediaRecorder.mimeType || 'audio/webm';
+                const audioBlob = new Blob(mediaChunks, { type: resolvedMime });
+
+                if (audioBlob.size < 600) {
+                    statusEl.textContent = 'Voice too short. Tap mic to speak.';
+                    return;
+                }
+
+                try {
+                    const reader = new FileReader();
+                    reader.onloadend = async function() {
+                        const base64Data = reader.result;
+                        try {
+                            const res = await fetch('/ai/transcribe', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                                },
+                                body: JSON.stringify({
+                                    audio: base64Data,
+                                    mime_type: resolvedMime,
+                                    language: currentLanguage
+                                })
+                            });
+
+                            if (!res.ok) {
+                                throw new Error(`HTTP ${res.status}`);
+                            }
+
+                            const json = await res.json();
+                            const transcript = (json.transcript || '').trim();
+                            if (transcript) {
+                                statusEl.textContent = 'Processing request...';
+                                handleAssistantInput(transcript);
+                            } else {
+                                statusEl.textContent = 'No words heard. Tap mic and try again.';
+                            }
+                        } catch (err) {
+                            console.error('Gemini transcription error:', err);
+                            statusEl.textContent = 'Could not transcribe voice. Type below or retry.';
+                        }
+                    };
+                    reader.readAsDataURL(audioBlob);
+                } catch (e) {
+                    console.error('Audio blob processing error:', e);
+                    statusEl.textContent = 'Audio processing error. Type below.';
+                }
+            };
+
+            mediaRecorder.start(250);
+            setListeningUi(true, 'Listening... speak now (tap mic to finish)');
+
+            // Auto-stop after 8 seconds max
+            mediaTimeout = setTimeout(() => {
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    stopMediaRecorderVoice();
+                }
+            }, 8000);
+
+        } catch (err) {
+            console.warn('Microphone access failed:', err);
+            setListeningUi(false);
+            statusEl.textContent = 'Mic access blocked. Allow mic in browser.';
+            textInput?.focus();
+        }
+    }
+
+    function stopMediaRecorderVoice() {
+        if (mediaTimeout) {
+            clearTimeout(mediaTimeout);
+            mediaTimeout = null;
+        }
+        if (mediaRecorder && mediaRecorder.state === 'recording') {
+            try {
+                mediaRecorder.stop();
+            } catch (e) {
+                console.warn('Error stopping MediaRecorder:', e);
+            }
+        }
+    }
+
     if (recognition) recognition.onerror = function(event) {
         console.warn('Voice recognition notice:', event.error);
         lastRecognitionError = event.error;
 
+        // If Web Speech cloud has network issues (common on localhost / http), automatically switch to Gemini MediaRecorder!
+        if (event.error === 'network' || event.error === 'service-not-allowed') {
+            console.info('Switching to Gemini MediaRecorder engine due to Web Speech network restriction.');
+            useMediaRecorderMode = true;
+            try { recognition.stop(); } catch(e) {}
+            // Immediately engage MediaRecorder voice recording
+            startMediaRecorderVoice();
+            return;
+        }
+
         const statusMap = {
-            'not-allowed': 'Mic access blocked. Type below.',
-            'service-not-allowed': 'Voice engine unavailable. Type below.',
+            'not-allowed': 'Mic access blocked. Allow mic in browser.',
             'no-speech': 'No voice heard. Tap mic or type.',
             'audio-capture': 'No mic found. Type below.',
-            'network': 'Voice offline — type your message below.',
         };
 
         const hint = statusMap[event.error] || 'Voice unavailable — type below.';
@@ -1034,7 +1189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (isListening) {
-            recognition.stop();
+            try { recognition.stop(); } catch(e) {}
             setListeningUi(false, hint);
             stopSpeaking();
         }
@@ -1045,31 +1200,36 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== TOGGLE LISTENING =====
     if (toggleBtn) {
         toggleBtn.addEventListener('click', async function() {
-            if (!recognition) {
-                statusEl.textContent = 'Mic not supported here. Type below.';
-                textInput?.focus();
+            if (isListening) {
+                if (useMediaRecorderMode) {
+                    stopMediaRecorderVoice();
+                } else {
+                    try { recognition?.stop(); } catch(e) {}
+                    stopSpeaking();
+                    setListeningUi(false);
+                }
                 return;
             }
 
-            if (!isListening) {
-                recognition.lang = currentLanguage === 'np' ? 'ne-NP' : 'en-US';
-                stopSpeaking();
-                toggleBtn.disabled = true;
-                statusEl.textContent = 'Checking microphone...';
+            // If in MediaRecorder mode or Web Speech is missing, use Gemini recorder directly
+            if (useMediaRecorderMode || !recognition) {
+                startMediaRecorderVoice();
+                return;
+            }
 
-                try {
-                    // Start within the click gesture; an awaited permission probe can lose activation.
-                    recognition.start();
-                } catch (error) {
-                    console.error('Recognition start failed:', error);
-                    statusEl.textContent = 'Could not start mic. Type below.';
-                } finally {
-                    toggleBtn.disabled = false;
-                }
-            } else {
-                recognition.stop();
-                stopSpeaking();
-                setListeningUi(false);
+            recognition.lang = currentLanguage === 'np' ? 'ne-NP' : 'en-US';
+            stopSpeaking();
+            toggleBtn.disabled = true;
+            statusEl.textContent = 'Checking microphone...';
+
+            try {
+                recognition.start();
+            } catch (error) {
+                console.warn('Recognition start failed, switching to Gemini MediaRecorder:', error);
+                useMediaRecorderMode = true;
+                startMediaRecorderVoice();
+            } finally {
+                toggleBtn.disabled = false;
             }
         });
     }
