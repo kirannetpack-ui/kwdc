@@ -66,6 +66,11 @@ Route::get('/', function () {
 Route::get('/ping', fn() => 'pong');
 Route::get('/invoice/verify/{invoiceNumber}', [InvoiceController::class, 'verify'])->name('invoice.verify');
 
+// Legal & Compliance Documentation
+Route::get('/privacy-policy', fn() => view('legal.privacy'))->name('privacy-policy');
+Route::get('/terms-of-service', fn() => view('legal.terms'))->name('terms-of-service');
+Route::get('/compliance', fn() => view('legal.compliance'))->name('compliance');
+
 // ================================================================
 // 2. AUTHENTICATION ROUTES
 // ================================================================
@@ -423,6 +428,8 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
         Route::get('/warehouse/{id}', [PdfController::class, 'downloadWarehouse'])->name('warehouse');
         Route::get('/dispatch/{id}', [PdfController::class, 'downloadDispatch'])->name('dispatch');
     });
+    Route::get('/warehouses/{id}/pdf', [PdfController::class, 'downloadWarehouse'])->name('warehouses.pdf');
+    Route::get('/dispatch/{id}/pdf', [PdfController::class, 'downloadDispatch'])->name('dispatch.pdf');
 
     // ==================== ADMIN ROUTES (Admin middleware) ====================
     Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function () {

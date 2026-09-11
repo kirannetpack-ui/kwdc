@@ -458,7 +458,21 @@
     @if(session('warning')) <div class="alert alert-warning mx-4 mt-4">{{ session('warning') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
     @if(session('info')) <div class="alert alert-info mx-4 mt-4">{{ session('info') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
     
-    <div class="page-content">@yield('content')</div>
+    <div class="page-content">
+        @yield('content')
+        <footer class="kwdc-portal-footer mt-12 pt-6 pb-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-slate-700"><i class="fas fa-warehouse text-orange-500 mr-1"></i> KTM-WDC</span>
+                <span>&bull;</span>
+                <span>&copy; {{ date('Y') }} Warehouse & Distribution Connect</span>
+            </div>
+            <div class="flex items-center gap-5 font-medium">
+                <a href="{{ route('privacy-policy') }}" class="hover:text-orange-600 transition">Privacy Policy</a>
+                <a href="{{ route('terms-of-service') }}" class="hover:text-orange-600 transition">Terms of Service</a>
+                <a href="{{ route('compliance') }}" class="hover:text-orange-600 transition">Compliance & Safety</a>
+            </div>
+        </footer>
+    </div>
 </div>
 
 <!-- ============================================================ -->
@@ -952,7 +966,11 @@
         <div class="kwdc-assistant-header">
             <div class="kwdc-assistant-title">
                 <div class="kwdc-assistant-avatar">
-                    <i class="fas fa-sparkles"></i>
+                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #f97316;">
+                        <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+                        <path d="M19 15L20.2 17.8L23 19L20.2 20.2L19 23L17.8 20.2L15 19L17.8 17.8L19 15Z" opacity="0.8" />
+                        <path d="M5 16L5.9 18.1L8 19L5.9 19.9L5 22L4.1 19.9L2 19L4.1 18.1L5 16Z" opacity="0.6" />
+                    </svg>
                 </div>
                 <div>
                     <strong>KWDC Assistant</strong>
@@ -964,6 +982,7 @@
                     <option value="en">EN</option>
                     <option value="np">NP</option>
                 </select>
+                <button id="voiceSpeechToggle" class="kwdc-assistant-close" aria-label="Toggle speech" title="Audible Responses"><i class="fas fa-volume-up"></i></button>
                 <button id="assistantClearBtn" class="kwdc-assistant-close" aria-label="Clear chat" title="Reset"><i class="fas fa-rotate-left"></i></button>
                 <button id="voiceCloseBtn" class="kwdc-assistant-close" aria-label="Close" title="Close"><i class="fas fa-times"></i></button>
             </div>
@@ -995,8 +1014,12 @@
         </div>
     </div>
 
-    <button id="voiceLaunchBtn" class="kwdc-assistant-launch" aria-label="Open KWDC assistant">
-        <i class="fas fa-sparkles"></i>
+    <button id="voiceLaunchBtn" class="kwdc-assistant-launch" aria-label="Open KWDC assistant" title="KWDC Logistics AI Assistant">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 26px; height: 26px; color: #f97316;">
+            <path d="M12 2L14.4 7.6L20 10L14.4 12.4L12 18L9.6 12.4L4 10L9.6 7.6L12 2Z" />
+            <path d="M19 15L20.2 17.8L23 19L20.2 20.2L19 23L17.8 20.2L15 19L17.8 17.8L19 15Z" opacity="0.8" />
+            <path d="M5 16L5.9 18.1L8 19L5.9 19.9L5 22L4.1 19.9L2 19L4.1 18.1L5 16Z" opacity="0.6" />
+        </svg>
     </button>
 </div>
 

@@ -386,19 +386,19 @@
 
     <!-- Quick Action Bar -->
     @if(!empty($quickActions))
-    <div class="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+    <div class="kwdc-action-bar">
         @foreach($quickActions as $action)
             @if($action['primary'])
-            <a href="{{ $action['route'] }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition whitespace-nowrap">
+            <a href="{{ $action['route'] }}" class="kwdc-action-btn primary">
                 <i class="fas fa-{{ $action['icon'] }}"></i>
                 <span>{{ $action['label'] }}</span>
             </a>
             @else
-            <a href="{{ $action['route'] }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-slate-900 font-bold text-xs shadow-sm transition whitespace-nowrap">
-                <i class="fas fa-{{ $action['icon'] }} text-orange-500"></i>
+            <a href="{{ $action['route'] }}" class="kwdc-action-btn">
+                <i class="fas fa-{{ $action['icon'] }}" style="color: #f97316;"></i>
                 <span>{{ $action['label'] }}</span>
                 @if(!empty($action['badge']) && $action['badge'] > 0)
-                    <span class="px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800 text-[10px] font-black">
+                    <span class="kwdc-action-badge">
                         {{ $action['badge'] }}
                     </span>
                 @endif

@@ -834,7 +834,7 @@ body.kwdc-app-shell {
 }
 
 .kwdc-app-shell .table-responsive,
-.kwdc-app-shell .overflow-x-auto,
+.kwdc-app-shell .overflow-x-auto:has(table),
 .kwdc-app-shell .bg-white:has(table) {
     border: 1px solid var(--kwdc-v2-line) !important;
     border-radius: 28px !important;
@@ -1062,7 +1062,7 @@ body.kwdc-app-shell {
 }
 
 .kwdc-app-shell .table-responsive,
-.kwdc-app-shell .overflow-x-auto,
+.kwdc-app-shell .overflow-x-auto:has(table),
 .kwdc-app-shell .bg-white:has(table) {
     border: 1px solid var(--kwdc-border);
     background: #ffffff;
@@ -1535,7 +1535,7 @@ body.kwdc-app-shell {
 }
 
 .kwdc-app-shell .table-responsive,
-.kwdc-app-shell .overflow-x-auto,
+.kwdc-app-shell .overflow-x-auto:has(table),
 .kwdc-app-shell .bg-white:has(table) {
     border-radius: 24px !important;
     border: 1px solid var(--kwdc-premium-line) !important;
@@ -1867,4 +1867,125 @@ tr[data-record-url]:focus-visible,
     background: #ffffff;
     border-color: #e2e8f0;
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+/* =========================================================
+   KWDC ACTION BAR & ACTION PILLS - UNIFIED 40PX ALIGNMENT
+   ========================================================= */
+.kwdc-app-shell .kwdc-action-bar,
+.kwdc-action-bar {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 2px 0 !important;
+    margin: 0 0 16px 0 !important;
+    border-radius: 0 !important;
+    overflow-x: auto !important;
+}
+
+.kwdc-app-shell .kwdc-action-bar .kwdc-action-btn,
+.kwdc-action-bar .kwdc-action-btn,
+.kwdc-app-shell a.kwdc-action-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    text-decoration: none !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-sizing: border-box !important;
+    border: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+    color: #334155 !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+
+.kwdc-app-shell .kwdc-action-bar .kwdc-action-btn:hover,
+.kwdc-action-bar .kwdc-action-btn:hover {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border-color: #cbd5e1 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06) !important;
+}
+
+.kwdc-app-shell .kwdc-action-bar .kwdc-action-btn.primary,
+.kwdc-action-bar .kwdc-action-btn.primary,
+.kwdc-app-shell a.kwdc-action-btn.primary {
+    background: #f97316 !important;
+    border-color: #ea580c !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.25) !important;
+}
+
+.kwdc-app-shell .kwdc-action-bar .kwdc-action-btn.primary:hover,
+.kwdc-action-bar .kwdc-action-btn.primary:hover {
+    background: #ea580c !important;
+    border-color: #c2410c !important;
+    color: #ffffff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35) !important;
+}
+
+.kwdc-app-shell .kwdc-action-bar .kwdc-action-badge,
+.kwdc-action-bar .kwdc-action-badge {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 2px 6px !important;
+    border-radius: 9999px !important;
+    background: #ffedd5 !important;
+    color: #9a3412 !important;
+    font-size: 11px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
+}
+
+/* =========================================================
+   LIVE MAP CONTAINERS - EXPLICIT 380PX HEIGHT
+   ========================================================= */
+.kwdc-live-map,
+.kwdc-pickup-map,
+#liveMap,
+#pickupRouteMap {
+    height: 380px !important;
+    min-height: 380px !important;
+    width: 100% !important;
+    border-radius: 20px !important;
+    border: 1px solid #e2e8f0 !important;
+    position: relative !important;
+    z-index: 1 !important;
+    background: #f8fafc;
+}
+
+.kwdc-action-pill,
+.kwdc-app-shell .kwdc-action-pill {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #1e293b !important;
+    text-decoration: none !important;
+    transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
 }

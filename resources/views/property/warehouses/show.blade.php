@@ -13,8 +13,11 @@
             <p class="text-muted small">View and manage your property details</p>
         </div>
         <div>
-            <a href="{{ route('warehouses.index') }}" class="btn btn-outline-secondary me-2">
+            <a href="{{ route('property.approved') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-2"></i>Back to Properties
+            </a>
+            <a href="{{ route('warehouses.pdf', $warehouse->id) }}" class="btn btn-primary me-2" style="background:#ea580c; border-color:#ea580c; color:#fff;">
+                <i class="fas fa-file-pdf me-2"></i>Certificate PDF
             </a>
             <a href="{{ route('property.warehouses.edit', $warehouse->id) }}" class="btn btn-warning">
                 <i class="fas fa-edit me-2"></i>Edit

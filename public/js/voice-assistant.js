@@ -200,9 +200,52 @@ document.addEventListener('DOMContentLoaded', function() {
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    // ===== Speech Synthesis (Text-to-Speech) =====
+    let isSpeechEnabled = localStorage.getItem('kwdcAssistantSpeech') !== 'false';
+    const speechToggleBtn = document.getElementById('voiceSpeechToggle');
+
+    function updateSpeechToggleUi() {
+        if (!speechToggleBtn) return;
+        speechToggleBtn.innerHTML = isSpeechEnabled 
+            ? '<i class="fas fa-volume-up" style="color:#f97316;"></i>' 
+            : '<i class="fas fa-volume-xmark" style="color:#64748b;"></i>';
+    }
+
+    if (speechToggleBtn) {
+        updateSpeechToggleUi();
+        speechToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            isSpeechEnabled = !isSpeechEnabled;
+            localStorage.setItem('kwdcAssistantSpeech', isSpeechEnabled ? 'true' : 'false');
+            updateSpeechToggleUi();
+            if (!isSpeechEnabled && window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+        });
+    }
+
+    function speakAssistantText(text) {
+        if (!isSpeechEnabled || !('speechSynthesis' in window)) return;
+        try {
+            window.speechSynthesis.cancel();
+            const cleanText = text.replace(/<[^>]*>?/gm, '').trim();
+            if (!cleanText || cleanText.length > 300) return;
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.rate = 1.05;
+            utterance.pitch = 1.0;
+            utterance.lang = currentLanguage === 'np' ? 'hi-IN' : 'en-US';
+            window.speechSynthesis.speak(utterance);
+        } catch (err) {
+            console.warn('Speech synthesis not available:', err);
+        }
+    }
+
     function addMessage(text, sender) {
         renderMessage(text, sender);
         rememberMessage(text, sender);
+        if (sender === 'assistant') {
+            speakAssistantText(text);
+        }
     }
 
     function restoreHistory() {
