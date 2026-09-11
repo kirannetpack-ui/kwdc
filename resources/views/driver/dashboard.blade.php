@@ -1,193 +1,228 @@
 @extends('layouts.app')
 
 @section('title', 'Driver Dashboard')
+@section('header', 'Driver Dashboard')
 
 @section('content')
-@php
-    $statusClasses = [
-        'pending' => 'warning',
-        'assigned' => 'info',
-        'picked_up' => 'primary',
-        'on_the_way' => 'primary',
-        'in_progress' => 'primary',
-        'delivered' => 'success',
-        'completed' => 'success',
-        'cancelled' => 'danger',
-    ];
-@endphp
-
-<div class="container-fluid">
-    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Apple-style Hero Banner -->
+    <div class="kwdc-dashboard-hero flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-            <p class="text-muted mb-1">Namaste, {{ auth()->user()->name }}</p>
-            <h2 class="mb-0">Driver Dashboard</h2>
+            <div class="flex items-center gap-2.5 mb-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200">
+                    Fleet Driver Console
+                </span>
+                <span class="text-xs text-gray-400 font-medium">Namaste, {{ auth()->user()->name }}</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
+                Driver Dashboard
+            </h1>
+            <p class="text-sm text-gray-500 mt-1 max-w-xl">
+                Track your assigned delivery routes, accept marketplace dispatches, and manage customer pickup transfers across the Kathmandu Valley network.
+            </p>
         </div>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('driver.jobs') }}" class="btn btn-primary">
-                <i class="fas fa-route me-2"></i>My Jobs
-            </a>
-            <a href="{{ route('driver.pickups') }}" class="btn btn-outline-primary">
-                <i class="fas fa-boxes-stacked me-2"></i>Pickups
-            </a>
-            <a href="{{ route('reminders.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-calendar-check me-2"></i>Reminders
-            </a>
-        </div>
-    </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-xl-3 col-md-6">
-            <div class="card stats-card stats-primary h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="stats-label">Assigned Jobs</h6>
-                        <h2 class="stats-number">{{ $stats['total_jobs'] ?? 0 }}</h2>
-                    </div>
-                    <div class="stats-icon"><i class="fas fa-truck-fast"></i></div>
-                </div>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div class="kwdc-beacon-container">
+                <span class="kwdc-beacon-dot"></span>
+                <span>Active & On Duty</span>
             </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card stats-card stats-warning h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="stats-label">Active Runs</h6>
-                        <h2 class="stats-number">{{ $stats['active_jobs'] ?? 0 }}</h2>
-                    </div>
-                    <div class="stats-icon"><i class="fas fa-location-arrow"></i></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card stats-card stats-success h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="stats-label">Completed</h6>
-                        <h2 class="stats-number">{{ $stats['completed_jobs'] ?? 0 }}</h2>
-                    </div>
-                    <div class="stats-icon"><i class="fas fa-circle-check"></i></div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card stats-card stats-info h-100">
-                <div class="card-body d-flex justify-content-between align-items-center">
-                    <div>
-                        <h6 class="stats-label">Earnings</h6>
-                        <h2 class="stats-number">Rs {{ number_format($stats['total_earnings'] ?? 0) }}</h2>
-                    </div>
-                    <div class="stats-icon"><i class="fas fa-wallet"></i></div>
-                </div>
+            <div class="px-4 py-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-600">
+                <i class="far fa-calendar-alt text-gray-400 mr-1.5"></i> {{ now()->format('D, M j, Y') }}
             </div>
         </div>
     </div>
 
-    <div class="row g-4 mb-4">
-        <div class="col-xl-4 col-md-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title mb-0">Pickup Summary</h5>
-                        <span class="badge bg-primary">{{ $stats['total_pickups'] ?? 0 }} total</span>
-                    </div>
-                    <div class="d-flex justify-content-between py-2 border-bottom">
-                        <span class="text-muted">Active Pickups</span>
-                        <strong>{{ $stats['active_pickups'] ?? 0 }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between py-2 border-bottom">
-                        <span class="text-muted">Completed Pickups</span>
-                        <strong>{{ $stats['completed_pickups'] ?? 0 }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between py-2">
-                        <span class="text-muted">Registered Vehicles</span>
-                        <strong>{{ $stats['vehicles'] ?? 0 }}</strong>
-                    </div>
+    <!-- Quick Action Pills -->
+    <div class="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+        <a href="{{ route('driver.available-jobs') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-magnifying-glass-location text-orange-500"></i>
+            <span>Browse Available Jobs</span>
+        </a>
+        <a href="{{ route('driver.jobs') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-route text-blue-500"></i>
+            <span>My Active Dispatches</span>
+        </a>
+        <a href="{{ route('driver.pickups') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-boxes-stacked text-emerald-500"></i>
+            <span>Pickup Assignments</span>
+        </a>
+        <a href="{{ route('driver.earnings') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-wallet text-purple-500"></i>
+            <span>Earnings Ledger</span>
+        </a>
+        <a href="{{ route('reminders.index') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-calendar-check text-gray-500"></i>
+            <span>Reminders</span>
+        </a>
+    </div>
+
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Deliveries</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">{{ $stats['active_jobs'] ?? 0 }}</p>
                 </div>
+                <div class="kwdc-kpi-icon" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-route"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>In Progress Now</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
             </div>
         </div>
 
-        <div class="col-xl-8 col-md-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title mb-0">Available Dispatches</h5>
-                        <a href="{{ route('driver.available-jobs') }}" class="btn btn-sm btn-outline-primary">View All</a>
-                    </div>
-
-                    @forelse($availableJobs as $job)
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 py-3 border-bottom">
-                            <div>
-                                <div class="fw-semibold">{{ $job->pickup_address }}</div>
-                                <div class="text-muted small">
-                                    To {{ $job->delivery_address ?? 'multiple stops' }} · {{ number_format($job->total_distance ?? 0, 1) }} km
-                                </div>
-                            </div>
-                            <div class="text-end">
-                                <div class="fw-semibold">Rs {{ number_format($job->base_price ?? 0) }}</div>
-                                <span class="badge bg-warning text-dark">{{ ucfirst($job->status) }}</span>
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-clipboard-list fa-2x mb-2"></i>
-                            <p class="mb-0">No open dispatches right now.</p>
-                        </div>
-                    @endforelse
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Completed Trips</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">{{ $stats['completed_jobs'] ?? 0 }}</p>
                 </div>
+                <div class="kwdc-kpi-icon" style="background: #ecfdf5; color: #059669;">
+                    <i class="fas fa-circle-check"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>Delivered Safely</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
+            </div>
+        </div>
+
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Earnings</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">NPR {{ number_format((float) ($stats['total_earnings'] ?? 0)) }}</p>
+                </div>
+                <div class="kwdc-kpi-icon" style="background: #fffbeb; color: #d97706;">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>Net Driver Payout</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
+            </div>
+        </div>
+
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Pickups</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">{{ $stats['active_pickups'] ?? 0 }}</p>
+                </div>
+                <div class="kwdc-kpi-icon" style="background: #fdf2f8; color: #db2777;">
+                    <i class="fas fa-box"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>Scheduled Transfers</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
             </div>
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title mb-0">Recent Jobs</h5>
-                        <a href="{{ route('driver.jobs') }}" class="btn btn-sm btn-outline-secondary">Manage</a>
-                    </div>
-
-                    @forelse($recentJobs as $job)
-                        <div class="d-flex justify-content-between align-items-start gap-3 py-3 border-bottom">
-                            <div>
-                                <div class="fw-semibold">#{{ $job->tracking_id ?? $job->id }}</div>
-                                <div class="text-muted small">{{ $job->pickup_address }}</div>
-                            </div>
-                            <span class="badge bg-{{ $statusClasses[$job->status] ?? 'secondary' }}">
-                                {{ ucfirst(str_replace('_', ' ', $job->status)) }}
-                            </span>
-                        </div>
-                    @empty
-                        <p class="text-muted mb-0 py-4 text-center">No assigned jobs yet.</p>
-                    @endforelse
+    <!-- Active Jobs & Marketplace Grids -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Assigned Dispatches -->
+        <div class="kwdc-surface-card space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-truck text-orange-500"></i>
+                    <h2 class="font-bold text-gray-900 text-base">My Assigned Dispatches</h2>
                 </div>
+                <a href="{{ route('driver.jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">View All</a>
+            </div>
+            <div class="space-y-3">
+                @forelse($recentJobs ?? [] as $job)
+                <div class="kwdc-feed-item flex items-center justify-between gap-4 cursor-pointer" data-record-url="{{ route('dispatch.show', $job->id) }}">
+                    <div>
+                        <p class="font-bold text-gray-900 text-sm">Order #{{ $job->tracking_id ?? $job->id }}</p>
+                        <p class="text-xs text-gray-600 mt-0.5">
+                            <span class="font-semibold text-gray-800">{{ $job->pickup_address ?? 'Origin' }}</span> &rarr; 
+                            <span>{{ $job->delivery_address ?? $job->destination_address ?? 'Destination' }}</span>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+                            {{ ucfirst(str_replace('_', ' ', $job->status ?? 'assigned')) }}
+                        </span>
+                        <p class="text-xs font-bold text-emerald-600 mt-1">NPR {{ number_format((float) ($job->driver_earning ?? 0)) }}</p>
+                    </div>
+                </div>
+                @empty
+                <p class="text-xs text-gray-400 py-6 text-center">No active delivery assignments. Browse available jobs below.</p>
+                @endforelse
             </div>
         </div>
 
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="card-title mb-0">Recent Pickups</h5>
-                        <a href="{{ route('driver.pickups') }}" class="btn btn-sm btn-outline-secondary">Open</a>
-                    </div>
-
-                    @forelse($recentPickups as $pickup)
-                        <div class="d-flex justify-content-between align-items-start gap-3 py-3 border-bottom">
-                            <div>
-                                <div class="fw-semibold">#{{ $pickup->tracking_id ?? $pickup->id }}</div>
-                                <div class="text-muted small">{{ $pickup->destination_address ?? $pickup->notes ?? 'Pickup route' }}</div>
-                            </div>
-                            <span class="badge bg-{{ $statusClasses[$pickup->status] ?? 'secondary' }}">
-                                {{ ucfirst(str_replace('_', ' ', $pickup->status)) }}
-                            </span>
-                        </div>
-                    @empty
-                        <p class="text-muted mb-0 py-4 text-center">No pickup work yet.</p>
-                    @endforelse
+        <!-- Available Marketplace Jobs -->
+        <div class="kwdc-surface-card space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-hand-holding-dollar text-emerald-500"></i>
+                    <h2 class="font-bold text-gray-900 text-base">Available Job Marketplace</h2>
                 </div>
+                <a href="{{ route('driver.available-jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">Marketplace</a>
+            </div>
+            <div class="space-y-3">
+                @forelse($availableJobs ?? [] as $job)
+                <div class="kwdc-feed-item flex items-center justify-between gap-4 cursor-pointer" data-record-url="{{ route('dispatch.show', $job->id) }}">
+                    <div>
+                        <p class="font-bold text-gray-900 text-sm">Dispatch #{{ $job->tracking_id ?? $job->id }}</p>
+                        <p class="text-xs text-gray-600 mt-0.5">
+                            Pickup: <span class="font-semibold text-gray-800">{{ $job->pickup_address ?? 'Kathmandu Hub' }}</span>
+                            @if($job->delivery_address || $job->destination_address)
+                                &bull; To: {{ $job->delivery_address ?? $job->destination_address }}
+                            @endif
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-extrabold text-emerald-600">NPR {{ number_format((float) ($job->driver_earning ?? $job->base_price ?? 0)) }}</p>
+                        <span class="text-xs text-gray-400">{{ number_format((float) ($job->total_distance ?? 0), 1) }} km</span>
+                    </div>
+                </div>
+                @empty
+                <p class="text-xs text-gray-400 py-6 text-center">No unassigned dispatches in the marketplace right now.</p>
+                @endforelse
             </div>
         </div>
     </div>
+
+    <!-- Recent Pickups Section -->
+    @if(!empty($recentPickups) && count($recentPickups) > 0)
+    <div class="kwdc-surface-card space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-boxes-stacked text-orange-500"></i>
+                <h2 class="font-bold text-gray-900 text-base">Scheduled Pickup Transfers</h2>
+            </div>
+            <a href="{{ route('driver.pickups') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All Pickups</a>
+        </div>
+        <div class="space-y-3">
+            @foreach($recentPickups as $pickup)
+            <div class="kwdc-feed-item flex items-center justify-between gap-4 cursor-pointer" data-record-url="{{ route('pickup.show', $pickup->id) }}">
+                <div>
+                    <p class="font-bold text-gray-900 text-sm">Pickup {{ $pickup->tracking_id ?? ('#' . $pickup->id) }}</p>
+                    <p class="text-xs text-gray-600 mt-0.5">
+                        {{ $pickup->pickup_address ?? $pickup->notes ?? 'Kathmandu Location' }}
+                        @if($pickup->notes && $pickup->notes !== $pickup->pickup_address)
+                            &bull; <span class="italic text-gray-500">{{ $pickup->notes }}</span>
+                        @endif
+                    </p>
+                </div>
+                <div class="text-right">
+                    <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200">
+                        {{ ucfirst(str_replace('_', ' ', $pickup->status ?? 'pending')) }}
+                    </span>
+                    <p class="text-xs text-gray-400 mt-1">{{ optional($pickup->created_at)->format('M d, Y') }}</p>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 </div>
 @endsection

@@ -1,232 +1,158 @@
 @extends('layouts.app')
 
-@section('title', 'Equipment Owner Dashboard')
-@section('header', 'Equipment Owner Dashboard')
+@section('title', 'Equipment Fleet Console')
+@section('header', 'Equipment Dashboard')
 
 @section('content')
-<!-- Namaste Greeting -->
-<div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg p-4 mb-6 border-l-4 border-orange-500">
-    <div class="flex items-center">
-        <div class="text-4xl mr-4 animate-wave" style="animation: wave 0.5s ease-in-out;">
-            🙏
-        </div>
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Apple-style Hero Banner -->
+    <div class="kwdc-dashboard-hero flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
-            <p class="text-gray-800 text-lg">
-                <span class="font-bold">Namaste Equipment Owner</span>,
-                <span class="text-orange-600 font-bold ml-1">{{ Auth::user()->name }}</span>
+            <div class="flex items-center gap-2.5 mb-2">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200">
+                    Heavy Machinery Fleet Console
+                </span>
+                <span class="text-xs text-gray-400 font-medium">KTM-WDC Equipment</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
+                Namaste, {{ Auth::user()->name }}
+            </h1>
+            <p class="text-sm text-gray-500 mt-1 max-w-xl">
+                Manage your heavy logistics machinery, monitor site rental deployments, update daily billing rates, and track maintenance records.
             </p>
-            <p class="text-sm text-gray-500 mt-1">Manage your equipment, track jobs, and monitor earnings.</p>
         </div>
-    </div>
-</div>
 
-<style>
-    @keyframes wave {
-        0%, 100% { transform: rotate(0deg); }
-        25% { transform: rotate(10deg); }
-        75% { transform: rotate(-10deg); }
-    }
-    .animate-wave { animation: wave 0.5s ease-in-out; }
-    .card-hover {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .card-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-    }
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-    .status-active { background: #d1fae5; color: #059669; }
-    .status-pending { background: #fef3c7; color: #d97706; }
-    .status-completed { background: #dbeafe; color: #2563eb; }
-</style>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div class="kwdc-beacon-container">
+                <span class="kwdc-beacon-dot"></span>
+                <span>Fleet Ready</span>
+            </div>
+            <div class="px-4 py-2 rounded-full bg-gray-50 border border-gray-200 text-xs font-semibold text-gray-600">
+                <i class="far fa-calendar-alt text-gray-400 mr-1.5"></i> {{ now()->format('D, M j, Y') }}
+            </div>
+        </div>
+    </div>
 
-<!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-xl p-6 shadow-md card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">My Equipment</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $myEquipment ?? 0 }}</p>
-                <p class="text-green-500 text-sm mt-2">Total registered</p>
-            </div>
-            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-tools text-blue-500 text-xl"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-xl p-6 shadow-md card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">Active Jobs</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $activeJobs ?? 0 }}</p>
-                <p class="text-orange-500 text-sm mt-2">In progress</p>
-            </div>
-            <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-crane text-orange-500 text-xl"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-xl p-6 shadow-md card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">Completed Jobs</p>
-                <p class="text-3xl font-bold text-gray-800">{{ $completedJobs ?? 0 }}</p>
-                <p class="text-green-500 text-sm mt-2">Finished</p>
-            </div>
-            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-check-circle text-green-500 text-xl"></i>
-            </div>
-        </div>
-    </div>
-    
-    <div class="bg-white rounded-xl p-6 shadow-md card-hover">
-        <div class="flex justify-between items-start">
-            <div>
-                <p class="text-gray-500 text-sm">Total Earnings</p>
-                <p class="text-3xl font-bold text-gray-800">रु {{ number_format($totalEarnings ?? 0) }}</p>
-                <p class="text-green-500 text-sm mt-2">Lifetime</p>
-            </div>
-            <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <i class="fas fa-rupee-sign text-purple-500 text-xl"></i>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="bg-white rounded-xl p-6 shadow-md mb-8">
-    <h3 class="text-xl font-bold text-gray-800 mb-4">Quick Actions</h3>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{{ route('equipment.register') }}" class="bg-gray-50 p-4 rounded-lg text-center hover:bg-orange-50 transition">
-            <i class="fas fa-plus-circle text-orange-500 text-2xl mb-2"></i>
-            <p class="text-sm font-semibold">Register Equipment</p>
+    <!-- Quick Action Pills -->
+    <div class="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
+        <a href="{{ route('equipment.register') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-plus-circle text-orange-500"></i>
+            <span>Register New Equipment</span>
         </a>
-        <a href="{{ route('equipment.jobs.index') }}" class="bg-gray-50 p-4 rounded-lg text-center hover:bg-orange-50 transition">
-            <i class="fas fa-briefcase text-orange-500 text-2xl mb-2"></i>
-            <p class="text-sm font-semibold">View Jobs</p>
+        <a href="{{ route('equipment.list') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-gear text-blue-500"></i>
+            <span>Manage Machinery Fleet</span>
         </a>
-        <a href="{{ route('equipment.list') }}" class="bg-gray-50 p-4 rounded-lg text-center hover:bg-orange-50 transition">
-            <i class="fas fa-tools text-orange-500 text-2xl mb-2"></i>
-            <p class="text-sm font-semibold">My Equipment</p>
+        <a href="{{ route('equipment.jobs.requests') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-clipboard-list text-emerald-500"></i>
+            <span>Job Booking Requests</span>
         </a>
-        <a href="#" class="bg-gray-50 p-4 rounded-lg text-center hover:bg-orange-50 transition">
-            <i class="fas fa-chart-line text-orange-500 text-2xl mb-2"></i>
-            <p class="text-sm font-semibold">Earnings Report</p>
+        <a href="{{ route('equipment.jobs.earnings') }}" class="kwdc-action-pill whitespace-nowrap">
+            <i class="fas fa-coins text-purple-500"></i>
+            <span>Revenue & Payouts</span>
         </a>
     </div>
-</div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- My Equipment List -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-800">My Equipment</h3>
-            <a href="{{ route('equipment.list') }}" class="text-orange-500 hover:text-orange-600 text-sm">View All →</a>
+    <!-- KPI Metric Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Fleet</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">{{ $myEquipment ?? 0 }}</p>
+                </div>
+                <div class="kwdc-kpi-icon" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-truck-ramp-box"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>Registered Units</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
+            </div>
         </div>
-        <div class="space-y-3">
+
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Active Deployments</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">{{ $activeJobs ?? 0 }}</p>
+                </div>
+                <div class="kwdc-kpi-icon" style="background: #ecfdf5; color: #059669;">
+                    <i class="fas fa-hard-hat"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>On-Site Rentals</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
+            </div>
+        </div>
+
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Completed Jobs</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">{{ $completedJobs ?? 0 }}</p>
+                </div>
+                <div class="kwdc-kpi-icon" style="background: #fffbeb; color: #d97706;">
+                    <i class="fas fa-check-double"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>Finished Rentals</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
+            </div>
+        </div>
+
+        <div class="kwdc-kpi-card">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Rental Earnings</p>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-gray-900">NPR {{ number_format((float) ($totalEarnings ?? 0)) }}</p>
+                </div>
+                <div class="kwdc-kpi-icon" style="background: #fdf2f8; color: #db2777;">
+                    <i class="fas fa-coins"></i>
+                </div>
+            </div>
+            <div class="pt-4 mt-2 border-t border-gray-50 flex items-center justify-between text-xs text-gray-500">
+                <span>Net Machinery Payout</span>
+                <i class="fas fa-arrow-up-right text-gray-300"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fleet Inventory Roster -->
+    <div class="kwdc-surface-card space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-gear text-orange-500"></i>
+                <h2 class="font-bold text-gray-900 text-base">Registered Machinery Fleet</h2>
+            </div>
+            <a href="{{ route('equipment.register') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Register Equipment</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @forelse($equipmentList ?? [] as $item)
-            <div class="border rounded-lg p-3 hover:shadow-md transition">
-                <div class="flex justify-between items-center">
+            <div class="kwdc-feed-item space-y-3">
+                <div class="flex items-start justify-between gap-2">
                     <div>
-                        <p class="font-semibold">{{ $item->name }}</p>
-                        <p class="text-sm text-gray-600">Type: {{ $item->type }}</p>
-                        <p class="text-xs text-gray-500">Model: {{ $item->model ?? 'N/A' }}</p>
+                        <h3 class="font-bold text-gray-900 text-sm">{{ $item->name ?? $item->equipment_name ?? 'Machinery Asset' }}</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ $item->type ?? $item->category ?? 'Logistics Machinery' }} &bull; {{ $item->model ?? 'Standard' }}</p>
                     </div>
-                    <div class="text-right">
-                        <span class="status-badge status-{{ $item->status ?? 'available' }}">
-                            {{ ucfirst($item->status ?? 'Available') }}
-                        </span>
-                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
+                        {{ ($item->status ?? 'available') === 'available' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-blue-50 text-blue-700 border border-blue-200' }}">
+                        {{ ucfirst($item->status ?? 'available') }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100 text-xs text-gray-600">
+                    <span>Daily Rate: <strong>NPR {{ number_format((float) ($item->daily_rate ?? $item->price ?? 0)) }}/day</strong></span>
+                    <span class="text-gray-400">ID #{{ $item->id }}</span>
                 </div>
             </div>
             @empty
-            <div class="text-center py-8">
-                <i class="fas fa-tools text-4xl text-gray-300 mb-2"></i>
-                <p class="text-gray-500">No equipment registered yet</p>
-                <a href="{{ route('equipment.register') }}" class="text-orange-500 text-sm mt-2 inline-block">Register your first equipment →</a>
+            <div class="col-span-3 py-8 text-center text-gray-400 text-sm">
+                <p>No equipment registered yet. Click "Register New Equipment" above to add machinery to your fleet.</p>
             </div>
             @endforelse
-        </div>
-    </div>
-    
-    <!-- Recent Job Requests -->
-    <div class="bg-white rounded-xl shadow-md p-6">
-        <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-bold text-gray-800">Recent Job Requests</h3>
-            <a href="{{ route('equipment.jobs.index') }}" class="text-orange-500 hover:text-orange-600 text-sm">View all</a>
-        </div>
-        <div class="space-y-3">
-            @forelse($jobRequests ?? [] as $job)
-            <div class="border rounded-lg p-3 hover:shadow-md transition">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <p class="font-semibold">Job #{{ $job->id }}</p>
-                        <p class="text-sm text-gray-600">Equipment: {{ $job->equipment->name ?? 'N/A' }}</p>
-                        <p class="text-xs text-gray-500">Client: {{ $job->client->name ?? 'N/A' }}</p>
-                    </div>
-                    <div class="text-right">
-                        <span class="status-badge status-{{ $job->status ?? 'pending' }}">
-                            {{ ucfirst($job->status ?? 'Pending') }}
-                        </span>
-                        @if(($job->status ?? '') == 'pending')
-                        <form action="{{ route('equipment.jobs.accept', $job->id) }}" method="POST" class="mt-2">
-                            @csrf
-                            <button type="submit" class="bg-green-500 text-white px-3 py-1 rounded text-sm hover:bg-green-600">
-                                Accept Job
-                            </button>
-                        </form>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            @empty
-            <div class="text-center py-8">
-                <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
-                <p class="text-gray-500">No job requests at the moment</p>
-            </div>
-            @endforelse
-        </div>
-    </div>
-</div>
-
-<!-- Recent Completed Jobs -->
-<div class="mt-6">
-    <div class="bg-white rounded-xl shadow-md p-6">
-        <h3 class="text-lg font-bold text-gray-800 mb-4">Recently Completed Jobs</h3>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Job ID</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Equipment</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Earnings</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Completed</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse($recentCompletedJobs ?? [] as $job)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3">#{{ $job->id }}</td>
-                        <td class="px-4 py-3">{{ $job->equipment->name ?? 'N/A' }}</td>
-                        <td class="px-4 py-3">{{ $job->client->name ?? 'N/A' }}</td>
-                        <td class="px-4 py-3 text-green-600 font-semibold">रु {{ number_format($job->price ?? 0) }}</td>
-                        <td class="px-4 py-3">{{ isset($job->updated_at) ? $job->updated_at->format('Y-m-d') : 'N/A' }}</td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">No completed jobs yet</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
         </div>
     </div>
 </div>
