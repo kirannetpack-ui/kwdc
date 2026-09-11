@@ -8,55 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{{ asset('css/kwdc-public.css') }}">
     <style>
-        .metrics-bar {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-            padding: 24px 0;
-            margin: -30px auto 40px auto;
-            position: relative;
-            z-index: 10;
-        }
-        @media (max-width: 800px) {
-            .metrics-bar { grid-template-columns: repeat(2, 1fr); margin-top: 20px; }
-        }
-        @media (max-width: 480px) {
-            .metrics-bar { grid-template-columns: 1fr; }
-        }
-        .metric-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 18px;
-            padding: 20px;
-            box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.05);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-        .metric-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        .metric-val {
-            font-size: 22px;
-            font-weight: 800;
-            color: #0f172a;
-            line-height: 1.1;
-        }
-        .metric-lbl {
-            font-size: 11px;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 3px;
-        }
+
         .footer-grid {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr 1fr;
@@ -138,39 +90,6 @@
             <span class="illustration-credit">Commercial Logistics Network</span>
         </section>
 
-        <!-- Live Operations Metrics Bar -->
-        <div class="shell">
-            <div class="metrics-bar">
-                <div class="metric-card">
-                    <div class="metric-icon" style="background:#eff6ff; color:#2563eb;"><i class="fas fa-warehouse"></i></div>
-                    <div>
-                        <div class="metric-val">50+</div>
-                        <div class="metric-lbl">Certified Hubs</div>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon" style="background:#f0fdf4; color:#16a34a;"><i class="fas fa-truck-fast"></i></div>
-                    <div>
-                        <div class="metric-val">99.8%</div>
-                        <div class="metric-lbl">On-Time Transit</div>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon" style="background:#fff7ed; color:#ea580c;"><i class="fas fa-boxes-stacked"></i></div>
-                    <div>
-                        <div class="metric-val">12,000+</div>
-                        <div class="metric-lbl">Tonnes Moved</div>
-                    </div>
-                </div>
-                <div class="metric-card">
-                    <div class="metric-icon" style="background:#faf5ff; color:#9333ea;"><i class="fas fa-shield-halved"></i></div>
-                    <div>
-                        <div class="metric-val">24/7</div>
-                        <div class="metric-lbl">GPS &amp; Security</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <section class="services shell" id="services">
             <div class="section-heading">
