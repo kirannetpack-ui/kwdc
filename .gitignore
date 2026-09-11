@@ -11,6 +11,7 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+*.code-workspace
 .DS_Store
 Thumbs.db
 /storage/framework/cache/data/**/*
@@ -24,10 +25,6 @@ Thumbs.db
 bootstrap/cache/
 /backups/
 /database/backups/
-/archive/**/node_modules/
-/archive/root-junk/cookies.txt
-/archive/root-junk/login.html
-/archive/root-junk/*.bak
 /tools/composer.phar
 
 database/*.sqlite

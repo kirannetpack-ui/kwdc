@@ -54,7 +54,7 @@ class ProfessionalEmailService
             'generated_date' => now()->format('F d, Y H:i')
         ];
         
-        return Pdf::loadView('pdfs.dispatch_summary', $data);
+        return Pdf::loadView('pdf.dispatch_summary', $data);
     }
     
     public function sendPaymentReceipt(User $user, $transaction, $pdf)

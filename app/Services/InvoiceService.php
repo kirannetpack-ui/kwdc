@@ -197,7 +197,7 @@ class InvoiceService
     public function generateAndStorePDF(Invoice $invoice): ?string
     {
         try {
-            $pdf = PDF::loadView('pdfs.invoice', [
+            $pdf = PDF::loadView('pdf.invoice', [
                 'invoice' => $invoice,
                 'company' => $this->getCompanyDetails()
             ]);
@@ -255,7 +255,7 @@ class InvoiceService
     // Download invoice
     public function downloadInvoice(Invoice $invoice)
     {
-        $pdf = PDF::loadView('pdfs.invoice', [
+        $pdf = PDF::loadView('pdf.invoice', [
             'invoice' => $invoice,
             'company' => $this->getCompanyDetails()
         ]);
@@ -267,7 +267,7 @@ class InvoiceService
     public function sendInvoiceEmail(Invoice $invoice)
     {
         try {
-            $pdf = PDF::loadView('pdfs.invoice', [
+            $pdf = PDF::loadView('pdf.invoice', [
                 'invoice' => $invoice,
                 'company' => $this->getCompanyDetails()
             ]);
