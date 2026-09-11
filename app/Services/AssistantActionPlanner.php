@@ -35,7 +35,15 @@ class AssistantActionPlanner
 
     private function planWithAi(string $query, ?string $role): ?array
     {
-        if (App::environment('testing') || !config('services.openai.api_key')) {
+        if (App::environment('testing')) {
+            return null;
+        }
+
+        $hasAiKey = config('services.gemini.api_key') 
+            || config('services.openai.api_key') 
+            || config('services.groq.api_key');
+
+        if (!$hasAiKey) {
             return null;
         }
 
@@ -57,7 +65,7 @@ PROMPT;
         ], JSON_UNESCAPED_SLASHES);
 
         try {
-            $result = $this->aiService->chat($system, $user, 'json', 'openai');
+            $result = $this->aiService->chat($system, $user, 'json');
             return is_array($result) ? $result : null;
         } catch (\Throwable $e) {
             Log::warning('Assistant planner AI failed: ' . $e->getMessage());

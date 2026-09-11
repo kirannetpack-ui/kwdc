@@ -100,45 +100,55 @@ class EnhancedAIService
             return null;
         }
 
-        try {
-            $fullPrompt = "System: $systemPrompt\n\nUser: $userPrompt";
-            if ($format === 'json') {
-                $fullPrompt .= "\n\nReturn your response STRICTLY as a valid JSON object. Do not wrap it in markdown blocks.";
-            }
+        $models = array_unique([
+            config('services.gemini.model', 'gemini-3.5-flash'),
+            'gemini-3.5-flash',
+            'gemini-3.5-flash-lite',
+        ]);
 
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" . $apiKey;
+        foreach ($models as $model) {
+            try {
+                $fullPrompt = "System: $systemPrompt\n\nUser: $userPrompt";
+                if ($format === 'json') {
+                    $fullPrompt .= "\n\nReturn your response STRICTLY as a valid JSON object. Do not wrap it in markdown code blocks.";
+                }
 
-            $response = Http::timeout(10)->post($url, [
-                'contents' => [
-                    [
-                        'parts' => [['text' => $fullPrompt]]
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . urlencode($apiKey);
+
+                $response = Http::withoutVerifying()->timeout(12)->post($url, [
+                    'contents' => [
+                        [
+                            'parts' => [['text' => $fullPrompt]]
+                        ]
                     ]
-                ]
-            ]);
+                ]);
 
-            if ($response->failed()) {
-                Log::error('Gemini error: ' . $response->status());
-                return null;
+                if ($response->failed()) {
+                    Log::warning("Gemini model {$model} returned status {$response->status()}: " . substr($response->body(), 0, 120));
+                    continue;
+                }
+
+                $data = $response->json();
+                $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
+
+                if (!$content) {
+                    continue;
+                }
+
+                if ($format === 'json') {
+                    $content = preg_replace('/```(?:json)?\s*|\s*```/', '', trim($content));
+                    return json_decode($content, true) ?? $content;
+                }
+
+                return trim($content);
+
+            } catch (\Exception $e) {
+                Log::error("Gemini exception on model {$model}: " . $e->getMessage());
+                continue;
             }
-
-            $data = $response->json();
-            $content = $data['candidates'][0]['content']['parts'][0]['text'] ?? null;
-
-            if (!$content) {
-                return null;
-            }
-
-            if ($format === 'json') {
-                $content = preg_replace('/```json\s*|\s*```/', '', $content);
-                return json_decode($content, true) ?? $content;
-            }
-
-            return $content;
-
-        } catch (\Exception $e) {
-            Log::error('Gemini exception: ' . $e->getMessage());
-            return null;
         }
+
+        return null;
     }
 
     /**

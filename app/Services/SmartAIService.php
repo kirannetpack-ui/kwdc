@@ -891,6 +891,28 @@ class SmartAIService
      */
     public function getGeneralAssistance(string $query, ?int $userId): array
     {
+        if (!app()->environment('testing') && (config('services.gemini.api_key') || config('services.openai.api_key'))) {
+            try {
+                $systemPrompt = <<<SYS
+You are the KTM-WDC Logistics Copilot, an AI assistant for warehouse management, parcel pickups, cargo dispatches, and logistics in Kathmandu Valley and across Nepal.
+Provide friendly, helpful, and concise answers (2-3 sentences max).
+If the user is asking about an operational action (e.g. sending cargo, booking warehouse space, scheduling a pickup), tell them how you can help or guide them to the right form.
+Support both English and Nepali naturally.
+SYS;
+                $aiReply = $this->aiService->chat($systemPrompt, $query, 'text');
+                if ($aiReply && is_string($aiReply) && trim($aiReply) !== '') {
+                    return [
+                        'action' => 'general_help',
+                        'title' => 'KWDC AI Assistant',
+                        'message' => trim($aiReply),
+                        'done' => false,
+                    ];
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Gemini general assistance failed, falling back to static menu: ' . $e->getMessage());
+            }
+        }
+
         return [
             'action' => 'general_help',
             'title' => '🤖 KTM-WDC AI Assistant',
