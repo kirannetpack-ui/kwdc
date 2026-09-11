@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Executive Operations Dashboard')
+@section('title', 'Dashboard')
 @section('header', 'Dashboard')
 
 @push('styles')
@@ -13,13 +13,20 @@
     .kwdc-glass-card {
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 24px;
-        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+        border-radius: 20px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03);
         transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .kwdc-glass-card:hover {
         border-color: #cbd5e1;
-        box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08);
+        box-shadow: 0 8px 25px -4px rgba(15, 23, 42, 0.06);
+    }
+    .kwdc-item-row {
+        transition: all 0.15s ease;
+    }
+    .kwdc-item-row:hover {
+        background-color: #f8fafc;
+        border-color: #cbd5e1;
     }
 </style>
 @endpush
@@ -30,60 +37,59 @@
     $role = $role ?? $user->role ?? 'client';
 
     $roleTitles = [
-        'admin' => 'Central Operations Administrator',
-        'client' => 'Enterprise Logistics Client',
-        'driver' => 'Fleet Logistics Driver',
-        'property_owner' => 'Commercial Warehouse Partner',
-        'equipment_owner' => 'Heavy Machinery Partner',
-        'security_agency' => 'Licensed Security Agency',
+        'admin' => 'Admin',
+        'client' => 'Client',
+        'driver' => 'Driver',
+        'property_owner' => 'Property',
+        'equipment_owner' => 'Equipment',
+        'security_agency' => 'Security',
     ];
     $roleTitle = $roleTitles[$role] ?? ucwords(str_replace('_', ' ', $role));
 
     $quickActions = [];
     if ($role === 'admin') {
         $quickActions = [
-            ['label' => 'Pending Approvals', 'icon' => 'clock', 'route' => route('admin.pending'), 'badge' => $stats['pending_requests'] ?? null, 'primary' => true],
-            ['label' => 'Dispatch Logistics', 'icon' => 'truck-fast', 'route' => route('admin.dispatch'), 'badge' => null, 'primary' => false],
-            ['label' => 'Manage Drivers', 'icon' => 'id-card', 'route' => route('admin.drivers'), 'badge' => null, 'primary' => false],
-            ['label' => 'Warehouse Hubs', 'icon' => 'warehouse', 'route' => route('warehouses.index'), 'badge' => null, 'primary' => false],
+            ['label' => 'Approvals', 'icon' => 'clock', 'route' => route('admin.pending'), 'badge' => $stats['pending_requests'] ?? null, 'primary' => true],
+            ['label' => 'Dispatches', 'icon' => 'truck-fast', 'route' => route('admin.dispatch'), 'badge' => null, 'primary' => false],
+            ['label' => 'Drivers', 'icon' => 'id-card', 'route' => route('admin.drivers'), 'badge' => null, 'primary' => false],
+            ['label' => 'Warehouses', 'icon' => 'warehouse', 'route' => route('warehouses.index'), 'badge' => null, 'primary' => false],
         ];
     } elseif ($role === 'client') {
         $quickActions = [
-            ['label' => 'Request Warehouse Space', 'icon' => 'plus-circle', 'route' => route('my-requests.create'), 'badge' => null, 'primary' => true],
-            ['label' => 'Book Dispatch Order', 'icon' => 'truck-arrow-right', 'route' => route('dispatch.direct-create'), 'badge' => null, 'primary' => false],
-            ['label' => 'Schedule Pickup', 'icon' => 'boxes-packing', 'route' => route('pickup.direct-create'), 'badge' => null, 'primary' => false],
-            ['label' => 'My Invoices', 'icon' => 'receipt', 'route' => route('invoices.client-index'), 'badge' => $stats['pending_invoices'] ?? null, 'primary' => false],
+            ['label' => '+ Space', 'icon' => 'plus-circle', 'route' => route('my-requests.create'), 'badge' => null, 'primary' => true],
+            ['label' => 'Dispatch', 'icon' => 'truck-arrow-right', 'route' => route('dispatch.direct-create'), 'badge' => null, 'primary' => false],
+            ['label' => 'Pickup', 'icon' => 'boxes-packing', 'route' => route('pickup.direct-create'), 'badge' => null, 'primary' => false],
+            ['label' => 'Invoices', 'icon' => 'receipt', 'route' => route('invoices.client-index'), 'badge' => $stats['pending_invoices'] ?? null, 'primary' => false],
         ];
     } elseif ($role === 'driver') {
         $quickActions = [
-            ['label' => 'Available Shipments', 'icon' => 'magnifying-glass-location', 'route' => route('driver.available-jobs'), 'badge' => $stats['available_jobs'] ?? null, 'primary' => true],
-            ['label' => 'My Active Deliveries', 'icon' => 'route', 'route' => route('driver.jobs'), 'badge' => $stats['active_jobs'] ?? null, 'primary' => false],
-            ['label' => 'Pickup Transfers', 'icon' => 'boxes-stacked', 'route' => route('driver.pickups'), 'badge' => null, 'primary' => false],
-            ['label' => 'Earnings Ledger', 'icon' => 'wallet', 'route' => route('driver.earnings'), 'badge' => null, 'primary' => false],
+            ['label' => 'Available', 'icon' => 'magnifying-glass-location', 'route' => route('driver.available-jobs'), 'badge' => $stats['available_jobs'] ?? null, 'primary' => true],
+            ['label' => 'Active', 'icon' => 'route', 'route' => route('driver.jobs'), 'badge' => $stats['active_jobs'] ?? null, 'primary' => false],
+            ['label' => 'Pickups', 'icon' => 'boxes-stacked', 'route' => route('driver.pickups'), 'badge' => null, 'primary' => false],
+            ['label' => 'Earnings', 'icon' => 'wallet', 'route' => route('driver.earnings'), 'badge' => null, 'primary' => false],
         ];
     } elseif ($role === 'equipment_owner') {
         $quickActions = [
-            ['label' => 'Register Equipment', 'icon' => 'plus-circle', 'route' => route('equipment.register'), 'badge' => null, 'primary' => true],
-            ['label' => 'Manage Machinery', 'icon' => 'gear', 'route' => route('equipment.list'), 'badge' => null, 'primary' => false],
-            ['label' => 'Rental Inquiries', 'icon' => 'clipboard-check', 'route' => route('equipment.jobs.requests'), 'badge' => $stats['job_requests'] ?? null, 'primary' => false],
-            ['label' => 'Rental Earnings', 'icon' => 'coins', 'route' => route('equipment.jobs.earnings'), 'badge' => null, 'primary' => false],
+            ['label' => '+ Equipment', 'icon' => 'plus-circle', 'route' => route('equipment.register'), 'badge' => null, 'primary' => true],
+            ['label' => 'Fleet', 'icon' => 'gear', 'route' => route('equipment.list'), 'badge' => null, 'primary' => false],
+            ['label' => 'Requests', 'icon' => 'clipboard-check', 'route' => route('equipment.jobs.requests'), 'badge' => $stats['job_requests'] ?? null, 'primary' => false],
+            ['label' => 'Earnings', 'icon' => 'coins', 'route' => route('equipment.jobs.earnings'), 'badge' => null, 'primary' => false],
         ];
     } elseif ($role === 'property_owner') {
         $quickActions = [
-            ['label' => 'List New Warehouse', 'icon' => 'plus-circle', 'route' => route('warehouses.create'), 'badge' => null, 'primary' => true],
-            ['label' => 'Storage Requests', 'icon' => 'clipboard-list', 'route' => route('property.requests.index'), 'badge' => $stats['pending_requests'] ?? 1, 'primary' => false],
-            ['label' => 'Warehouse Analytics', 'icon' => 'chart-line', 'route' => route('property.analytics'), 'badge' => null, 'primary' => false],
-            ['label' => 'My Properties', 'icon' => 'building', 'route' => route('property.approved'), 'badge' => null, 'primary' => false],
+            ['label' => '+ Warehouse', 'icon' => 'plus-circle', 'route' => route('warehouses.create'), 'badge' => null, 'primary' => true],
+            ['label' => 'Requests', 'icon' => 'clipboard-list', 'route' => route('property.requests.index'), 'badge' => $stats['pending_requests'] ?? 1, 'primary' => false],
+            ['label' => 'Analytics', 'icon' => 'chart-line', 'route' => route('property.analytics'), 'badge' => null, 'primary' => false],
+            ['label' => 'Properties', 'icon' => 'building', 'route' => route('property.approved'), 'badge' => null, 'primary' => false],
         ];
     } elseif ($role === 'security_agency') {
         $quickActions = [
-            ['label' => 'Deploy Guard Personnel', 'icon' => 'user-plus', 'route' => route('security.dashboard'), 'badge' => null, 'primary' => true],
-            ['label' => 'High-Value Cargo', 'icon' => 'box-archive', 'route' => route('security.dashboard'), 'badge' => null, 'primary' => false],
-            ['label' => 'Facility Posts', 'icon' => 'building-shield', 'route' => route('security.dashboard'), 'badge' => null, 'primary' => false],
+            ['label' => '+ Guard', 'icon' => 'user-plus', 'route' => route('security.dashboard'), 'badge' => null, 'primary' => true],
+            ['label' => 'Cargo', 'icon' => 'box-archive', 'route' => route('security.dashboard'), 'badge' => null, 'primary' => false],
+            ['label' => 'Posts', 'icon' => 'building-shield', 'route' => route('security.dashboard'), 'badge' => null, 'primary' => false],
         ];
     }
 
-    // Role-specific rich KPI items with micro-indicators
     $kpiList = [];
     if ($role === 'property_owner') {
         $whTotal = $stats['my_properties'] ?? 2;
@@ -92,40 +98,40 @@
 
         $kpiList = [
             [
-                'label' => 'Registered Properties',
-                'val' => $whTotal . ' Facilities',
-                'sub' => $whApproved . ' of ' . $whTotal . ' Approved & Live',
-                'pill' => '100% Verified',
+                'label' => 'Properties',
+                'val' => $whTotal,
+                'sub' => $whApproved . '/' . $whTotal . ' live',
+                'pill' => 'Active',
                 'pill_type' => 'success',
                 'icon' => 'warehouse',
                 'icon_bg' => 'bg-blue-50 text-blue-600',
                 'meter' => 100,
             ],
             [
-                'label' => 'Space Inquiries',
-                'val' => ($stats['total_requests'] ?? 3) . ' Requests',
-                'sub' => ($stats['pending_requests'] ?? 1) . ' Pending Verification',
-                'pill' => 'Action Required',
+                'label' => 'Inquiries',
+                'val' => $stats['total_requests'] ?? 3,
+                'sub' => ($stats['pending_requests'] ?? 1) . ' pending',
+                'pill' => 'Review',
                 'pill_type' => 'warning',
                 'icon' => 'clipboard-check',
                 'icon_bg' => 'bg-amber-50 text-amber-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Leased Storage',
-                'val' => ($stats['approved_requests'] ?? 2) . ' Leased Hubs',
-                'sub' => '78% Storage Volume Leased',
-                'pill' => '↑ 14% MoM',
+                'label' => 'Occupancy',
+                'val' => '78%',
+                'sub' => ($stats['approved_requests'] ?? 2) . ' leased',
+                'pill' => '↑ 14%',
                 'pill_type' => 'success',
                 'icon' => 'cubes',
                 'icon_bg' => 'bg-purple-50 text-purple-600',
                 'meter' => 78,
             ],
             [
-                'label' => 'Estimated Monthly Yield',
+                'label' => 'Revenue',
                 'val' => 'NPR ' . number_format($revenueVal),
-                'sub' => 'Recurring commercial lease revenue',
-                'pill' => '↑ 8.5% MoM',
+                'sub' => 'Monthly lease',
+                'pill' => '↑ 8.5%',
                 'pill_type' => 'success',
                 'icon' => 'wallet',
                 'icon_bg' => 'bg-emerald-50 text-emerald-600',
@@ -135,40 +141,40 @@
     } elseif ($role === 'admin') {
         $kpiList = [
             [
-                'label' => 'Approved Warehouses',
-                'val' => ($stats['approved_warehouses'] ?? 0) . ' Hubs',
-                'sub' => ($stats['warehouses'] ?? 0) . ' Total in Network',
-                'pill' => 'All Active',
+                'label' => 'Warehouses',
+                'val' => $stats['approved_warehouses'] ?? 0,
+                'sub' => ($stats['warehouses'] ?? 0) . ' total',
+                'pill' => 'Active',
                 'pill_type' => 'success',
                 'icon' => 'warehouse',
                 'icon_bg' => 'bg-blue-50 text-blue-600',
                 'meter' => 100,
             ],
             [
-                'label' => 'Active Dispatches',
-                'val' => (($stats['total_dispatches'] ?? 0) - ($stats['completed_dispatches'] ?? 0)) . ' Transit',
-                'sub' => ($stats['completed_dispatches'] ?? 0) . ' Delivered Safely',
-                'pill' => '99.4% On Time',
+                'label' => 'Dispatches',
+                'val' => (($stats['total_dispatches'] ?? 0) - ($stats['completed_dispatches'] ?? 0)),
+                'sub' => ($stats['completed_dispatches'] ?? 0) . ' delivered',
+                'pill' => 'Transit',
                 'pill_type' => 'success',
                 'icon' => 'truck-fast',
                 'icon_bg' => 'bg-emerald-50 text-emerald-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Review Queue',
-                'val' => (($stats['pending_warehouses'] ?? 0) + ($stats['pending_requests'] ?? 0)) . ' Items',
-                'sub' => 'Awaiting authorization',
-                'pill' => 'Action Needed',
+                'label' => 'Pending Queue',
+                'val' => (($stats['pending_warehouses'] ?? 0) + ($stats['pending_requests'] ?? 0)),
+                'sub' => 'Review queue',
+                'pill' => 'Action',
                 'pill_type' => 'warning',
                 'icon' => 'clock',
                 'icon_bg' => 'bg-amber-50 text-amber-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Logistics Drivers',
-                'val' => ($stats['drivers'] ?? 0) . ' Drivers',
-                'sub' => ($stats['vehicles'] ?? 0) . ' Registered Vehicles',
-                'pill' => 'Fleet Ready',
+                'label' => 'Fleet Drivers',
+                'val' => $stats['drivers'] ?? 0,
+                'sub' => ($stats['vehicles'] ?? 0) . ' vehicles',
+                'pill' => 'Ready',
                 'pill_type' => 'success',
                 'icon' => 'id-card',
                 'icon_bg' => 'bg-purple-50 text-purple-600',
@@ -178,9 +184,9 @@
     } elseif ($role === 'client') {
         $kpiList = [
             [
-                'label' => 'Warehouse Leases',
-                'val' => ($stats['active_requests'] ?? 0) . ' Contracts',
-                'sub' => 'Active storage capacity',
+                'label' => 'Storage',
+                'val' => $stats['active_requests'] ?? 0,
+                'sub' => 'Active leases',
                 'pill' => 'Active',
                 'pill_type' => 'success',
                 'icon' => 'warehouse',
@@ -188,30 +194,30 @@
                 'meter' => null,
             ],
             [
-                'label' => 'Dispatches in Transit',
-                'val' => ($stats['pending_dispatches'] ?? 0) . ' Live Orders',
-                'sub' => ($stats['completed_dispatches'] ?? 0) . ' Completed orders',
-                'pill' => 'Live Tracking',
+                'label' => 'Dispatches',
+                'val' => $stats['pending_dispatches'] ?? 0,
+                'sub' => ($stats['completed_dispatches'] ?? 0) . ' delivered',
+                'pill' => 'Transit',
                 'pill_type' => 'success',
                 'icon' => 'truck-moving',
                 'icon_bg' => 'bg-emerald-50 text-emerald-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Pickups Scheduled',
-                'val' => ($stats['pickups'] ?? 0) . ' Transfers',
-                'sub' => 'Scheduled freight collection',
-                'pill' => 'Valley Route',
+                'label' => 'Pickups',
+                'val' => $stats['pickups'] ?? 0,
+                'sub' => 'Scheduled routes',
+                'pill' => 'Active',
                 'pill_type' => 'success',
                 'icon' => 'box-open',
                 'icon_bg' => 'bg-amber-50 text-amber-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Total Logistics Spent',
+                'label' => 'Logistics Spent',
                 'val' => 'NPR ' . number_format((float) ($stats['total_spent'] ?? 0)),
-                'sub' => 'Settled freight & warehousing',
-                'pill' => 'Statements Paid',
+                'sub' => 'Total settled',
+                'pill' => 'Paid',
                 'pill_type' => 'success',
                 'icon' => 'wallet',
                 'icon_bg' => 'bg-purple-50 text-purple-600',
@@ -221,39 +227,39 @@
     } elseif ($role === 'driver') {
         $kpiList = [
             [
-                'label' => 'Active Deliveries',
-                'val' => ($stats['active_jobs'] ?? 0) . ' Active',
-                'sub' => 'In progress right now',
-                'pill' => 'On Route',
+                'label' => 'Active Jobs',
+                'val' => $stats['active_jobs'] ?? 0,
+                'sub' => 'In progress',
+                'pill' => 'Route',
                 'pill_type' => 'warning',
                 'icon' => 'route',
                 'icon_bg' => 'bg-blue-50 text-blue-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Completed Deliveries',
-                'val' => ($stats['completed_jobs'] ?? 0) . ' Trips',
-                'sub' => 'Delivered safely',
-                'pill' => '100% Success',
+                'label' => 'Completed',
+                'val' => $stats['completed_jobs'] ?? 0,
+                'sub' => 'Delivered',
+                'pill' => 'Done',
                 'pill_type' => 'success',
                 'icon' => 'circle-check',
                 'icon_bg' => 'bg-emerald-50 text-emerald-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Total Driver Payout',
+                'label' => 'Earnings',
                 'val' => 'NPR ' . number_format((float) ($stats['total_earnings'] ?? 0)),
-                'sub' => 'Net accumulated revenue',
-                'pill' => 'Verified Payout',
+                'sub' => 'Net payout',
+                'pill' => 'Verified',
                 'pill_type' => 'success',
                 'icon' => 'wallet',
                 'icon_bg' => 'bg-amber-50 text-amber-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Driver Quality Score',
+                'label' => 'Rating',
                 'val' => number_format((float) ($stats['rating'] > 0 ? $stats['rating'] : 5.0), 1) . ' ★',
-                'sub' => 'Top rated valley carrier',
+                'sub' => 'Driver score',
                 'pill' => 'Top Tier',
                 'pill_type' => 'success',
                 'icon' => 'star',
@@ -264,19 +270,19 @@
     } elseif ($role === 'equipment_owner') {
         $kpiList = [
             [
-                'label' => 'Machinery Fleet',
-                'val' => ($stats['my_equipment'] ?? 0) . ' Machines',
-                'sub' => ($stats['available_equipment'] ?? 0) . ' Available for Rent',
-                'pill' => 'Fleet Ready',
+                'label' => 'Fleet',
+                'val' => $stats['my_equipment'] ?? 0,
+                'sub' => ($stats['available_equipment'] ?? 0) . ' ready',
+                'pill' => 'Available',
                 'pill_type' => 'success',
                 'icon' => 'truck-ramp-box',
                 'icon_bg' => 'bg-blue-50 text-blue-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Active Deployments',
-                'val' => ($stats['active_jobs'] ?? 0) . ' On Site',
-                'sub' => 'Under active rental lease',
+                'label' => 'On Site',
+                'val' => $stats['active_jobs'] ?? 0,
+                'sub' => 'Active rental',
                 'pill' => 'Active',
                 'pill_type' => 'warning',
                 'icon' => 'hard-hat',
@@ -284,20 +290,20 @@
                 'meter' => null,
             ],
             [
-                'label' => 'Completed Leases',
-                'val' => ($stats['completed_jobs'] ?? 0) . ' Jobs',
-                'sub' => 'Returned in good condition',
-                'pill' => 'Verified',
+                'label' => 'Completed',
+                'val' => $stats['completed_jobs'] ?? 0,
+                'sub' => 'Returned',
+                'pill' => 'Done',
                 'pill_type' => 'success',
                 'icon' => 'check-double',
                 'icon_bg' => 'bg-amber-50 text-amber-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Rental Earnings',
+                'label' => 'Earnings',
                 'val' => 'NPR ' . number_format((float) ($stats['total_earnings'] ?? 0)),
-                'sub' => 'Net equipment income',
-                'pill' => 'Yield Paid',
+                'sub' => 'Net rental',
+                'pill' => 'Paid',
                 'pill_type' => 'success',
                 'icon' => 'coins',
                 'icon_bg' => 'bg-purple-50 text-purple-600',
@@ -307,9 +313,9 @@
     } elseif ($role === 'security_agency') {
         $kpiList = [
             [
-                'label' => 'Licensed Guards',
-                'val' => ($stats['personnel_count'] ?? 0) . ' Personnel',
-                'sub' => 'Active verified security officers',
+                'label' => 'Guards',
+                'val' => $stats['personnel_count'] ?? 0,
+                'sub' => 'Active officers',
                 'pill' => 'On Duty',
                 'pill_type' => 'success',
                 'icon' => 'user-shield',
@@ -317,19 +323,19 @@
                 'meter' => null,
             ],
             [
-                'label' => 'Monitored Cargo',
-                'val' => ($stats['goods_count'] ?? 0) . ' Units',
-                'sub' => 'High-value bonded inventory',
-                'pill' => 'Secured',
+                'label' => 'Cargo Units',
+                'val' => $stats['goods_count'] ?? 0,
+                'sub' => 'Secured goods',
+                'pill' => 'Protected',
                 'pill_type' => 'success',
                 'icon' => 'shield-check',
                 'icon_bg' => 'bg-emerald-50 text-emerald-600',
                 'meter' => null,
             ],
             [
-                'label' => 'Facility Posts',
-                'val' => ($stats['assignments'] ?? 0) . ' Posts',
-                'sub' => ($stats['active_assignments'] ?? 0) . ' Active perimeter posts',
+                'label' => 'Posts',
+                'val' => $stats['assignments'] ?? 0,
+                'sub' => ($stats['active_assignments'] ?? 0) . ' active',
                 'pill' => 'Guarded',
                 'pill_type' => 'success',
                 'icon' => 'building-shield',
@@ -337,10 +343,10 @@
                 'meter' => null,
             ],
             [
-                'label' => 'Incident Reports',
-                'val' => ($stats['incidents_reported'] ?? 0) . ' Incidents',
-                'sub' => 'Zero breach telemetry',
-                'pill' => 'All Clear',
+                'label' => 'Incidents',
+                'val' => $stats['incidents_reported'] ?? 0,
+                'sub' => 'Zero breach',
+                'pill' => 'Clear',
                 'pill_type' => 'success',
                 'icon' => 'triangle-exclamation',
                 'icon_bg' => 'bg-purple-50 text-purple-600',
@@ -351,45 +357,44 @@
 @endphp
 
 <div class="max-w-7xl mx-auto space-y-6">
-    <!-- Executive Welcome Hero Card -->
-    <div class="kwdc-glass-card p-6 sm:p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <!-- Clean Minimalist Hero Banner -->
+    <div class="kwdc-glass-card p-6 sm:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
         <div>
             <div class="flex items-center gap-2 mb-2">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
-                    <i class="fas fa-building-circle-check"></i> {{ $roleTitle }}
+                    <i class="fas fa-layer-group"></i> {{ $roleTitle }}
                 </span>
-                <span class="text-xs text-slate-400 font-medium">KTM-WDC Logistics System</span>
             </div>
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
                 Namaste, {{ $user->name }}
             </h1>
-            <p class="text-sm text-slate-500 mt-1 max-w-xl">
-                Real-time operational command center. Monitor shipments, facility occupancies, workflows, and automated dispatches across the Kathmandu Valley network.
+            <p class="text-xs text-slate-500 mt-1">
+                Logistics operations & live metrics.
             </p>
         </div>
 
-        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div class="inline-flex items-center gap-2 px-3.5 py-2 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live & Operational</span>
+                <span>Live</span>
             </div>
-            <div class="px-4 py-2 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600">
-                <i class="far fa-calendar-alt text-slate-400 mr-1.5"></i> {{ now()->format('D, M j, Y') }}
+            <div class="px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600">
+                <i class="far fa-calendar-alt text-slate-400 mr-1.5"></i> {{ now()->format('M j, Y') }}
             </div>
         </div>
     </div>
 
     <!-- Quick Action Bar -->
     @if(!empty($quickActions))
-    <div class="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
+    <div class="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
         @foreach($quickActions as $action)
             @if($action['primary'])
-            <a href="{{ $action['route'] }}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-bold text-xs shadow-md shadow-orange-500/25 transition whitespace-nowrap">
+            <a href="{{ $action['route'] }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition whitespace-nowrap">
                 <i class="fas fa-{{ $action['icon'] }}"></i>
                 <span>{{ $action['label'] }}</span>
             </a>
             @else
-            <a href="{{ $action['route'] }}" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-slate-900 font-bold text-xs shadow-sm transition whitespace-nowrap">
+            <a href="{{ $action['route'] }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200/80 text-slate-700 hover:text-slate-900 font-bold text-xs shadow-sm transition whitespace-nowrap">
                 <i class="fas fa-{{ $action['icon'] }} text-orange-500"></i>
                 <span>{{ $action['label'] }}</span>
                 @if(!empty($action['badge']) && $action['badge'] > 0)
@@ -404,15 +409,15 @@
     @endif
 
     <!-- 4 High-Impact KPI Metric Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         @foreach($kpiList as $kpi)
-        <div class="kwdc-glass-card p-6 flex flex-col justify-between space-y-4">
-            <div class="flex items-start justify-between gap-4">
+        <div class="kwdc-glass-card p-5 sm:p-6 flex flex-col justify-between space-y-4">
+            <div class="flex items-start justify-between gap-3">
                 <div class="space-y-1">
                     <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{{ $kpi['label'] }}</p>
                     <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 kwdc-kpi-val">{{ $kpi['val'] }}</p>
                 </div>
-                <div class="w-11 h-11 rounded-2xl flex items-center justify-center text-lg flex-shrink-0 {{ $kpi['icon_bg'] }} shadow-sm">
+                <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0 {{ $kpi['icon_bg'] }}">
                     <i class="fas fa-{{ $kpi['icon'] }}"></i>
                 </div>
             </div>
@@ -420,7 +425,7 @@
             @if(isset($kpi['meter']) && $kpi['meter'] !== null)
             <div class="space-y-1.5 pt-1">
                 <div class="w-full h-1.5 rounded-full bg-slate-100 overflow-hidden">
-                    <div class="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500" style="width: {{ $kpi['meter'] }}%;"></div>
+                    <div class="h-full rounded-full bg-orange-500" style="width: {{ $kpi['meter'] }}%;"></div>
                 </div>
                 <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium">
                     <span>{{ $kpi['sub'] }}</span>
@@ -428,7 +433,7 @@
                 </div>
             </div>
             @else
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+            <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
                 <span class="text-slate-500 font-medium truncate">{{ $kpi['sub'] }}</span>
                 @if($kpi['pill_type'] === 'success')
                 <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -446,104 +451,365 @@
     </div>
 
     <!-- Analytics Visualizers Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <!-- Main Line/Bar Chart -->
-        <div class="lg:col-span-2 kwdc-glass-card p-6 sm:p-7 space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="lg:col-span-2 kwdc-glass-card p-5 sm:p-6 space-y-4">
+            <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">Revenue & Operational Velocity</h2>
-                    <p class="text-xs text-slate-400">Weekly throughput and financial telemetry</p>
+                    <h2 class="text-sm font-bold text-slate-900">Revenue</h2>
+                    <p class="text-[11px] text-slate-400">Last 7 days</p>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">7 Days</span>
-                    <span class="px-2.5 py-1 rounded-lg hover:bg-slate-50 text-slate-400 text-xs font-medium cursor-pointer">30 Days</span>
-                    <span class="px-2.5 py-1 rounded-lg hover:bg-slate-50 text-slate-400 text-xs font-medium cursor-pointer">Quarter</span>
+                <div class="flex items-center gap-1">
+                    <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">7D</span>
+                    <span class="px-2 py-1 rounded-lg hover:bg-slate-50 text-slate-400 text-xs font-medium cursor-pointer">30D</span>
+                    <span class="px-2 py-1 rounded-lg hover:bg-slate-50 text-slate-400 text-xs font-medium cursor-pointer">90D</span>
                 </div>
             </div>
-            <div class="h-64 sm:h-72 w-full relative">
+            <div class="h-60 sm:h-64 w-full relative">
                 <canvas id="dashboardPrimaryChart"></canvas>
             </div>
         </div>
 
         <!-- Workload Distribution Doughnut Chart -->
-        <div class="kwdc-glass-card p-6 sm:p-7 space-y-4">
+        <div class="kwdc-glass-card p-5 sm:p-6 space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900">Capacity & Workload</h2>
-                    <p class="text-xs text-slate-400">Facility volume allocation</p>
+                    <h2 class="text-sm font-bold text-slate-900">Occupancy</h2>
+                    <p class="text-[11px] text-slate-400">Capacity breakdown</p>
                 </div>
-                <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400">
-                    <i class="fas fa-chart-pie"></i>
+                <div class="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
+                    <i class="fas fa-chart-pie text-xs"></i>
                 </div>
             </div>
-            <div class="h-64 sm:h-72 w-full relative flex items-center justify-center">
+            <div class="h-60 sm:h-64 w-full relative flex items-center justify-center">
                 <canvas id="dashboardActivityChart"></canvas>
             </div>
         </div>
     </div>
 
-    <!-- Role Specific Feed -->
+    <!-- Role-Specific Feeds -->
     @if($role === 'property_owner')
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- My Warehouse Facilities -->
-        <div class="kwdc-glass-card p-6 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Warehouses -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
-                    <i class="fas fa-warehouse text-orange-500"></i>
-                    <h2 class="font-bold text-slate-900 text-base">My Warehouse Facilities</h2>
+                    <i class="fas fa-warehouse text-orange-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Warehouses</h2>
                 </div>
-                <a href="{{ route('warehouses.create') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Add Property</a>
+                <a href="{{ route('warehouses.create') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Add</a>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-2">
                 @forelse($myWarehouses ?? [] as $wh)
-                <div class="p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:bg-white hover:border-slate-200 transition cursor-pointer space-y-2.5" data-record-url="{{ route('warehouses.show', $wh->id) }}">
-                    <div class="flex items-start justify-between gap-3">
-                        <div>
-                            <h3 class="font-bold text-slate-900 text-sm">{{ $wh->name }}</h3>
-                            <p class="text-xs text-slate-500 mt-0.5"><i class="fas fa-location-dot text-orange-500 mr-1"></i>{{ $wh->address ?? $wh->city ?? 'Kathmandu Hub' }}</p>
-                        </div>
-                        <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('warehouses.show', $wh->id) }}">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-xs">{{ $wh->name }}</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">
+                            <i class="fas fa-location-dot text-orange-500 mr-1"></i>{{ $wh->city ?? 'Kathmandu' }} &bull; {{ number_format((float) ($wh->capacity ?? 0)) }} m³
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
                             {{ $wh->status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
                             {{ ucfirst($wh->status) }}
                         </span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs text-slate-600 pt-2 border-t border-slate-100">
-                        <span>Capacity: <strong>{{ number_format((float) ($wh->capacity ?? 0)) }} m³</strong></span>
-                        <span class="text-orange-600 font-bold">Inspect Details &rarr;</span>
+                        <span class="text-xs text-orange-600 font-bold">&rarr;</span>
                     </div>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-6 text-center">No warehouses listed yet. Register your facility above.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">No warehouses listed.</p>
                 @endforelse
             </div>
         </div>
 
-        <!-- Inbound Space Requests -->
-        <div class="kwdc-glass-card p-6 space-y-4">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <!-- Inbound Requests -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
-                    <i class="fas fa-clipboard-list text-blue-500"></i>
-                    <h2 class="font-bold text-slate-900 text-base">Inbound Tenant Requests</h2>
+                    <i class="fas fa-clipboard-list text-blue-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Requests</h2>
                 </div>
-                <a href="{{ route('property.requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All Requests</a>
+                <a href="{{ route('property.requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
             </div>
-            <div class="space-y-3">
+            <div class="space-y-2">
                 @forelse($recentRequests ?? [] as $req)
-                <div class="p-4 rounded-2xl bg-slate-50/70 border border-slate-100 hover:bg-white hover:border-slate-200 transition cursor-pointer flex items-center justify-between gap-4" data-record-url="{{ route('warehouse-requests.show', $req->id) }}">
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('warehouse-requests.show', $req->id) }}">
                     <div>
-                        <p class="font-bold text-slate-900 text-sm">Lease Request #{{ $req->id }}</p>
-                        <p class="text-xs text-slate-500 mt-0.5">{{ optional($req->client)->name ?? 'Enterprise Client' }} &bull; {{ $req->space_sqft ?? 0 }} sq.ft</p>
+                        <p class="font-bold text-slate-900 text-xs">Request #{{ $req->id }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ optional($req->client)->name ?? 'Client' }} &bull; {{ $req->space_sqft ?? 0 }} sq.ft</p>
                     </div>
                     <div class="text-right">
-                        <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider
+                        <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
                             {{ ($req->status ?? 'pending') === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
                             {{ ucfirst($req->status ?? 'pending') }}
                         </span>
-                        <p class="text-xs text-slate-400 mt-1">{{ optional($req->created_at)->diffForHumans() }}</p>
                     </div>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-6 text-center">No pending space requests right now.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">No requests.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @elseif($role === 'admin')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Warehouses -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-warehouse text-orange-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Warehouses</h2>
+                </div>
+                <a href="{{ route('warehouses.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($recentWarehouses ?? [] as $wh)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('warehouses.show', $wh->id) }}">
+                    <div>
+                        <h3 class="font-bold text-slate-900 text-xs">{{ $wh->name }}</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ $wh->city ?? 'Kathmandu' }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                        {{ $wh->status === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+                        {{ ucfirst($wh->status) }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No warehouses.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Dispatches -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-truck text-emerald-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Dispatches</h2>
+                </div>
+                <a href="{{ route('dispatch.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($recentDispatches ?? [] as $disp)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('dispatch.show', $disp->id) }}">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">#{{ $disp->tracking_id ?? $disp->id }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ Str::limit($disp->destination_address ?? 'Kathmandu', 25) }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                        {{ ucfirst(str_replace('_', ' ', $disp->status ?? 'pending')) }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No dispatches.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @elseif($role === 'client')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Shipments -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-truck text-orange-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Shipments</h2>
+                </div>
+                <a href="{{ route('dispatch.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($recentDispatches ?? [] as $disp)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('dispatch.show', $disp->id) }}">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">#{{ $disp->tracking_id ?? $disp->id }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ Str::limit($disp->destination_address ?? 'Kathmandu', 28) }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                        {{ ucfirst(str_replace('_', ' ', $disp->status ?? 'pending')) }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No shipments.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Storage Space -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-warehouse text-blue-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Storage</h2>
+                </div>
+                <a href="{{ route('my-requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($recentRequests ?? [] as $req)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('warehouse-requests.show', $req->id) }}">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">{{ optional($req->warehouse)->name ?? ('Request #' . $req->id) }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ $req->space_sqft ?? 0 }} sq.ft</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                        {{ ($req->status ?? 'pending') === 'approved' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
+                        {{ ucfirst($req->status ?? 'pending') }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No storage requests.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @elseif($role === 'driver')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- Assigned Jobs -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-route text-orange-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Assigned Jobs</h2>
+                </div>
+                <a href="{{ route('driver.jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($myJobs ?? [] as $job)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('dispatch.show', $job->id) }}">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">#{{ $job->tracking_id ?? $job->id }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ Str::limit($job->destination_address ?? 'Kathmandu', 28) }}</p>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600">NPR {{ number_format((float) ($job->driver_earning ?? 0)) }}</span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No active jobs.</p>
+                @endforelse
+            </div>
+        </div>
+
+        <!-- Available Pool -->
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-hand-holding-dollar text-emerald-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Marketplace</h2>
+                </div>
+                <a href="{{ route('driver.available-jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">Browse</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($availableJobs ?? [] as $job)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3" data-record-url="{{ route('dispatch.show', $job->id) }}">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">Trip #{{ $job->id }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ Str::limit($job->pickup_address ?? 'Kathmandu', 25) }}</p>
+                    </div>
+                    <span class="text-xs font-bold text-emerald-600">NPR {{ number_format((float) ($job->driver_earning ?? $job->base_price ?? 0)) }}</span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No jobs available.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @elseif($role === 'equipment_owner')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-gear text-orange-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Fleet</h2>
+                </div>
+                <a href="{{ route('equipment.register') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Add</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($myEquipment ?? [] as $eq)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">{{ $eq->name }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ $eq->type ?? 'Machinery' }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider
+                        {{ $eq->status === 'available' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-blue-50 text-blue-700 border border-blue-200' }}">
+                        {{ ucfirst($eq->status) }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No equipment.</p>
+                @endforelse
+            </div>
+        </div>
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-clipboard-check text-blue-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Requests</h2>
+                </div>
+                <a href="{{ route('equipment.jobs.requests') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($recentRequests ?? [] as $req)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">Request #{{ $req->id }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ optional($req->user)->name ?? 'Client' }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700 border border-amber-200">
+                        {{ ucfirst($req->status ?? 'pending') }}
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No requests.</p>
+                @endforelse
+            </div>
+        </div>
+    </div>
+    @elseif($role === 'security_agency')
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-user-shield text-blue-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Guards</h2>
+                </div>
+                <a href="{{ route('security.dashboard') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">Manage</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($securityPersonnel ?? [] as $guard)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">{{ $guard->name }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ $guard->badge_number ?? 'Officer' }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        On Duty
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No personnel.</p>
+                @endforelse
+            </div>
+        </div>
+        <div class="kwdc-glass-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <i class="fas fa-shield-halved text-emerald-500 text-sm"></i>
+                    <h2 class="font-bold text-slate-900 text-sm">Cargo</h2>
+                </div>
+                <a href="{{ route('security.dashboard') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+            </div>
+            <div class="space-y-2">
+                @forelse($guardGoods ?? [] as $item)
+                <div class="p-3 rounded-xl bg-slate-50/70 border border-slate-100 kwdc-item-row cursor-pointer flex items-center justify-between gap-3">
+                    <div>
+                        <p class="font-bold text-slate-900 text-xs">{{ $item->item_name ?? 'Secured Goods' }}</p>
+                        <p class="text-[11px] text-slate-500 mt-0.5">{{ $item->facility ?? 'Facility 1' }}</p>
+                    </div>
+                    <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
+                        Secured
+                    </span>
+                </div>
+                @empty
+                <p class="text-xs text-slate-400 py-4 text-center">No cargo items.</p>
                 @endforelse
             </div>
         </div>
@@ -556,16 +822,15 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const isDriverEarnings = @json($role === 'driver');
     const primaryLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const primaryValues = [18000, 24000, 31000, 28000, 39000, 48000, 42000];
 
-    // Primary Chart (Smooth Line with Gradient)
+    // Primary Chart (Smooth Line with Subtle Gradient)
     const primaryCanvas = document.getElementById('dashboardPrimaryChart');
     if (primaryCanvas) {
         const ctx = primaryCanvas.getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 240);
-        gradient.addColorStop(0, 'rgba(249, 115, 22, 0.22)');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+        gradient.addColorStop(0, 'rgba(249, 115, 22, 0.20)');
         gradient.addColorStop(1, 'rgba(249, 115, 22, 0.00)');
 
         new Chart(primaryCanvas, {
@@ -573,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function () {
             data: {
                 labels: primaryLabels,
                 datasets: [{
-                    label: 'Revenue (NPR)',
+                    label: 'Revenue',
                     data: primaryValues,
                     backgroundColor: gradient,
                     borderColor: '#f97316',
@@ -581,9 +846,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     pointBackgroundColor: '#ffffff',
                     pointBorderColor: '#f97316',
                     pointBorderWidth: 2,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    tension: 0.36,
+                    pointRadius: 3.5,
+                    pointHoverRadius: 5.5,
+                    tension: 0.35,
                     fill: true,
                 }]
             },
@@ -593,10 +858,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.92)',
-                        padding: 12,
-                        cornerRadius: 12,
-                        titleFont: { weight: 'bold', size: 12 },
+                        backgroundColor: 'rgba(15, 23, 42, 0.90)',
+                        padding: 10,
+                        cornerRadius: 10,
+                        titleFont: { weight: 'bold', size: 11 },
                         callbacks: {
                             label: function(context) {
                                 return ' NPR ' + Number(context.parsed.y).toLocaleString();
@@ -611,7 +876,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     },
                     y: {
                         beginAtZero: true,
-                        grid: { color: '#f1f5f9' },
+                        grid: { color: '#f8fafc' },
                         ticks: { color: '#94a3b8', font: { size: 11 } }
                     }
                 }
@@ -625,26 +890,26 @@ document.addEventListener('DOMContentLoaded', function () {
         new Chart(activityCanvas, {
             type: 'doughnut',
             data: {
-                labels: ['Leased Space (78%)', 'Available Space (22%)'],
+                labels: ['Leased (78%)', 'Free (22%)'],
                 datasets: [{
                     data: [78, 22],
                     backgroundColor: ['#f97316', '#e2e8f0'],
-                    borderWidth: 3,
+                    borderWidth: 2,
                     borderColor: '#ffffff',
-                    hoverOffset: 4
+                    hoverOffset: 3
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '76%',
+                cutout: '74%',
                 plugins: {
                     legend: {
                         position: 'bottom',
                         labels: {
                             usePointStyle: true,
-                            boxWidth: 8,
-                            padding: 16,
+                            boxWidth: 6,
+                            padding: 14,
                             font: { size: 11, weight: '600' },
                             color: '#64748b'
                         }
