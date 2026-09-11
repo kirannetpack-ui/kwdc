@@ -276,14 +276,20 @@
                         <!-- DESCRIPTION SECTION -->
                         <!-- ============================================================ -->
                         <div class="bg-light p-3 rounded mb-4">
-                            <h6 class="border-bottom pb-2 mb-3 fw-bold">
-                                <i class="fas fa-file-alt text-warning me-2"></i>Description
-                            </h6>
+                            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                                <h6 class="mb-0 fw-bold">
+                                    <i class="fas fa-file-alt text-warning me-2"></i>Description & Highlights
+                                </h6>
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAiWarehouseCopy" onclick="generateAiWarehouseCopy()">
+                                    <i class="fas fa-wand-magic-sparkles me-1"></i> AI Generate Description
+                                </button>
+                            </div>
                             
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Description</label>
-                                <textarea name="description" class="form-control" 
-                                          rows="4" placeholder="Describe the warehouse, including any special features...">{{ old('description') }}</textarea>
+                                <textarea name="description" id="warehouse_description" class="form-control" 
+                                          rows="6" placeholder="Describe the warehouse, including any special features...">{{ old('description') }}</textarea>
+                                <small class="text-muted">Tip: Click 'AI Generate Description' to automatically compose a commercial real estate listing from your location and specs.</small>
                             </div>
                         </div>
 
@@ -536,5 +542,63 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+async function generateAiWarehouseCopy() {
+    const name = document.querySelector('input[name="name"]')?.value || 'Kathmandu Logistics Hub';
+    const city = document.querySelector('input[name="city"]')?.value || 'Kathmandu';
+    const address = document.querySelector('input[name="address"]')?.value || city;
+    const sqft = document.querySelector('input[name="area_sqft"]')?.value || 5000;
+    const price = document.querySelector('input[name="price"]')?.value || 35;
+
+    const btn = document.getElementById('btnAiWarehouseCopy');
+    const descArea = document.getElementById('warehouse_description') || document.querySelector('textarea[name="description"]');
+    
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Drafting...';
+    }
+
+    try {
+        const response = await fetch('/ai/warehouse-copy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                location: address ? `${address}, ${city}` : city,
+                total_sqft: parseFloat(sqft) || 5000,
+                price_per_sqft: parseFloat(price) || 35
+            })
+        });
+
+        const res = await response.json();
+        if (res.success && res.copy) {
+            let fullText = `${res.copy.title}\n\n${res.copy.description}\n\nKey Facility Highlights:\n`;
+            if (Array.isArray(res.copy.highlights)) {
+                fullText += res.copy.highlights.map(h => `• ${h}`).join('\n');
+            }
+            if (res.copy.ideal_for) {
+                fullText += `\n\nIdeal For: ${res.copy.ideal_for}`;
+            }
+            if (descArea) {
+                descArea.value = fullText;
+                descArea.focus();
+            }
+        } else {
+            alert('Unable to generate copy right now.');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to generate copy.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-1"></i> AI Generate Description';
+        }
+    }
+}
 </script>
 @endpush

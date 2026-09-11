@@ -200,6 +200,62 @@
 
             <!-- Sidebar - 1 column -->
             <div class="space-y-6">
+                <!-- AI Packaging & Vehicle Advisor -->
+                <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl shadow-md p-5 text-white border border-indigo-500/25">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-sm">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </span>
+                            <div>
+                                <h4 class="text-sm font-bold text-white leading-tight">AI Packaging & Vehicle</h4>
+                                <p class="text-[11px] text-indigo-200/70">Kathmandu Quick Pickup Engine</p>
+                            </div>
+                        </div>
+                        <button type="button" id="btnAiPickupAdvisor" onclick="runAiPickupAdvisor()" class="text-xs px-2.5 py-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold transition flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-bolt text-[10px]"></i> Advise
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-[11px] text-indigo-200/80 mb-1 font-medium">Describe items to collect:</label>
+                        <input type="text" id="aiPickupCargoDesc" class="w-full bg-white/10 border border-white/20 rounded-md px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="e.g. 3 boxes of electronics, 25kg, fragile">
+                    </div>
+
+                    <div id="aiPickupLoading" class="hidden text-center py-4 text-xs text-indigo-200">
+                        <div class="spinner-border spinner-border-sm text-orange-400 mb-1" role="status"></div>
+                        <p>Analyzing courier vehicle & packaging guidelines...</p>
+                    </div>
+
+                    <div id="aiPickupOutput" class="hidden space-y-2.5 text-xs">
+                        <div class="bg-white/10 rounded-lg p-3 border border-white/10">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Suggested Vehicle:</span>
+                                <span id="aiPickupVehicle" class="font-bold text-amber-300"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Estimated ETA:</span>
+                                <span id="aiPickupEta" class="font-semibold text-white"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-300 font-medium">Estimated Rate:</span>
+                                <span id="aiPickupPrice" class="font-extrabold text-emerald-400"></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 rounded-lg p-2.5 border border-white/5 text-[11px] text-slate-200">
+                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-box-open mr-1"></i>Packaging Protocol:</p>
+                            <p id="aiPickupPackaging" class="text-slate-300 leading-relaxed mb-2"></p>
+                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-hand-holding mr-1"></i>Handling Precautions:</p>
+                            <p id="aiPickupHandling" class="text-slate-300 leading-relaxed"></p>
+                        </div>
+
+                        <button type="button" onclick="applyAiPickupAdvice()" class="w-full py-1.5 px-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fas fa-check-circle"></i> Apply to Pickup Form
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Drivers Section -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -828,6 +884,87 @@ document.getElementById('pickupForm').addEventListener('submit', async function(
         console.error('Error:', error);
     }
 });
+
+let currentAiPickupAdvice = null;
+
+async function runAiPickupAdvisor() {
+    const pickup = document.getElementById('pickup_address')?.value?.trim() || '';
+    const cargoDesc = document.getElementById('aiPickupCargoDesc')?.value?.trim() || '';
+
+    const loading = document.getElementById('aiPickupLoading');
+    const output = document.getElementById('aiPickupOutput');
+    const btn = document.getElementById('btnAiPickupAdvisor');
+
+    if (!pickup && !cargoDesc) {
+        showToast('Please provide pickup address or describe cargo items.', 'info');
+        document.getElementById('aiPickupCargoDesc')?.focus();
+        return;
+    }
+
+    loading.classList.remove('hidden');
+    output.classList.add('hidden');
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/ai/pickup-advisor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                pickup_address: pickup,
+                cargo_description: cargoDesc || 'Standard cargo packages',
+                fragile: cargoDesc.toLowerCase().includes('fragile') || cargoDesc.toLowerCase().includes('glass'),
+                urgency: 'normal'
+            })
+        });
+
+        const res = await response.json();
+        if (res.success && res.advice) {
+            currentAiPickupAdvice = res.advice;
+            document.getElementById('aiPickupVehicle').textContent = res.advice.suggested_vehicle || 'Pickup Truck';
+            document.getElementById('aiPickupEta').textContent = (res.advice.estimated_minutes || 45) + ' mins';
+            document.getElementById('aiPickupPrice').textContent = 'रू ' + Number(res.advice.estimated_price_npr || 0).toLocaleString();
+            document.getElementById('aiPickupPackaging').textContent = res.advice.packaging_advice || 'Standard boxed packaging.';
+            document.getElementById('aiPickupHandling').textContent = res.advice.handling_notes || 'Handle with care.';
+
+            output.classList.remove('hidden');
+            showToast('AI pickup recommendations generated!', 'success');
+        } else {
+            showToast('AI advisor unavailable right now.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Failed to consult AI pickup advisor.', 'error');
+    } finally {
+        loading.classList.add('hidden');
+        btn.disabled = false;
+    }
+}
+
+function applyAiPickupAdvice() {
+    if (!currentAiPickupAdvice) return;
+
+    // Apply notes to first stop if available
+    const firstNotes = document.querySelector('textarea[name^="delivery_stops"]');
+    if (firstNotes && currentAiPickupAdvice.packaging_advice) {
+        firstNotes.value = `[AI Advice: ${currentAiPickupAdvice.suggested_vehicle}] ${currentAiPickupAdvice.packaging_advice} | ${currentAiPickupAdvice.handling_notes}`;
+    }
+
+    // Pre-fill price if 0
+    if (currentAiPickupAdvice.estimated_price_npr) {
+        const priceEl = document.getElementById('total_price');
+        const priceDisplay = document.getElementById('total_price_display');
+        if (priceEl && (!priceEl.value || priceEl.value == '0')) {
+            priceEl.value = currentAiPickupAdvice.estimated_price_npr;
+            if (priceDisplay) priceDisplay.textContent = 'रू ' + Number(currentAiPickupAdvice.estimated_price_npr).toLocaleString();
+        }
+    }
+
+    showToast('AI packaging guidelines added to notes & fare pre-filled!', 'success');
+}
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');

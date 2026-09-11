@@ -236,6 +236,61 @@
 
             <!-- Sidebar - 1 column -->
             <div class="space-y-6">
+                <!-- AI Route & Cargo Advisor -->
+                <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl shadow-md p-5 text-white border border-indigo-500/25">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-sm">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </span>
+                            <div>
+                                <h4 class="text-sm font-bold text-white leading-tight">AI Route Advisor</h4>
+                                <p class="text-[11px] text-indigo-200/70">Nepal Highway & Rates Engine</p>
+                            </div>
+                        </div>
+                        <button type="button" id="btnAiDispatchAdvisor" onclick="runAiDispatchAdvisor()" class="text-xs px-2.5 py-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold transition flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-bolt text-[10px]"></i> Advise
+                        </button>
+                    </div>
+
+                    <div id="aiDispatchLoading" class="hidden text-center py-4 text-xs text-indigo-200">
+                        <div class="spinner-border spinner-border-sm text-orange-400 mb-1" role="status"></div>
+                        <p>Analyzing Nepal terrain, route & fair rates...</p>
+                    </div>
+
+                    <div id="aiDispatchOutput" class="hidden space-y-2.5 text-xs">
+                        <div class="bg-white/10 rounded-lg p-3 border border-white/10">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Suggested Vehicle:</span>
+                                <span id="aiSuggestedVehicle" class="font-bold text-amber-300"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Estimated Transit:</span>
+                                <span id="aiEstimatedTransit" class="font-semibold text-white"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Fair Rate Est:</span>
+                                <span id="aiSuggestedPrice" class="font-extrabold text-emerald-400"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-300 font-medium">Est. Distance:</span>
+                                <span id="aiSuggestedDistance" class="font-semibold text-white"></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 rounded-lg p-2.5 border border-white/5 text-[11px] text-slate-200">
+                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-route mr-1"></i>Route Advisory:</p>
+                            <p id="aiRouteAdvisory" class="text-slate-300 leading-relaxed mb-2"></p>
+                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-shield-alt mr-1"></i>Precautions:</p>
+                            <p id="aiHandlingPrecautions" class="text-slate-300 leading-relaxed"></p>
+                        </div>
+
+                        <button type="button" onclick="applyAiDispatchAdvice()" class="w-full py-1.5 px-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fas fa-check-circle"></i> Apply AI Recommendations
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Vehicle Type (NEW) -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <h3 class="text-lg font-bold mb-4 flex items-center">
@@ -882,6 +937,112 @@ document.getElementById('dispatchForm').addEventListener('submit', async functio
         console.error('Error:', error);
     }
 });
+
+let currentAiDispatchAdvice = null;
+
+async function runAiDispatchAdvisor() {
+    const pickup = document.getElementById('pickup_address')?.value?.trim() || '';
+    const firstStop = document.querySelector('.stop-address')?.value?.trim() || '';
+    const cargoType = document.getElementById('cargo_type')?.value || '';
+    const weight = document.getElementById('weight_kg')?.value || '';
+    const notes = document.getElementById('special_instructions')?.value || '';
+
+    const loading = document.getElementById('aiDispatchLoading');
+    const output = document.getElementById('aiDispatchOutput');
+    const btn = document.getElementById('btnAiDispatchAdvisor');
+
+    if (!pickup && !firstStop) {
+        showToast('Please enter pickup or delivery address first.', 'info');
+        document.getElementById('pickup_address')?.focus();
+        return;
+    }
+
+    loading.classList.remove('hidden');
+    output.classList.add('hidden');
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/ai/dispatch-advisor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                pickup_address: pickup,
+                delivery_address: firstStop,
+                cargo_type: cargoType,
+                weight_kg: weight ? parseFloat(weight) : null,
+                urgency: 'medium',
+                special_instructions: notes
+            })
+        });
+
+        const res = await response.json();
+        if (res.success && res.advice) {
+            currentAiDispatchAdvice = res.advice;
+            document.getElementById('aiSuggestedVehicle').textContent = res.advice.suggested_vehicle || 'Standard';
+            document.getElementById('aiEstimatedTransit').textContent = res.advice.estimated_hours || 'N/A';
+            document.getElementById('aiSuggestedPrice').textContent = 'रू ' + Number(res.advice.suggested_price_npr || 0).toLocaleString();
+            document.getElementById('aiSuggestedDistance').textContent = (res.advice.estimated_distance_km || 0) + ' km';
+            document.getElementById('aiRouteAdvisory').textContent = res.advice.route_advisory || 'Standard transit protocols apply.';
+            document.getElementById('aiHandlingPrecautions').textContent = res.advice.handling_precautions || 'Standard packaging.';
+
+            output.classList.remove('hidden');
+            showToast('AI route analysis complete', 'success');
+        } else {
+            showToast('AI advisor unavailable right now.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Failed to consult AI advisor.', 'error');
+    } finally {
+        loading.classList.add('hidden');
+        btn.disabled = false;
+    }
+}
+
+function applyAiDispatchAdvice() {
+    if (!currentAiDispatchAdvice) return;
+
+    // Apply vehicle type
+    const vType = document.getElementById('vehicle_type');
+    if (vType) {
+        const sv = (currentAiDispatchAdvice.suggested_vehicle || '').toLowerCase();
+        if (sv.includes('heavy') || sv.includes('container') || sv.includes('tata 407')) {
+            vType.value = 'Heavy';
+        } else if (sv.includes('refrigerated') || sv.includes('cold')) {
+            vType.value = 'Refrigerated';
+        } else if (sv.includes('bike') || sv.includes('two') || sv.includes('courier')) {
+            vType.value = 'Two-Wheeler';
+        } else {
+            vType.value = 'Standard';
+        }
+    }
+
+    // Apply distance if not yet calculated
+    if (currentAiDispatchAdvice.estimated_distance_km) {
+        const distEl = document.getElementById('total_distance');
+        const distDisplay = document.getElementById('total_distance_display');
+        if (distEl && (!distEl.value || distEl.value == '0')) {
+            distEl.value = currentAiDispatchAdvice.estimated_distance_km;
+            if (distDisplay) distDisplay.textContent = currentAiDispatchAdvice.estimated_distance_km + ' km';
+        }
+    }
+
+    // Apply price if not yet set
+    if (currentAiDispatchAdvice.suggested_price_npr) {
+        const priceEl = document.getElementById('total_price');
+        const priceDisplay = document.getElementById('total_price_display');
+        if (priceEl && (!priceEl.value || priceEl.value == '0')) {
+            priceEl.value = currentAiDispatchAdvice.suggested_price_npr;
+            if (priceDisplay) priceDisplay.textContent = 'रू ' + Number(currentAiDispatchAdvice.suggested_price_npr).toLocaleString();
+        }
+    }
+
+    showToast('AI recommendations applied to form!', 'success');
+}
 
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');

@@ -417,11 +417,11 @@
 
         <!-- CENTER: QUICK SEARCH / COMMAND PILL -->
         <div class="hidden lg:flex items-center">
-            <a href="{{ route('tracking.index') }}" class="flex items-center gap-2.5 px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200/70 text-slate-500 hover:text-slate-700 rounded-full text-xs transition border border-slate-200/70 w-64 shadow-2xs text-decoration-none">
-                <i class="fas fa-magnifying-glass text-[11px] text-slate-400"></i>
-                <span class="font-medium text-slate-500">Track shipment or hub...</span>
+            <button type="button" onclick="if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" class="flex items-center gap-2.5 px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200/70 text-slate-500 hover:text-slate-700 rounded-full text-xs transition border border-slate-200/70 w-64 shadow-2xs cursor-pointer text-start">
+                <i class="fas fa-wand-magic-sparkles text-[11px] text-amber-500"></i>
+                <span class="font-medium text-slate-600">Ask AI Copilot or search...</span>
                 <kbd class="ml-auto font-mono text-[10px] bg-white border border-slate-200 text-slate-400 px-1.5 py-0.5 rounded font-bold shadow-2xs">Ctrl K</kbd>
-            </a>
+            </button>
         </div>
 
         <!-- RIGHT: CALENDAR, NOTIFICATIONS & USER PROFILE MENU -->

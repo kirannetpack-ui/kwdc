@@ -384,6 +384,66 @@
         </div>
     </div>
 
+    <!-- AI Daily Operational Logistics Brief Widget -->
+    <div id="aiDashboardBriefWidget" class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-5 sm:p-6 border border-indigo-500/25 shadow-sm text-white relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <span class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-lg flex-shrink-0">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                </span>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-sm font-bold text-white mb-0">Executive Logistics Brief</h3>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 font-bold border border-orange-500/30">Gemini 3.5</span>
+                    </div>
+                    <p id="aiBriefGreeting" class="text-xs text-indigo-200/80 mb-0">Daily Operational Intelligence for {{ $roleTitle }}</p>
+                </div>
+            </div>
+            <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="self-start sm:self-auto text-xs px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white font-semibold transition border border-white/10 flex items-center gap-1.5 shadow-sm">
+                <i class="fas fa-rotate text-[11px]" id="aiBriefRefreshIcon"></i> Refresh Brief
+            </button>
+        </div>
+
+        <div id="aiBriefLoading" class="hidden text-center py-6 text-xs text-indigo-200">
+            <div class="spinner-border spinner-border-sm text-orange-400 mb-2" role="status"></div>
+            <p>Synthesizing operations across dispatches, warehouses & shipments...</p>
+        </div>
+
+        <div id="aiBriefContent" class="pt-4 space-y-3.5">
+            <p id="aiBriefSummary" class="text-xs font-semibold text-amber-200/90 leading-relaxed bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                Operations active across Kathmandu & regional transit corridors.
+            </p>
+
+            <div>
+                <h4 class="text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-bullseye text-orange-400"></i> Operational Highlights
+                </h4>
+                <ul id="aiBriefBullets" class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs text-slate-200">
+                    <li class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-start gap-2">
+                        <i class="fas fa-check text-emerald-400 mt-0.5 text-[11px]"></i>
+                        <span>Dispatches are tracked and running with normal transit windows.</span>
+                    </li>
+                    <li class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-start gap-2">
+                        <i class="fas fa-check text-emerald-400 mt-0.5 text-[11px]"></i>
+                        <span>Warehouse storage and inventory occupancy stable.</span>
+                    </li>
+                    <li class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-start gap-2">
+                        <i class="fas fa-check text-emerald-400 mt-0.5 text-[11px]"></i>
+                        <span>Fleet availability ready for pending order assignments.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-indigo-950/70 border border-indigo-500/30 rounded-xl p-3 text-xs flex items-start gap-2.5">
+                <span class="w-5 h-5 rounded-md bg-indigo-500/20 text-indigo-300 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5 font-bold">★</span>
+                <div>
+                    <span class="font-bold text-indigo-200">Recommended Action: </span>
+                    <span id="aiBriefAction" class="text-slate-200">Review today's pending dispatches and confirm delivery routes.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Action Bar -->
     @if(!empty($quickActions))
     <div class="kwdc-action-bar">
@@ -919,5 +979,83 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
+
+const dashboardStats = @json($stats ?? []);
+
+async function refreshDashboardAiBrief(force = false) {
+    const loading = document.getElementById('aiBriefLoading');
+    const content = document.getElementById('aiBriefContent');
+    const icon = document.getElementById('aiBriefRefreshIcon');
+    const cacheKey = 'kwdc_dashboard_brief_' + (document.querySelector('meta[name="user-id"]')?.content || 'user');
+
+    if (!force) {
+        try {
+            const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+            if (cached && (Date.now() - cached.timestamp < 30 * 60 * 1000)) {
+                renderBrief(cached.data);
+                return;
+            }
+        } catch (e) {}
+    }
+
+    if (loading) loading.classList.remove('hidden');
+    if (content) content.classList.add('opacity-40');
+    if (icon) icon.classList.add('fa-spin');
+
+    try {
+        const response = await fetch('/ai/dashboard-brief', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ stats: dashboardStats })
+        });
+
+        const res = await response.json();
+        if (res.success && res.brief) {
+            renderBrief(res.brief);
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: res.brief }));
+            } catch (e) {}
+        }
+    } catch (e) {
+        console.warn('Could not fetch daily brief', e);
+    } finally {
+        if (loading) loading.classList.add('hidden');
+        if (content) content.classList.remove('opacity-40');
+        if (icon) icon.classList.remove('fa-spin');
+    }
+}
+
+function renderBrief(b) {
+    if (!b) return;
+    if (b.greeting) {
+        const gEl = document.getElementById('aiBriefGreeting');
+        if (gEl) gEl.textContent = b.greeting;
+    }
+    if (b.key_metrics_summary) {
+        const sEl = document.getElementById('aiBriefSummary');
+        if (sEl) sEl.textContent = b.key_metrics_summary;
+    }
+    if (Array.isArray(b.operational_bullets) && b.operational_bullets.length) {
+        const bEl = document.getElementById('aiBriefBullets');
+        if (bEl) {
+            bEl.innerHTML = b.operational_bullets.map(text => `
+                <li class="bg-white/5 border border-white/10 rounded-xl p-3 flex items-start gap-2">
+                    <i class="fas fa-check text-emerald-400 mt-0.5 text-[11px]"></i>
+                    <span>${text}</span>
+                </li>
+            `).join('');
+        }
+    }
+    if (b.recommended_action) {
+        const aEl = document.getElementById('aiBriefAction');
+        if (aEl) aEl.textContent = b.recommended_action;
+    }
+}
+
+refreshDashboardAiBrief(false);
 </script>
 @endpush

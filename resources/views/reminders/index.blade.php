@@ -166,6 +166,31 @@
 @endphp
 
 <div class="max-w-7xl mx-auto space-y-6">
+    <!-- AI Natural Language Quick-Add Bar -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 border border-indigo-500/25 shadow-sm text-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-lg flex-shrink-0">
+                <i class="fas fa-wand-magic-sparkles"></i>
+            </span>
+            <div>
+                <h3 class="text-sm font-bold text-white mb-0.5">Quick-Add Reminder with AI</h3>
+                <p class="text-xs text-indigo-200/70 mb-0">Type or speak (e.g. <em>"Call driver Ramesh tomorrow at 10 AM about Pokhara cargo"</em>)</p>
+            </div>
+        </div>
+        <form id="aiReminderForm" onsubmit="handleAiReminderQuickAdd(event)" class="flex items-center gap-2 flex-1 max-w-xl">
+            <div class="relative flex-1">
+                <input type="text" id="aiReminderInput" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="Type reminder in natural English or Nepali...">
+                <button type="button" onclick="recordAiReminderVoice()" id="btnAiReminderMic" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-400 text-xs transition" title="Voice speak reminder">
+                    <i class="fas fa-microphone"></i>
+                </button>
+            </div>
+            <button type="submit" id="btnAiReminderSubmit" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm flex-shrink-0">
+                <i class="fas fa-sparkles"></i>
+                <span>Add with AI</span>
+            </button>
+        </form>
+    </div>
+
     <!-- Interactive Calendar Grid Card -->
     <section class="kwdc-cal-card">
         <div class="calendar-toolbar">
@@ -340,5 +365,132 @@ document.addEventListener('DOMContentLoaded', function () {
         if (input && value) input.value = value;
     });
 });
+
+async function handleAiReminderQuickAdd(event) {
+    if (event) event.preventDefault();
+    const input = document.getElementById('aiReminderInput');
+    const text = input ? input.value.trim() : '';
+    if (!text) return;
+
+    const btn = document.getElementById('btnAiReminderSubmit');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Parsing...';
+    }
+
+    try {
+        const response = await fetch('/ai/parse-reminder', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ text: text })
+        });
+
+        const res = await response.json();
+        if (res.success && res.parsed) {
+            const p = res.parsed;
+            document.getElementById('title').value = p.title || text;
+            if (p.starts_at) document.getElementById('starts_at').value = p.starts_at;
+            if (p.remind_at) document.getElementById('remind_at').value = p.remind_at;
+            if (p.notes) document.getElementById('notes').value = p.notes;
+
+            // Scroll down to editor and highlight
+            const editorCard = document.getElementById('reminder-editor');
+            if (editorCard) {
+                editorCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                editorCard.classList.add('ring-2', 'ring-orange-500');
+                setTimeout(() => editorCard.classList.remove('ring-2', 'ring-orange-500'), 2500);
+            }
+            document.getElementById('title')?.focus();
+            if (input) input.value = '';
+        } else {
+            alert('Could not parse reminder details.');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to contact AI parser.');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-sparkles"></i><span>Add with AI</span>';
+        }
+    }
+}
+
+let reminderAudioRecorder = null;
+let reminderAudioChunks = [];
+
+async function recordAiReminderVoice() {
+    const micBtn = document.getElementById('btnAiReminderMic');
+    const input = document.getElementById('aiReminderInput');
+
+    if (reminderAudioRecorder && reminderAudioRecorder.state === 'recording') {
+        reminderAudioRecorder.stop();
+        return;
+    }
+
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        reminderAudioChunks = [];
+        reminderAudioRecorder = new MediaRecorder(stream);
+
+        reminderAudioRecorder.ondataavailable = e => {
+            if (e.data.size > 0) reminderAudioChunks.push(e.data);
+        };
+
+        reminderAudioRecorder.onstop = async () => {
+            stream.getTracks().forEach(t => t.stop());
+            if (micBtn) {
+                micBtn.innerHTML = '<i class="fas fa-spinner fa-spin text-orange-400"></i>';
+            }
+
+            const audioBlob = new Blob(reminderAudioChunks, { type: reminderAudioRecorder.mimeType || 'audio/webm' });
+            const reader = new FileReader();
+            reader.readAsDataURL(audioBlob);
+            reader.onloadend = async () => {
+                const base64Audio = reader.result;
+                try {
+                    const transRes = await fetch('/ai/transcribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            audio: base64Audio,
+                            language: 'en'
+                        })
+                    });
+                    const transData = await transRes.json();
+                    if (transData.success && transData.transcript) {
+                        if (input) input.value = transData.transcript;
+                        handleAiReminderQuickAdd();
+                    }
+                } catch (err) {
+                    console.error('Transcription error', err);
+                } finally {
+                    if (micBtn) micBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+                }
+            };
+        };
+
+        reminderAudioRecorder.start();
+        if (micBtn) micBtn.innerHTML = '<i class="fas fa-stop text-red-500 animate-pulse"></i>';
+
+        // Auto stop after 7 seconds
+        setTimeout(() => {
+            if (reminderAudioRecorder && reminderAudioRecorder.state === 'recording') {
+                reminderAudioRecorder.stop();
+            }
+        }, 7000);
+    } catch (err) {
+        console.warn('Mic access error', err);
+        alert('Microphone access is needed to speak your reminder.');
+    }
+}
 </script>
 @endpush

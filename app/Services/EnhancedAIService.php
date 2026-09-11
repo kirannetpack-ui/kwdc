@@ -420,6 +420,187 @@ class EnhancedAIService
     }
 
     /**
+     * Dispatch & Cargo Route Advisor
+     */
+    public function adviseDispatch(array $data): array
+    {
+        $system = <<<PROMPT
+You are the KTM-WDC Logistics Dispatch & Route Advisor for Nepal. Analyze origin, destination, cargo, and weight.
+Return strictly a JSON object with:
+- suggested_vehicle: string (e.g., 'Pickup (1 Ton)', 'Medium Truck (Tata 407)', 'Heavy Truck (10 Ton)', 'Container')
+- estimated_hours: string (e.g., '6-8 hours')
+- estimated_distance_km: number (numeric km estimate)
+- suggested_price_npr: number (fair market rate in Nepalese Rupees)
+- route_advisory: string (terrain and highway notes like Prithvi, BP, or Ring Road conditions)
+- handling_precautions: string (strapping, tarpaulin, temperature precautions)
+- summary: string (1-2 sentence executive operational advice)
+PROMPT;
+
+        $user = json_encode($data, JSON_UNESCAPED_SLASHES);
+        $result = $this->chat($system, $user, 'json');
+
+        if (is_array($result) && !empty($result)) {
+            return $result;
+        }
+
+        // Fallback calculation if AI unavailable
+        $origin = strtolower((string) ($data['pickup_address'] ?? 'Kathmandu'));
+        $dest = strtolower((string) ($data['delivery_address'] ?? 'Pokhara'));
+        $isIntercity = !str_contains($dest, 'kathmandu') && !str_contains($dest, 'lalitpur') && !str_contains($dest, 'bhaktapur');
+
+        return [
+            'suggested_vehicle' => $isIntercity ? 'Medium Truck (Tata 407)' : 'Pickup (1 Ton)',
+            'estimated_hours' => $isIntercity ? '6-8 hours' : '1-2 hours',
+            'estimated_distance_km' => $isIntercity ? 205 : 18,
+            'suggested_price_npr' => $isIntercity ? 14500 : 2500,
+            'route_advisory' => $isIntercity 
+                ? 'Standard intercity highway transit. Ensure weather and road clearance along highway passes.'
+                : 'Intra-valley route. Comply with local traffic restriction windows.',
+            'handling_precautions' => 'Secure cargo with weather-resistant tarpaulin and ratchets.',
+            'summary' => 'Direct dispatch route planned with standard cargo handling protocols.',
+        ];
+    }
+
+    /**
+     * Pickup Packaging & Vehicle Advisor
+     */
+    public function advisePickup(array $data): array
+    {
+        $system = <<<PROMPT
+You are the KTM-WDC Pickup & Packaging Advisor in Kathmandu. Return strictly a JSON object with:
+- suggested_vehicle: string ('Motorbike Courier', 'Cargo Van', 'Pickup Truck')
+- packaging_advice: string (packaging guidelines for the described items)
+- estimated_price_npr: number (fair pickup rate in NPR)
+- estimated_minutes: number (estimated pickup ETA in minutes)
+- handling_notes: string (fragile, moisture, or stacking notes)
+PROMPT;
+
+        $user = json_encode($data, JSON_UNESCAPED_SLASHES);
+        $result = $this->chat($system, $user, 'json');
+
+        if (is_array($result) && !empty($result)) {
+            return $result;
+        }
+
+        return [
+            'suggested_vehicle' => 'Pickup Truck',
+            'packaging_advice' => 'Box with inner padding and clear labels.',
+            'estimated_price_npr' => 1200,
+            'estimated_minutes' => 45,
+            'handling_notes' => 'Handle with standard care upon collection.',
+        ];
+    }
+
+    /**
+     * Warehouse Facility Listing Copywriter
+     */
+    public function generateWarehouseCopy(array $data): array
+    {
+        $system = <<<PROMPT
+You are a commercial real estate copywriter for logistics facilities in Nepal.
+Based on warehouse specs (location, capacity sqft, price, and features), return strictly a JSON object with:
+- title: string (professional, compelling listing title)
+- description: string (2-3 paragraphs highlighting highway accessibility, loading bays, safety, and operational efficiency)
+- highlights: array of strings (4-5 key facility selling points)
+- ideal_for: string (recommended commercial uses e.g., 'FMCG, E-commerce, Cold/Dry Storage')
+PROMPT;
+
+        $user = json_encode($data, JSON_UNESCAPED_SLASHES);
+        $result = $this->chat($system, $user, 'json');
+
+        if (is_array($result) && !empty($result)) {
+            return $result;
+        }
+
+        $location = $data['location'] ?? 'Kathmandu';
+        $sqft = $data['total_sqft'] ?? 5000;
+
+        return [
+            'title' => "Premium {$sqft} Sq.Ft Logistics Facility in {$location}",
+            'description' => "Centrally situated in {$location}, this {$sqft} sq.ft warehouse offers high-ceiling storage, dedicated loading docks, and 24/7 security. Strategically positioned with seamless access to primary transport arteries for smooth distribution.",
+            'highlights' => [
+                "Generous {$sqft} sq.ft clear storage area",
+                'Direct truck and container access',
+                '24/7 monitored perimeter security',
+                'Dedicated loading and unloading docks',
+            ],
+            'ideal_for' => 'Wholesale distribution, bulk inventory storage, and regional e-commerce fulfillment.',
+        ];
+    }
+
+    /**
+     * Natural Language Reminder Parser
+     */
+    public function parseNaturalReminder(string $text): array
+    {
+        $today = now()->format('Y-m-d H:i');
+        $system = <<<PROMPT
+You are a reminder parser for KTM-WDC Logistics. Today is {$today}.
+Parse the text (English or Nepali) into reminder attributes. Return strictly a JSON object with:
+- title: string (clean, concise reminder title)
+- starts_at: string (YYYY-MM-DDTHH:MM or null)
+- remind_at: string (YYYY-MM-DDTHH:MM or null)
+- priority: string ('low', 'medium', or 'high')
+- notes: string (any extra details, phone numbers, or context)
+PROMPT;
+
+        $result = $this->chat($system, $text, 'json');
+
+        if (is_array($result) && !empty($result['title'])) {
+            return $result;
+        }
+
+        // Rule-based fallback
+        $tomorrow = now()->addDay()->setTime(10, 0)->format('Y-m-d\TH:i');
+        return [
+            'title' => trim(preg_replace('/^(remind me to|please remind me to|remember to)\s+/i', '', $text)),
+            'starts_at' => $tomorrow,
+            'remind_at' => now()->addDay()->setTime(9, 30)->format('Y-m-d\TH:i'),
+            'priority' => 'medium',
+            'notes' => $text,
+        ];
+    }
+
+    /**
+     * Executive Logistics Daily Brief
+     */
+    public function generateDashboardBrief(string $role, array $stats): array
+    {
+        $today = now()->format('l, F j, Y');
+        $system = <<<PROMPT
+You are the KTM-WDC Chief Operations Analyst. Today is {$today}.
+Based on the user's role ({$role}) and current system stats, generate an operational executive summary.
+Return strictly a JSON object with:
+- greeting: string (e.g., 'Namaste Admin, here is your logistics briefing:')
+- key_metrics_summary: string (1 sentence summarising overall volume and health)
+- operational_bullets: array of strings (3 actionable bullets highlighting priorities, capacity, or dispatches)
+- recommended_action: string (1 concrete priority step for today)
+PROMPT;
+
+        $user = json_encode(['role' => $role, 'stats' => $stats], JSON_UNESCAPED_SLASHES);
+        $result = $this->chat($system, $user, 'json');
+
+        if (is_array($result) && !empty($result['operational_bullets'])) {
+            return $result;
+        }
+
+        $activeDispatches = $stats['in_transit_dispatches'] ?? ($stats['dispatchesByStatus']['in_transit'] ?? 0);
+        $pending = $stats['pending_dispatches'] ?? 0;
+        $occupancy = $stats['occupancyRate'] ?? 70;
+
+        return [
+            'greeting' => "Namaste " . ucwords(str_replace('_', ' ', $role)) . ", here is your daily logistics briefing:",
+            'key_metrics_summary' => "Operations are active with {$activeDispatches} dispatches in transit and warehouse capacity at {$occupancy}%.",
+            'operational_bullets' => [
+                "{$activeDispatches} cargo dispatches currently active across primary corridors.",
+                "{$pending} pending requests awaiting operational clearance.",
+                "Storage utilization is steady at {$occupancy}% occupancy across registered warehouses.",
+            ],
+            'recommended_action' => 'Review pending dispatch manifests and confirm driver assignments for today.',
+        ];
+    }
+
+    /**
      * Health Check - Verify API connectivity
      */
     public function healthCheck(): array

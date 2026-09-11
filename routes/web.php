@@ -212,6 +212,11 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
     // ==================== AI ROUTES ====================
     Route::post('/ai/voice-command', [AIController::class, 'handleVoice'])->name('ai.voice.command');
     Route::post('/ai/chat-support', [AIController::class, 'chatSupport'])->name('ai.chat');
+    Route::post('/ai/dispatch-advisor', [AIController::class, 'dispatchAdvisor'])->name('ai.dispatch-advisor');
+    Route::post('/ai/pickup-advisor', [AIController::class, 'pickupAdvisor'])->name('ai.pickup-advisor');
+    Route::post('/ai/warehouse-copy', [AIController::class, 'warehouseCopy'])->name('ai.warehouse-copy');
+    Route::post('/ai/parse-reminder', [AIController::class, 'parseReminder'])->name('ai.parse-reminder');
+    Route::post('/ai/dashboard-brief', [AIController::class, 'dashboardBrief'])->name('ai.dashboard-brief');
     Route::post('/dispatch/calculate-price', [DispatchController::class, 'calculatePriceAjax'])->name('dispatch.calculate-price');
     Route::post('/dispatch/recommend-drivers', [DispatchController::class, 'getDriverRecommendations'])->name('dispatch.recommend-drivers');
     Route::post('/pickup/recommend-drivers', [PickupRequestController::class, 'getDriverRecommendations'])->name('pickup.recommend-drivers');

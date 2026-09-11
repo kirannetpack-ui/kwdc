@@ -165,14 +165,35 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // ===== OPEN / CLOSE HELPERS =====
+    window.openKwdcAssistant = function(promptText) {
+        if (chatWindow) {
+            chatWindow.style.display = 'flex';
+            setAssistantOpen(true);
+            if (textInput) {
+                if (promptText) textInput.value = promptText;
+                setTimeout(() => textInput.focus(), 50);
+            }
+        }
+    };
+
+    // Hotkey: Ctrl + K or Cmd + K to summon AI Copilot
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            window.openKwdcAssistant();
+        }
+    });
+
     // ===== TOGGLE CHAT WINDOW =====
     launchBtn.addEventListener('click', function(e) {
         e.preventDefault();
         const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
-        chatWindow.style.display = isHidden ? 'flex' : 'none';
-        setAssistantOpen(isHidden);
         if (isHidden) {
-            textInput?.focus();
+            window.openKwdcAssistant();
+        } else {
+            chatWindow.style.display = 'none';
+            setAssistantOpen(false);
         }
     });
 
