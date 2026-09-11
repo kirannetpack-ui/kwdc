@@ -27,7 +27,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function readHistory() {
         try {
-            return JSON.parse(localStorage.getItem(historyKey) || '[]').filter(item => item?.text && item?.sender);
+            const raw = JSON.parse(localStorage.getItem(historyKey) || '[]');
+            return raw.filter(item => {
+                if (!item?.text || !item?.sender) return false;
+                const t = item.text.toLowerCase();
+                // Filter out any legacy error notices or connection complaints
+                if (t.includes('browser speech service') || t.includes('microphone permission is blocked') || t.includes('speech recognition is blocked')) {
+                    return false;
+                }
+                return true;
+            });
         } catch (error) {
             console.warn('Assistant history could not be read.', error);
             return [];
@@ -125,11 +134,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function setListeningUi(active, message = null) {
         isListening = active;
         window.isListening = active;
-        toggleBtn.innerHTML = active
-            ? '<i class="fas fa-stop"></i> Stop'
-            : '<i class="fas fa-microphone"></i> Start';
-        statusEl.textContent = message || (active ? 'Listening... speak now' : 'Speak or type a request');
-        toggleBtn.classList.toggle('listening', active);
+        if (toggleBtn) {
+            toggleBtn.innerHTML = active
+                ? '<i class="fas fa-stop"></i>'
+                : '<i class="fas fa-microphone"></i>';
+            toggleBtn.classList.toggle('listening', active);
+            toggleBtn.title = active ? 'Stop listening' : 'Voice Input';
+        }
+        if (statusEl) {
+            statusEl.textContent = message || (active ? 'Listening... speak now' : 'Ready • Speak or type below');
+        }
     }
 
     // ===== TOGGLE CHAT WINDOW =====
@@ -137,15 +151,16 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
         chatWindow.style.display = isHidden ? 'flex' : 'none';
-        launchBtn.style.transform = isHidden ? 'scale(1.1)' : 'scale(1)';
         setAssistantOpen(isHidden);
+        if (isHidden) {
+            textInput?.focus();
+        }
     });
 
     // ===== CLOSE BUTTON =====
     if (closeBtn) {
         closeBtn.addEventListener('click', function() {
             chatWindow.style.display = 'none';
-            launchBtn.style.transform = 'scale(1)';
             if (isListening) {
                 recognition?.stop();
                 setListeningUi(false);
@@ -228,11 +243,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!isSpeechEnabled || !('speechSynthesis' in window)) return;
         try {
             window.speechSynthesis.cancel();
-            const cleanText = text.replace(/<[^>]*>?/gm, '').trim();
+            // Clean markdown asterisks, URLs, brackets and list bullets for smooth natural voice
+            const cleanText = text
+                .replace(/<[^>]*>?/gm, '')
+                .replace(/https?:\/\/\S+/g, '')
+                .replace(/[*_#`~[\]]/g, '')
+                .replace(/^[-•]\s*/gm, '')
+                .trim();
             if (!cleanText || cleanText.length > 300) return;
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.rate = 1.05;
+            utterance.rate = 1.0;
             utterance.pitch = 1.0;
+            // Use hi-IN for Nepali phonetics as Windows/Chromium handles Devanagari accurately through it
             utterance.lang = currentLanguage === 'np' ? 'hi-IN' : 'en-US';
             window.speechSynthesis.speak(utterance);
         } catch (err) {
@@ -893,8 +915,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return true;
         } catch (error) {
             console.warn('Microphone access failed:', error);
-            statusEl.textContent = 'Mic permission blocked. Type below.';
-            addAssistantNotice('Microphone permission is blocked or unavailable. Please allow microphone access in your browser, or type your request below.');
+            if (statusEl) statusEl.textContent = 'Mic permission blocked. Type below.';
+            textInput?.focus();
             return false;
         }
     }
@@ -927,11 +949,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (recognition) recognition.onspeechstart = function() {
         heardSpeech = true;
-        statusEl.textContent = 'Hearing you...';
+        if (statusEl) statusEl.textContent = 'Hearing you...';
     };
 
     if (recognition) recognition.onspeechend = function() {
-        statusEl.textContent = 'Processing...';
+        if (statusEl) statusEl.textContent = 'Processing speech...';
     };
 
     if (recognition) recognition.onend = function() {
@@ -943,36 +965,41 @@ document.addEventListener('DOMContentLoaded', function() {
         setListeningUi(false);
 
         if (lastRecognitionError === 'not-allowed' || lastRecognitionError === 'service-not-allowed') {
-            statusEl.textContent = 'Mic permission blocked. Type below.';
+            if (statusEl) statusEl.textContent = 'Mic permission blocked. Type below.';
+            textInput?.focus();
             return;
         }
 
         if (!heardSpeech || listenedForMs < 1200) {
-            statusEl.textContent = 'I did not hear anything. Try again or type below.';
+            if (statusEl) statusEl.textContent = 'No voice heard. Tap mic or type below.';
         }
     };
 
     if (recognition) recognition.onerror = function(event) {
-        console.error('❌ Recognition error:', event.error);
+        console.warn('Voice recognition notice:', event.error);
         lastRecognitionError = event.error;
 
-        const messages = {
-            'not-allowed': 'Microphone permission is blocked. Please allow mic access in your browser, or type below.',
-            'service-not-allowed': 'Speech recognition is blocked by this browser. Type below or try Chrome.',
-            'no-speech': 'I did not hear anything. Click Start and speak after the listening message appears.',
-            'audio-capture': 'No microphone was found. Check your mic, or type below.',
-            'network': 'Browser speech service could not connect. Type below or try again.',
+        const statusMap = {
+            'not-allowed': 'Mic permission blocked. Type below.',
+            'service-not-allowed': 'Speech engine not available. Type below.',
+            'no-speech': 'No voice heard. Tap mic or type below.',
+            'audio-capture': 'No microphone found. Type below.',
+            'network': 'Speech cloud offline. Type below or retry.',
         };
 
-        if (messages[event.error]) {
-            statusEl.textContent = event.error === 'no-speech' ? 'I did not hear anything. Try again.' : 'Mic unavailable. Type below.';
-            addAssistantNotice(messages[event.error]);
+        const hint = statusMap[event.error] || 'Mic unavailable. Type below.';
+        if (statusEl) {
+            statusEl.textContent = hint;
         }
 
         if (isListening) {
             recognition.stop();
-            setListeningUi(false);
+            setListeningUi(false, hint);
             stopSpeaking();
+        }
+
+        if (event.error === 'network' || event.error === 'not-allowed' || event.error === 'audio-capture') {
+            textInput?.focus();
         }
     };
 
@@ -1059,7 +1086,6 @@ document.addEventListener('DOMContentLoaded', function() {
     restoreHistory();
     if (shouldRestoreOpen()) {
         chatWindow.style.display = 'flex';
-        launchBtn.style.transform = 'scale(1.1)';
     } else {
         chatWindow.style.display = 'none';
     }
