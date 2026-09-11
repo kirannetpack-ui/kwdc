@@ -130,12 +130,12 @@
 <div class="sidebar" id="sidebar">
     <div class="kwdc-sidebar-brand p-6">
         <div class="flex items-center space-x-3">
-            <div class="kwdc-brand-icon w-10 h-10 flex items-center justify-center">
-                <i class="fas fa-warehouse text-white text-xl"></i>
+            <div class="kwdc-brand-icon w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
+                <i class="fas fa-warehouse text-white text-lg"></i>
             </div>
             <div>
-                <h1 class="text-xl font-bold text-white">KTM-WDC</h1>
-                <p class="text-xs text-gray-400">Warehouse & Distribution</p>
+                <h1 class="text-lg font-extrabold text-white tracking-tight leading-tight">KTM-WDC</h1>
+                <p class="text-[11px] text-slate-400 font-medium">Logistics & Distribution</p>
             </div>
         </div>
     </div>
@@ -143,13 +143,13 @@
     @auth
     <div class="kwdc-sidebar-user p-4">
         <div class="flex items-center space-x-3">
-            <div class="kwdc-user-avatar w-10 h-10 flex items-center justify-center flex-shrink-0">
-                <i class="fas fa-user text-white"></i>
+            <div class="kwdc-user-avatar w-9 h-9 rounded-lg bg-slate-800 text-orange-400 border border-slate-700/80 flex items-center justify-center flex-shrink-0 font-bold text-xs">
+                {{ substr(Auth::user()->name, 0, 1) }}
             </div>
-            <div class="min-w-0">
-                <p class="font-semibold text-sm truncate">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-gray-400 truncate">{{ Auth::user()->email }}</p>
-                <span class="kwdc-role-pill text-xs">{{ ucfirst(Auth::user()->role ?? 'User') }}</span>
+            <div class="min-w-0 flex-1">
+                <p class="font-semibold text-xs text-white truncate">{{ Auth::user()->name }}</p>
+                <p class="text-[10px] text-slate-400 truncate">{{ Auth::user()->email }}</p>
+                <span class="kwdc-role-pill text-[10px]">{{ ucfirst(str_replace('_', ' ', Auth::user()->role ?? 'User')) }}</span>
             </div>
         </div>
     </div>
@@ -393,17 +393,18 @@
 <!-- ============================================================ -->
 <div class="main-content">
     <div class="top-bar">
-        <div>
-            <h2 class="text-2xl font-semibold text-gray-800">@yield('header', 'Dashboard')</h2>
-            @auth
-            <div class="flex items-center mt-1">
-                <p class="text-gray-600">
-                    <span class="font-semibold">Signed in as</span>
-                    <span class="text-orange-600 font-semibold">{{ Auth::user()->name }}</span>
-                    <span class="text-gray-500 text-sm ml-2">({{ ucfirst(Auth::user()->role ?? 'User') }})</span>
-                </p>
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-sm">
+                <i class="fas fa-layer-group"></i>
             </div>
-            @endauth
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Workspace</span>
+                    <span class="text-xs text-slate-300">/</span>
+                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">@yield('header', 'Dashboard')</span>
+                </div>
+                <p class="text-xs text-slate-500 font-medium hidden sm:block">KTM-WDC Logistics &bull; Active Operational Session</p>
+            </div>
         </div>
         <div class="flex items-center space-x-4">
             <!-- NOTIFICATION BELL WITH DROPDOWN -->

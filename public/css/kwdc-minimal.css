@@ -1,54 +1,153 @@
-/* Shared workspace appearance with distinct semantic status colors. */
-body.kwdc-app-shell { background: #f5f5f7; color: #202124; }
-body.kwdc-app-shell, body.kwdc-app-shell :is(button,input,select,textarea,h1,h2,h3,h4,p,a,span,th,td,label,div) { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; letter-spacing: 0; }
-.kwdc-app-shell .sidebar { background: #fafafa !important; color: #343438 !important; border-right: 1px solid #e6e6e8; box-shadow: none !important; }
-.kwdc-app-shell .sidebar :is(.sidebar-link,.section-header,.text-gray-400,.text-gray-500) { color: #606065 !important; }
-.kwdc-app-shell .sidebar .sidebar-link { border-radius: 10px; margin-top: 3px; margin-bottom: 3px; font-size: 13px; font-weight: 500; }
-.kwdc-app-shell .sidebar .sidebar-link.active { background: #e9edf4 !important; color: #175bbd !important; box-shadow: none; }
-.kwdc-app-shell .sidebar .sidebar-link:hover { background: #eeeef0; color: #202124 !important; }
-.kwdc-app-shell .sidebar .section-header { font-size: 11px; margin-top: 26px; }
-.kwdc-app-shell :is(.topbar,.top-bar,.header) { background: rgba(255,255,255,.94); box-shadow: none; border-bottom: 1px solid #e6e6e8; }
-.kwdc-app-shell .main-content :is(.card,.kwdc-panel,.kwdc-stat-card,.shadow-md,.shadow-lg) { box-shadow: 0 2px 8px #00000004 !important; border: 1px solid #e6e6e8; border-radius: 16px; background: #fff; }
-.kwdc-app-shell .card-header { padding: 20px 24px; background: transparent !important; color: #202124 !important; border-bottom: 1px solid #eeeef0; }
-.kwdc-app-shell .card-body { padding: 24px; }
-.kwdc-app-shell .main-content :is(h2,h3,h4) { font-weight: 600; letter-spacing: 0; }
-.kwdc-app-shell .main-content h2 { font-size: 26px; }
-.kwdc-app-shell .main-content h3 { font-size: 18px; }
-.kwdc-app-shell .main-content :is(.kwdc-hero,.dashboard-hero) { background: transparent !important; box-shadow: none !important; border: 0; padding: 8px 0 24px; color: #202124 !important; border-radius: 0; }
-.kwdc-app-shell .kwdc-hero h2 { font-size: 28px; font-weight: 600; }
-.kwdc-app-shell .kwdc-hero p { font-size: 14px; }
-.kwdc-app-shell .kwdc-stat-label { text-transform: none; font-weight: 500; font-size: 13px; }
-.kwdc-app-shell .kwdc-stat-value { font-weight: 600; font-variant-numeric: tabular-nums; }
-.kwdc-app-shell .kwdc-stat-card { padding: 24px; }
-.kwdc-app-shell .btn { border-radius: 10px; padding: 10px 16px; font-weight: 500; box-shadow: none; }
-.kwdc-app-shell .btn-sm { padding: 7px 11px; }
-.kwdc-app-shell :is(.btn-primary,.btn-warning) { background: #1769ce; border-color: #1769ce; color: #fff; }
-.kwdc-app-shell :is(.form-control,.form-select) { border: 1px solid #dcdce0; border-radius: 10px; min-height: 44px; box-shadow: none; background-color: #fff; color: #202124; }
-.kwdc-app-shell .form-label { font-weight: 500; font-size: 13px; margin-bottom: 8px; }
-.kwdc-app-shell table { width: 100%; font-size: 14px; }
-.kwdc-app-shell table :is(th,td) { padding: 16px 20px; vertical-align: middle; border-bottom: 1px solid #eeeef0; }
-.kwdc-app-shell table th { background: #fafafa; font-weight: 500; font-size: 12px; text-transform: none; color: #68686d; }
-.kwdc-app-shell .badge { border-radius: 7px; font-weight: 500; padding: 6px 9px; }
-.kwdc-app-shell tr[data-record-url] { cursor: pointer; }
-.kwdc-app-shell tr[data-record-url]:hover { background: #f5f8fc; }
-.kwdc-app-shell :focus-visible { outline: 3px solid #78a8ea !important; outline-offset: 3px; }
-.record-detail { max-width: 1000px; padding: 12px 0; }
-.detail-section { border-top: 1px solid #dedee2; padding: 28px 0; }
-.detail-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 28px; margin: 24px 0 0; }
-.detail-grid dt { color: #76767b; font-size: 13px; font-weight: 400; margin-bottom: 6px; }
-.detail-grid dd { margin: 0; overflow-wrap: anywhere; }
-.calendar-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 28px; }
-.calendar-toolbar h2 { margin: 0; }
-.calendar-weekdays,.calendar-grid { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); }
-.calendar-weekdays div { padding: 12px 8px; color: #77777d; font-size: 12px; text-align: right; }
-.calendar-grid { border-top: 1px solid #dedee2; border-left: 1px solid #dedee2; background: #fff; }
-.calendar-day { min-height: 110px; min-width: 0; border-right: 1px solid #e6e6e8; border-bottom: 1px solid #e6e6e8; padding: 6px; }
-.calendar-day.outside { background: #fafafa; color: #aaa; }
-.calendar-date { display: block; margin-left: auto; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: inherit; font-size: 13px; }
-.calendar-day.today .calendar-date { background: #d93a41; color: #fff; }
-.calendar-event { width: 100%; display: block; text-align: left; background: #eaf2fe; color: #24589f; border: 0; border-left: 2px solid #4b87d9; border-radius: 4px; padding: 5px; font-size: 11px; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.calendar-event time { font-variant-numeric: tabular-nums; }
-.kwdc-app-shell .kwdc-assistant-panel { border-radius: 20px; box-shadow: 0 12px 50px #00000020; }
-.kwdc-app-shell .kwdc-assistant-launch { background: #252528; box-shadow: 0 4px 16px #00000020; width: 48px; height: 48px; font-size: 19px; }
-@media(max-width:640px) { .calendar-day { min-height: 85px; padding: 3px; } .calendar-event time { display: none; } .calendar-toolbar { flex-wrap: wrap; } .detail-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } .kwdc-app-shell .card-body { padding: 18px; } .calendar-event { font-size: 10px; } }
-@media(prefers-reduced-motion:reduce) { .kwdc-app-shell * { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+/* Modern Executive Workspace Appearance */
+body.kwdc-app-shell {
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+    letter-spacing: -0.011em;
+}
+
+/* Premium Dark Sidebar */
+.kwdc-app-shell .sidebar {
+    background: #090e17 !important;
+    color: #f8fafc !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-brand {
+    padding: 24px 20px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 8px;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-brand h1 {
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 19px;
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-brand p {
+    color: #94a3b8 !important;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 2px 0 0;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-user {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px;
+    margin: 8px 14px 16px;
+    padding: 12px 14px;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-user p.font-semibold {
+    color: #ffffff !important;
+    font-size: 13px;
+    margin: 0;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-user p.text-gray-400 {
+    color: #94a3b8 !important;
+    font-size: 11px;
+    margin: 2px 0 0;
+}
+
+.kwdc-app-shell .sidebar .kwdc-role-pill {
+    background: rgba(249, 115, 22, 0.15) !important;
+    color: #fb923c !important;
+    border: 1px solid rgba(249, 115, 22, 0.3) !important;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link {
+    color: #94a3b8 !important;
+    font-weight: 500;
+    font-size: 13px;
+    border-radius: 12px;
+    margin: 4px 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.16s ease;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    transform: translateX(2px);
+}
+
+.kwdc-app-shell .sidebar .sidebar-link.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35) !important;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link.active i {
+    color: #ffffff !important;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: inherit;
+    background: transparent !important;
+}
+
+.kwdc-app-shell .sidebar .section-header {
+    color: #64748b !important;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 18px 20px 6px;
+    display: block !important;
+}
+
+/* Modern Top Bar */
+.kwdc-app-shell .top-bar {
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    padding: 12px 28px !important;
+    min-height: 62px;
+}
+
+/* Card Surfaces */
+.kwdc-app-shell .main-content :is(.card, .kwdc-panel, .shadow-md, .shadow-lg) {
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04) !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+}
+
+.kwdc-app-shell .kwdc-assistant-launch {
+    background: #0f172a !important;
+    color: #ffffff !important;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 999px !important;
+    box-shadow: 0 10px 25px -3px rgba(15, 23, 42, 0.35) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    font-size: 18px !important;
+    transition: transform 0.2s ease !important;
+}
+
+.kwdc-app-shell .kwdc-assistant-launch:hover {
+    transform: scale(1.08) !important;
+    background: #1e293b !important;
+}
