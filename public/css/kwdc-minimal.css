@@ -117,14 +117,28 @@ body.kwdc-app-shell {
 }
 
 /* Modern Top Bar */
-.kwdc-app-shell .top-bar {
+.kwdc-app-shell .top-bar,
+.top-bar {
     background: rgba(255, 255, 255, 0.88) !important;
-    backdrop-filter: blur(14px) !important;
-    -webkit-backdrop-filter: blur(14px) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
     border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
-    padding: 12px 28px !important;
-    min-height: 62px;
+    padding: 0 28px !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+}
+
+.top-bar .dropdown-toggle::after {
+    display: none !important;
 }
 
 /* Card Surfaces */

@@ -397,28 +397,49 @@
 <!-- ============================================================ -->
 <div class="main-content">
     <div class="top-bar">
+        <!-- LEFT: BREADCRUMB & LIVE INDICATOR -->
         <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-sm">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-xs shadow-orange-500/20">
                 <i class="fas fa-layer-group"></i>
             </div>
-            <div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Workspace</span>
-                    <span class="text-xs text-slate-300">/</span>
-                    <span class="text-xs font-bold text-slate-700 uppercase tracking-wider">@yield('header', 'Dashboard')</span>
+            <div class="flex items-center gap-2.5">
+                <div class="flex items-center gap-1.5 text-xs font-semibold">
+                    <span class="text-slate-400 uppercase tracking-wider">Portal</span>
+                    <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
+                    <span class="text-slate-800 font-extrabold uppercase tracking-wider">@yield('header', 'Dashboard')</span>
                 </div>
-                <p class="text-xs text-slate-500 font-medium hidden sm:block">KTM-WDC Logistics &bull; Active Operational Session</p>
+                <div class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Live Hub</span>
+                </div>
             </div>
         </div>
-        <div class="flex items-center space-x-4">
+
+        <!-- CENTER: QUICK SEARCH / COMMAND PILL -->
+        <div class="hidden lg:flex items-center">
+            <a href="{{ route('tracking.index') }}" class="flex items-center gap-2.5 px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200/70 text-slate-500 hover:text-slate-700 rounded-full text-xs transition border border-slate-200/70 w-64 shadow-2xs text-decoration-none">
+                <i class="fas fa-magnifying-glass text-[11px] text-slate-400"></i>
+                <span class="font-medium text-slate-500">Track shipment or hub...</span>
+                <kbd class="ml-auto font-mono text-[10px] bg-white border border-slate-200 text-slate-400 px-1.5 py-0.5 rounded font-bold shadow-2xs">Ctrl K</kbd>
+            </a>
+        </div>
+
+        <!-- RIGHT: CALENDAR, NOTIFICATIONS & USER PROFILE MENU -->
+        <div class="flex items-center gap-3">
+            <!-- CALENDAR DATE PILL -->
+            <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/70 border border-slate-200/70 text-xs font-semibold text-slate-600">
+                <i class="far fa-calendar-alt text-orange-500"></i>
+                <span>{{ now()->format('D, M j, Y') }}</span>
+            </div>
+
             <!-- NOTIFICATION BELL WITH DROPDOWN -->
             <div class="dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="notificationDropdownToggle" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="position: relative; display: inline-block; padding: 0;">
-                    <i class="fas fa-bell text-gray-500 text-xl cursor-pointer hover:text-orange-500 transition"></i>
+                <a class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 flex items-center justify-center transition border border-slate-200/70 text-decoration-none relative" href="#" id="notificationDropdownToggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell text-sm"></i>
                     @auth
                         @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
                         @if($unreadCount > 0)
-                            <span class="badge bg-danger rounded-pill" id="unreadCount" style="position: absolute; top: -5px; right: -5px; font-size: 10px; min-width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                            <span class="badge bg-red-500 text-white rounded-full" id="unreadCount" style="position: absolute; top: -3px; right: -3px; font-size: 9px; min-width: 17px; height: 17px; padding: 0 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff;">
                                 {{ $unreadCount }}
                             </span>
                         @endif
@@ -449,7 +470,41 @@
                 </ul>
             </div>
 
-            <span class="text-sm text-gray-600 hidden sm:inline">{{ now()->format('F j, Y') }}</span>
+            <!-- USER QUICK PROFILE BADGE & DROPDOWN -->
+            @auth
+            <div class="dropdown">
+                <a href="#" class="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-xl hover:bg-slate-100 transition border border-slate-200/70 text-decoration-none" id="userMenuToggle" data-bs-toggle="dropdown" aria-expanded="false">
+                    @if(auth()->user()->profile_photo)
+                        <img src="{{ asset(auth()->user()->profile_photo) }}" class="w-7 h-7 rounded-lg object-cover ring-1 ring-orange-500/30" alt="Avatar">
+                    @else
+                        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-slate-700 to-slate-900 text-white text-[11px] font-bold flex items-center justify-center">
+                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                        </div>
+                    @endif
+                    <div class="hidden md:flex flex-col text-left leading-tight">
+                        <span class="text-xs font-bold text-slate-800">{{ auth()->user()->name }}</span>
+                        <span class="text-[10px] font-medium text-slate-400 capitalize">{{ str_replace('_', ' ', auth()->user()->role) }}</span>
+                    </div>
+                    <i class="fas fa-chevron-down text-[9px] text-slate-400 ml-1"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end shadow-lg border-slate-200 py-1" aria-labelledby="userMenuToggle" style="border-radius:12px; min-width:190px;">
+                    <li class="px-3 py-2 border-b border-slate-100">
+                        <p class="text-xs font-bold text-slate-800 m-0">{{ auth()->user()->name }}</p>
+                        <p class="text-[11px] text-slate-400 m-0 truncate">{{ auth()->user()->email }}</p>
+                    </li>
+                    <li><a class="dropdown-item py-2 px-3 text-xs font-semibold text-slate-700" href="{{ route('profile.edit') }}"><i class="fas fa-user-circle me-2 text-slate-400"></i>Account Settings</a></li>
+                    <li><a class="dropdown-item py-2 px-3 text-xs font-semibold text-slate-700" href="{{ route('notifications.index') }}"><i class="fas fa-bell me-2 text-slate-400"></i>Notifications</a></li>
+                    <li><a class="dropdown-item py-2 px-3 text-xs font-semibold text-slate-700" href="{{ route('reminders.index') }}"><i class="fas fa-calendar-alt me-2 text-slate-400"></i>Reminder Calendar</a></li>
+                    <li><hr class="dropdown-divider my-1 border-slate-100"></li>
+                    <li>
+                        <form method="POST" action="{{ route('logout') }}" class="m-0">
+                            @csrf
+                            <button type="submit" class="dropdown-item py-2 px-3 text-xs font-bold text-red-600 hover:bg-red-50 w-full text-start"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+            @endauth
         </div>
     </div>
     

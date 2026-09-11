@@ -630,11 +630,16 @@ body.kwdc-app-shell {
 }
 
 .kwdc-app-shell .top-bar {
-    min-height: 88px;
-    margin: 18px 22px 0;
-    border-radius: 32px !important;
-    background: rgba(255, 255, 255, .84) !important;
-    box-shadow: 0 18px 56px rgba(16, 24, 40, .08) !important;
+    min-height: 64px;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: rgba(255, 255, 255, .88) !important;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, .03) !important;
+    backdrop-filter: blur(18px);
 }
 
 .kwdc-app-shell .top-bar h2,
@@ -1424,14 +1429,15 @@ body.kwdc-app-shell {
 }
 
 .kwdc-app-shell .top-bar {
-    min-height: 84px;
-    margin: 18px 18px 0;
-    padding: 18px 26px !important;
-    border: 1px solid rgba(228, 234, 242, 0.86) !important;
-    border-radius: 28px;
-    background: rgba(255, 255, 255, 0.82) !important;
-    box-shadow: 0 18px 50px rgba(17, 24, 39, 0.08) !important;
-    backdrop-filter: blur(22px);
+    min-height: 64px;
+    margin: 0 !important;
+    padding: 0 28px !important;
+    border: none !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    box-shadow: 0 1px 3px rgba(17, 24, 39, 0.03) !important;
+    backdrop-filter: blur(20px);
 }
 
 .kwdc-app-shell .top-bar h2 {
