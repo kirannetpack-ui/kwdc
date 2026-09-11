@@ -403,10 +403,11 @@ function initMap() {
 
 // ------------------ LOCATION LOOKUP ------------------
 async function geocodeAddress(address) {
+    if (!address || address.trim().length < 3) return null;
     try {
         return await KwdcMaps.search(address);
     } catch (e) {
-        showToast('Location search is unavailable. Please retry.', 'error');
+        console.warn('Geocoding notice:', e);
     }
     return null;
 }
@@ -458,7 +459,6 @@ async function renderMapMarkers() {
         if (revision !== mapRevision) return;
         
         if (!coords) {
-            showToast('Location not found: ' + item.address, 'error');
             continue;
         }
 

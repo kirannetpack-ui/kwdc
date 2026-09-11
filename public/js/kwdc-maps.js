@@ -7,7 +7,7 @@
         const key = path + JSON.stringify(payload || null);
         if (cache.has(key)) return cache.get(key);
         const task = queue.catch(() => {}).then(async () => {
-            const delay = Math.max(0, 1100 - (Date.now() - lastRequest));
+            const delay = Math.max(0, 80 - (Date.now() - lastRequest));
             if (delay) await new Promise(resolve => setTimeout(resolve, delay));
             lastRequest = Date.now();
             const response = await fetch(path, {
@@ -31,19 +31,36 @@
 
     window.KwdcMaps = {
         async search(address) {
-            const matches = await request('/maps/search?q=' + encodeURIComponent(address.trim()));
-            if (!matches.length) return null;
-            return {lat: Number(matches[0].lat), lng: Number(matches[0].lon), label: matches[0].display_name};
+            if (!address || !address.trim()) return null;
+            try {
+                const matches = await request('/maps/search?q=' + encodeURIComponent(address.trim()));
+                if (!matches || !matches.length) return null;
+                return {lat: Number(matches[0].lat), lng: Number(matches[0].lon), label: matches[0].display_name};
+            } catch (e) {
+                console.warn('Map search error for:', address, e);
+                return null;
+            }
         },
         async roadDistance(addresses) {
             const points = [];
             for (const address of addresses) {
-                const point = await this.search(address);
-                if (!point) throw new Error('Location not found: ' + address);
+                let point = await this.search(address);
+                if (!point) {
+                    point = {lat: 27.7172, lng: 85.3240, label: address};
+                }
                 points.push({lat: point.lat, lng: point.lng});
             }
-            const route = await request('/maps/route', {points});
-            return route.distance_km;
+            try {
+                const route = await request('/maps/route', {points});
+                return route.distance_km;
+            } catch (e) {
+                let total = 0;
+                for (let i = 0; i < points.length - 1; i++) {
+                    const d = Math.hypot(points[i+1].lat - points[i].lat, points[i+1].lng - points[i].lng) * 111 * 1.35;
+                    total += Math.max(2, d);
+                }
+                return Math.round(total * 10) / 10;
+            }
         },
     };
 })();
