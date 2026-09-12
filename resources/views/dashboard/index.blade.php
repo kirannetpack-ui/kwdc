@@ -357,94 +357,103 @@
 @endphp
 
 <div class="max-w-7xl mx-auto space-y-6">
-    <!-- Clean Minimalist Hero Banner -->
-    <div class="kwdc-glass-card p-6 sm:p-7 flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        <div>
-            <div class="flex items-center gap-2 mb-2">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
-                    <i class="fas fa-layer-group"></i> {{ $roleTitle }}
-                </span>
-            </div>
-            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                Namaste, {{ $user->name }}
-            </h1>
-            <p class="text-xs text-slate-500 mt-1">
-                Logistics operations & live metrics.
-            </p>
-        </div>
-
-        <div class="flex items-center gap-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/80 text-xs font-bold">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Live</span>
-            </div>
-            <div class="px-3.5 py-1.5 rounded-full bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-600">
-                <i class="far fa-calendar-alt text-slate-400 mr-1.5"></i> {{ now()->format('M j, Y') }}
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Daily Operational Logistics Brief Widget -->
-    <div id="aiDashboardBriefWidget" class="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/90 shadow-xs relative overflow-hidden transition hover:border-slate-300">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <span class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-base shadow-xs shadow-orange-500/20 flex-shrink-0">
-                    <i class="fas fa-wand-magic-sparkles"></i>
-                </span>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h3 class="text-sm sm:text-base font-extrabold text-slate-900 mb-0 tracking-tight">Executive Logistics Brief</h3>
-                        <span class="inline-flex items-center gap-1 text-[10px] px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 font-bold border border-amber-200/80">
-                            <i class="fas fa-sparkles text-[9px]"></i> Gemini 3.5
-                        </span>
-                    </div>
-                    <p id="aiBriefGreeting" class="text-xs text-slate-500 mb-0 font-medium">Daily Operational Intelligence for {{ $roleTitle }}</p>
+    <!-- Unified Executive Command Hero & AI Logistics Brief -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+        <!-- LEFT: Welcome & Live Operations Telemetry (5 cols) -->
+        <div class="lg:col-span-5 kwdc-hero-welcome">
+            <div>
+                <div class="flex items-center justify-between gap-3 mb-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
+                        <i class="fas fa-layer-group"></i> {{ $roleTitle }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>Active Session</span>
+                    </span>
                 </div>
-            </div>
-            <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="self-start sm:self-auto inline-flex items-center gap-2 text-xs px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 font-semibold transition border border-slate-200 shadow-2xs">
-                <i class="fas fa-rotate text-[11px]" id="aiBriefRefreshIcon"></i>
-                <span>Refresh Brief</span>
-            </button>
-        </div>
-
-        <div id="aiBriefLoading" class="hidden text-center py-6 text-xs text-slate-500">
-            <div class="spinner-border spinner-border-sm text-orange-500 mb-2" role="status"></div>
-            <p class="font-medium">Synthesizing operations across dispatches, warehouses & shipments...</p>
-        </div>
-
-        <div id="aiBriefContent" class="pt-4 space-y-3.5">
-            <div class="bg-amber-50/60 border border-amber-200/60 rounded-xl p-3.5 flex items-start gap-2.5">
-                <i class="fas fa-bolt text-amber-500 text-sm mt-0.5 flex-shrink-0"></i>
-                <p id="aiBriefSummary" class="text-xs font-medium text-slate-800 leading-relaxed mb-0">
-                    Operations active across Kathmandu & regional transit corridors.
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                    Namaste, {{ $user->name }}
+                </h1>
+                <p class="text-xs text-slate-400 font-medium mt-1">
+                    {{ now()->format('l, F j, Y') }} &bull; {{ now()->format('h:i A') }}
+                </p>
+                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                    Real-time command center for logistics throughput, dispatch flows, and warehousing status across Kathmandu corridors.
                 </p>
             </div>
 
+            <!-- Quick Telemetry Chips -->
+            <div class="grid grid-cols-3 gap-2.5 pt-4 mt-4 border-t border-slate-100">
+                <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 text-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Dispatches</span>
+                    <span class="text-base font-extrabold text-slate-900 mt-0.5 block">{{ $stats['pending_dispatches'] ?? ($stats['active_jobs'] ?? 18) }}</span>
+                </div>
+                <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 text-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Storage</span>
+                    <span class="text-base font-extrabold text-slate-900 mt-0.5 block">{{ $stats['occupancyRate'] ?? 70 }}%</span>
+                </div>
+                <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 text-center">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Network</span>
+                    <span class="text-xs font-extrabold text-emerald-600 mt-1 flex items-center justify-center gap-1">
+                        <i class="fas fa-circle-check text-[10px]"></i> Optimal
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: AI Logistics Brief Card (7 cols) -->
+        <div class="lg:col-span-7 kwdc-brief-card flex flex-col justify-between" id="aiDashboardBriefWidget">
             <div>
-                <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                    <i class="fas fa-bullseye text-orange-500"></i> Operational Highlights
-                </h4>
-                <ul id="aiBriefBullets" class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-700">
-                    <li class="bg-slate-50/80 hover:bg-slate-100/70 border border-slate-200/80 rounded-xl p-3.5 flex items-start gap-2.5 transition">
-                        <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5"><i class="fas fa-check"></i></span>
-                        <span class="font-medium text-slate-700">Dispatches are tracked and running with normal transit windows.</span>
-                    </li>
-                    <li class="bg-slate-50/80 hover:bg-slate-100/70 border border-slate-200/80 rounded-xl p-3.5 flex items-start gap-2.5 transition">
-                        <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5"><i class="fas fa-check"></i></span>
-                        <span class="font-medium text-slate-700">Warehouse storage and inventory occupancy stable.</span>
-                    </li>
-                    <li class="bg-slate-50/80 hover:bg-slate-100/70 border border-slate-200/80 rounded-xl p-3.5 flex items-start gap-2.5 transition">
-                        <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5"><i class="fas fa-check"></i></span>
-                        <span class="font-medium text-slate-700">Fleet availability ready for pending order assignments.</span>
-                    </li>
-                </ul>
+                <div class="flex items-center justify-between gap-4 pb-3.5 border-b border-slate-100">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-xs shadow-xs flex-shrink-0">
+                            <i class="fas fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-sm font-extrabold text-slate-900 tracking-tight mb-0">AI Logistics Brief</h2>
+                            <span class="text-[11px] text-slate-400 font-medium">Powered by Gemini 3.5</span>
+                        </div>
+                    </div>
+                    <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-600 font-semibold transition border border-slate-200 shadow-2xs">
+                        <i class="fas fa-rotate text-[10px]" id="aiBriefRefreshIcon"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <div id="aiBriefLoading" class="hidden text-center py-6 text-xs text-slate-500">
+                    <div class="spinner-border spinner-border-sm text-orange-500 mb-2" role="status"></div>
+                    <p class="font-medium">Synthesizing logistics intelligence...</p>
+                </div>
+
+                <div id="aiBriefContent" class="pt-3.5 space-y-3">
+                    <p id="aiBriefSummary" class="text-xs text-slate-600 leading-relaxed font-medium mb-0">
+                        The network has generated NPR 111,300 in total revenue across 18 dispatches, with warehouse capacity steady at 70%.
+                    </p>
+
+                    <div id="aiBriefBullets" class="space-y-2">
+                        <div class="kwdc-signal-row">
+                            <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Expedite clearance of 2 pending warehouses to expand active storage capacity.</span>
+                        </div>
+                        <div class="kwdc-signal-row">
+                            <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Optimize driver allocations across fleet to prevent dispatch bottlenecks.</span>
+                        </div>
+                        <div class="kwdc-signal-row">
+                            <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">6 pending dispatch orders ready for operational assignment.</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="bg-slate-900 text-white rounded-xl p-3.5 text-xs flex items-start sm:items-center gap-3 shadow-2xs">
-                <span class="w-6 h-6 rounded-lg bg-orange-500 text-white flex items-center justify-center flex-shrink-0 text-[11px] font-bold shadow-xs">★</span>
-                <div class="flex-1">
-                    <span class="font-bold text-amber-400">Recommended Action: </span>
-                    <span id="aiBriefAction" class="text-slate-200 font-medium">Review today's pending dispatches and confirm delivery routes.</span>
+            <div class="mt-3.5 pt-3 border-t border-slate-100">
+                <div class="kwdc-priority-box">
+                    <i class="fas fa-triangle-exclamation text-amber-500 mt-0.5 text-xs flex-shrink-0"></i>
+                    <div>
+                        <span class="font-bold text-amber-900">Priority: </span>
+                        <span id="aiBriefAction" class="text-amber-800 font-medium">Prioritize the evaluation of the 2 pending warehouse applications today.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1049,10 +1058,10 @@ function renderBrief(b) {
         const bEl = document.getElementById('aiBriefBullets');
         if (bEl) {
             bEl.innerHTML = b.operational_bullets.map(text => `
-                <li class="bg-slate-50/80 hover:bg-slate-100/70 border border-slate-200/80 rounded-xl p-3.5 flex items-start gap-2.5 transition">
-                    <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 text-[10px] mt-0.5"><i class="fas fa-check"></i></span>
-                    <span class="font-medium text-slate-700">${text}</span>
-                </li>
+                <div class="kwdc-signal-row">
+                    <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
+                    <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">${text}</span>
+                </div>
             `).join('');
         }
     }
