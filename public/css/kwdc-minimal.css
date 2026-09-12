@@ -35,39 +35,6 @@ body.kwdc-app-shell {
     margin: 2px 0 0;
 }
 
-.kwdc-app-shell .sidebar .kwdc-sidebar-user {
-    background: rgba(255, 255, 255, 0.04) !important;
-    border: 1px solid rgba(255, 255, 255, 0.08) !important;
-    border-radius: 16px;
-    margin: 8px 14px 16px;
-    padding: 12px 14px;
-}
-
-.kwdc-app-shell .sidebar .kwdc-sidebar-user p.font-semibold {
-    color: #ffffff !important;
-    font-size: 13px;
-    margin: 0;
-}
-
-.kwdc-app-shell .sidebar .kwdc-sidebar-user p.text-gray-400 {
-    color: #94a3b8 !important;
-    font-size: 11px;
-    margin: 2px 0 0;
-}
-
-.kwdc-app-shell .sidebar .kwdc-role-pill {
-    background: rgba(249, 115, 22, 0.15) !important;
-    color: #fb923c !important;
-    border: 1px solid rgba(249, 115, 22, 0.3) !important;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    padding: 2px 8px;
-    border-radius: 6px;
-    display: inline-block;
-    margin-top: 4px;
-}
-
 .kwdc-app-shell .sidebar .sidebar-link {
     color: #94a3b8 !important;
     font-weight: 500;
@@ -78,7 +45,7 @@ body.kwdc-app-shell {
     display: flex;
     align-items: center;
     gap: 10px;
-    transition: all 0.16s ease;
+    transition: color 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .kwdc-app-shell .sidebar .sidebar-link:hover {
@@ -139,6 +106,55 @@ body.kwdc-app-shell {
 
 .top-bar .dropdown-toggle::after {
     display: none !important;
+}
+
+/* Minimalist Top Bar Search / AI Button */
+.kwdc-topbar-search {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+    width: 220px !important;
+    max-width: 260px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-align: left !important;
+    text-decoration: none !important;
+}
+
+.kwdc-topbar-search:hover {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+.kwdc-topbar-search .kwdc-kbd {
+    margin-left: auto !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.04em !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
 /* Card Surfaces */

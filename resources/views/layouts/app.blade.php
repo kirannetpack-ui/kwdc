@@ -140,25 +140,6 @@
         </div>
     </div>
     
-    @auth
-    <div class="kwdc-sidebar-user p-4">
-        <div class="flex items-center space-x-3">
-            <a href="{{ route('profile.edit') }}" class="kwdc-user-avatar w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-orange-500 to-amber-600 text-white border border-white/10 flex items-center justify-center flex-shrink-0 font-extrabold text-sm shadow-sm transition hover:scale-105" title="Edit Profile">
-                @if(Auth::user()->profile_photo && file_exists(public_path(Auth::user()->profile_photo)))
-                    <img src="{{ asset(Auth::user()->profile_photo) }}" alt="{{ Auth::user()->name }}" class="w-full h-full object-cover">
-                @else
-                    <span>{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
-                @endif
-            </a>
-            <div class="min-w-0 flex-1">
-                <p class="font-semibold text-xs text-white truncate">{{ Auth::user()->name }}</p>
-                <p class="text-[10px] text-slate-400 truncate">{{ Auth::user()->email }}</p>
-                <span class="kwdc-role-pill text-[10px]">{{ ucfirst(str_replace('_', ' ', Auth::user()->role ?? 'User')) }}</span>
-            </div>
-        </div>
-    </div>
-    @endauth
-    
     <!-- Navigation -->
     <nav class="py-4">
         @auth
@@ -406,7 +387,7 @@
                 <div class="flex items-center gap-1.5 text-xs font-semibold">
                     <span class="text-slate-400 uppercase tracking-wider">Portal</span>
                     <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
-                    <span class="text-slate-800 font-extrabold uppercase tracking-wider">@yield('header', 'Dashboard')</span>
+                    <span class="text-slate-800 font-extrabold uppercase tracking-wider" id="kwdc-topbar-header">@yield('header', 'Dashboard')</span>
                 </div>
                 <div class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -417,10 +398,10 @@
 
         <!-- CENTER: QUICK SEARCH / COMMAND PILL -->
         <div class="hidden lg:flex items-center">
-            <button type="button" onclick="if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" class="flex items-center gap-2.5 px-3.5 py-1.5 bg-slate-100/90 hover:bg-slate-200/70 text-slate-500 hover:text-slate-700 rounded-full text-xs transition border border-slate-200/70 w-64 shadow-2xs cursor-pointer text-start">
-                <i class="fas fa-wand-magic-sparkles text-[11px] text-amber-500"></i>
-                <span class="font-medium text-slate-600">Ask AI Copilot or search...</span>
-                <kbd class="ml-auto font-mono text-[10px] bg-white border border-slate-200 text-slate-400 px-1.5 py-0.5 rounded font-bold shadow-2xs">Ctrl K</kbd>
+            <button type="button" onclick="if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" class="kwdc-topbar-search" aria-label="Search or Ask AI">
+                <i class="fas fa-wand-magic-sparkles text-[11px] text-amber-500 flex-shrink-0"></i>
+                <span class="truncate">Search or Ask AI...</span>
+                <span class="kwdc-kbd">Ctrl+K</span>
             </button>
         </div>
 
@@ -520,7 +501,7 @@
     @if(session('warning')) <div class="alert alert-warning mx-4 mt-4">{{ session('warning') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
     @if(session('info')) <div class="alert alert-info mx-4 mt-4">{{ session('info') }} <button type="button" class="float-right" onclick="this.parentElement.style.display='none'">&times;</button></div> @endif
     
-    <div class="page-content">
+    <div class="page-content" id="kwdc-page-content">
         @yield('content')
         <footer class="kwdc-portal-footer mt-12 pt-6 pb-8 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
             <div class="flex items-center gap-2">
@@ -1287,5 +1268,6 @@
 </div>
 
 <script src="{{ asset('js/voice-assistant.js') }}"></script>
+@stack('scripts')
 </body>
 </html>
