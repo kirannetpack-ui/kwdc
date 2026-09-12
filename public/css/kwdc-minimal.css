@@ -262,20 +262,23 @@ html {
     box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
 }
 
-.kwdc-signal-row {
+.kwdc-signal-row,
+.kwdc-insight-row {
     background: #f8fafc;
     border: 1px solid #edf2f7;
     border-radius: 12px;
-    padding: 10px 14px;
+    padding: 11px 14px;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    transition: all 0.16s ease;
+    gap: 12px;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.kwdc-signal-row:hover {
+.kwdc-signal-row:hover,
+.kwdc-insight-row:hover {
     background: #f1f5f9;
-    border-color: #e2e8f0;
+    border-color: #cbd5e1;
+    transform: translateX(1px);
 }
 
 .kwdc-signal-badge {
@@ -292,18 +295,14 @@ html {
     margin-top: 1px;
 }
 
-.kwdc-priority-box {
+.kwdc-priority-box,
+.kwdc-priority-banner {
     background: #fffbeb;
     border: 1px solid #fef3c7;
-    border-left: 3.5px solid #f59e0b;
-    border-radius: 12px;
-    padding: 12px 14px;
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    font-size: 12px;
-    color: #78350f;
-    line-height: 1.5;
+    border-left: 4px solid #f59e0b;
+    border-radius: 14px;
+    padding: 12px 16px;
+    transition: all 0.16s ease;
 }
 
 /* ==========================================================================

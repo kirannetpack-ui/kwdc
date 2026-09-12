@@ -359,14 +359,18 @@
 <div class="max-w-7xl mx-auto space-y-6">
     <!-- Unified Executive Command Hero & AI Logistics Brief -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        <!-- LEFT: Welcome & Live Operations Telemetry (5 cols) -->
-        <div class="lg:col-span-5 kwdc-hero-welcome">
+        <!-- LEFT: Executive Mission Control & Capacity Overview (5 cols) -->
+        <div class="lg:col-span-5 kwdc-hero-welcome space-y-4">
+            <!-- Greeting Header -->
             <div>
-                <div class="flex items-center justify-between gap-3 mb-3">
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
-                        <i class="fas fa-layer-group"></i> {{ $roleTitle }}
-                    </span>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
+                            <i class="fas fa-layer-group"></i> {{ $roleTitle }}
+                        </span>
+                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Executive Overview</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span>Active Session</span>
                     </span>
@@ -374,29 +378,62 @@
                 <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
                     Namaste, {{ $user->name }}
                 </h1>
-                <p class="text-xs text-slate-400 font-medium mt-1">
+                <p class="text-xs text-slate-400 font-medium mt-0.5">
                     {{ now()->format('l, F j, Y') }} &bull; {{ now()->format('h:i A') }}
-                </p>
-                <p class="text-xs text-slate-500 mt-2 leading-relaxed">
-                    Real-time command center for logistics throughput, dispatch flows, and warehousing status across Kathmandu corridors.
                 </p>
             </div>
 
-            <!-- Quick Telemetry Chips -->
-            <div class="grid grid-cols-3 gap-2.5 pt-4 mt-4 border-t border-slate-100">
-                <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 text-center">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Dispatches</span>
-                    <span class="text-base font-extrabold text-slate-900 mt-0.5 block">{{ $stats['pending_dispatches'] ?? ($stats['active_jobs'] ?? 18) }}</span>
+            <!-- Visual Capacity Ring & Utilization Gauge -->
+            <div class="bg-gradient-to-br from-slate-50 to-slate-100/70 border border-slate-200/80 rounded-2xl p-3.5">
+                <div class="flex items-center gap-3.5">
+                    <div class="relative w-14 h-14 flex-shrink-0">
+                        <svg class="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
+                            <path class="text-slate-200" stroke-width="3.5" stroke="currentColor" fill="none"
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                            <path class="text-orange-500 transition-all duration-1000 ease-out" stroke-dasharray="{{ $stats['occupancyRate'] ?? 70 }}, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
+                                  d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                        </svg>
+                        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+                            <span class="text-xs font-extrabold text-slate-900 leading-none">{{ $stats['occupancyRate'] ?? 70 }}%</span>
+                            <span class="text-[7px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Used</span>
+                        </div>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center justify-between gap-2">
+                            <span class="text-xs font-bold text-slate-900 truncate">Hub Storage Occupancy</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 flex-shrink-0">
+                                +3.2% ↑
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                            {{ $stats['approved_warehouses'] ?? 4 }} primary facility hubs active across Kathmandu corridors.
+                        </p>
+                    </div>
                 </div>
-                <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 text-center">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Storage</span>
-                    <span class="text-base font-extrabold text-slate-900 mt-0.5 block">{{ $stats['occupancyRate'] ?? 70 }}%</span>
+            </div>
+
+            <!-- Live Telemetry Row: 3 High-Density Tiles -->
+            <div class="grid grid-cols-3 gap-2.5 pt-1">
+                <div class="bg-white border border-slate-200/90 rounded-xl p-2.5 shadow-2xs hover:border-slate-300 transition text-left">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">Dispatches</span>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span class="text-base font-extrabold text-slate-900 kwdc-kpi-val">{{ $stats['total_dispatches'] ?? 18 }}</span>
+                        <span class="text-[10px] font-bold text-orange-600 truncate">{{ $stats['pending_dispatches'] ?? 6 }} queue</span>
+                    </div>
                 </div>
-                <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 text-center">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Network</span>
-                    <span class="text-xs font-extrabold text-emerald-600 mt-1 flex items-center justify-center gap-1">
-                        <i class="fas fa-circle-check text-[10px]"></i> Optimal
-                    </span>
+                <div class="bg-white border border-slate-200/90 rounded-xl p-2.5 shadow-2xs hover:border-slate-300 transition text-left">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">Fleet Units</span>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span class="text-base font-extrabold text-slate-900 kwdc-kpi-val">{{ $stats['active_drivers'] ?? ($stats['drivers'] ?? 6) }}</span>
+                        <span class="text-[10px] font-bold text-slate-400 truncate">/ {{ $stats['vehicles'] ?? 10 }}</span>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-200/90 rounded-xl p-2.5 shadow-2xs hover:border-slate-300 transition text-left">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">Network</span>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-xs font-extrabold text-slate-800">Optimal</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -404,14 +441,14 @@
         <!-- RIGHT: AI Logistics Brief Card (7 cols) -->
         <div class="lg:col-span-7 kwdc-brief-card flex flex-col justify-between" id="aiDashboardBriefWidget">
             <div>
-                <div class="flex items-center justify-between gap-4 pb-3.5 border-b border-slate-100">
+                <div class="flex items-center justify-between gap-4 pb-3 border-b border-slate-100">
                     <div class="flex items-center gap-2.5">
                         <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-xs shadow-xs flex-shrink-0">
                             <i class="fas fa-wand-magic-sparkles"></i>
                         </div>
                         <div>
                             <h2 class="text-sm font-extrabold text-slate-900 tracking-tight mb-0">AI Logistics Brief</h2>
-                            <span class="text-[11px] text-slate-400 font-medium">Powered by Gemini 3.5</span>
+                            <span class="text-[11px] text-slate-400 font-medium">Powered by Gemini 3.5 &bull; Real-time Operations</span>
                         </div>
                     </div>
                     <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-600 font-semibold transition border border-slate-200 shadow-2xs">
@@ -425,35 +462,49 @@
                     <p class="font-medium">Synthesizing logistics intelligence...</p>
                 </div>
 
-                <div id="aiBriefContent" class="pt-3.5 space-y-3">
+                <div id="aiBriefContent" class="pt-3 space-y-2.5">
                     <p id="aiBriefSummary" class="text-xs text-slate-600 leading-relaxed font-medium mb-0">
-                        The network has generated NPR 111,300 in total revenue across 18 dispatches, with warehouse capacity steady at 70%.
+                        Network operations are managing 18 total dispatches with a healthy revenue baseline of 111,300, though 6 dispatches remain pending execution.
                     </p>
 
                     <div id="aiBriefBullets" class="space-y-2">
-                        <div class="kwdc-signal-row">
-                            <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
-                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Expedite clearance of 2 pending warehouses to expand active storage capacity.</span>
+                        <div class="kwdc-insight-row">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border bg-blue-50 text-blue-700 border-blue-200/80 flex-shrink-0 mt-0.5">
+                                <i class="fas fa-truck-fast text-[9px]"></i> DISPATCH
+                            </span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Prioritize clearing the 6 pending dispatches to improve the 4 completed dispatch ratio.</span>
                         </div>
-                        <div class="kwdc-signal-row">
-                            <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
-                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Optimize driver allocations across fleet to prevent dispatch bottlenecks.</span>
+                        <div class="kwdc-insight-row">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border bg-emerald-50 text-emerald-700 border-emerald-200/80 flex-shrink-0 mt-0.5">
+                                <i class="fas fa-warehouse text-[9px]"></i> CAPACITY
+                            </span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Review and process the 2 pending warehouse approvals to expand operational capacity from the current 4 active facilities.</span>
                         </div>
-                        <div class="kwdc-signal-row">
-                            <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
-                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">6 pending dispatch orders ready for operational assignment.</span>
+                        <div class="kwdc-insight-row">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border bg-amber-50 text-amber-700 border-amber-200/80 flex-shrink-0 mt-0.5">
+                                <i class="fas fa-id-card text-[9px]"></i> FLEET
+                            </span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">Coordinate with available vehicle assets (10 registered) and drivers (6 active) to handle the 2 pending system requests.</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-3.5 pt-3 border-t border-slate-100">
-                <div class="kwdc-priority-box">
-                    <i class="fas fa-triangle-exclamation text-amber-500 mt-0.5 text-xs flex-shrink-0"></i>
-                    <div>
-                        <span class="font-bold text-amber-900">Priority: </span>
-                        <span id="aiBriefAction" class="text-amber-800 font-medium">Prioritize the evaluation of the 2 pending warehouse applications today.</span>
+            <div class="mt-3 pt-3 border-t border-slate-100">
+                <div class="kwdc-priority-banner flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-start gap-2.5 min-w-0">
+                        <span class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-800 flex items-center justify-center text-xs flex-shrink-0 mt-0.5">
+                            <i class="fas fa-bolt"></i>
+                        </span>
+                        <div class="text-xs text-amber-900 leading-relaxed min-w-0">
+                            <strong class="font-extrabold uppercase tracking-wider text-[10px] text-amber-900 block mb-0.5">Priority Directive:</strong>
+                            <span id="aiBriefAction">Immediately allocate available driver and vehicle resources to clear the 6 pending dispatches and review the 2 pending warehouse applications.</span>
+                        </div>
                     </div>
+                    <a href="{{ $role === 'admin' ? route('admin.dispatch') : ($role === 'driver' ? route('driver.jobs') : route('dispatch.direct-create')) }}" class="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0 shadow-2xs self-end sm:self-auto">
+                        <span>Take Action</span>
+                        <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -1044,6 +1095,25 @@ async function refreshDashboardAiBrief(force = false) {
     }
 }
 
+function getCategoryForBullet(text, idx) {
+    const t = (text || '').toLowerCase();
+    if (t.includes('dispatch') || t.includes('delivery') || t.includes('order') || t.includes('transit')) {
+        return { tag: 'DISPATCH', bg: 'bg-blue-50 text-blue-700 border-blue-200/80', icon: 'fa-truck-fast' };
+    }
+    if (t.includes('warehouse') || t.includes('storage') || t.includes('capacity') || t.includes('occupancy') || t.includes('facility')) {
+        return { tag: 'CAPACITY', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', icon: 'fa-warehouse' };
+    }
+    if (t.includes('driver') || t.includes('vehicle') || t.includes('fleet') || t.includes('asset') || t.includes('truck')) {
+        return { tag: 'FLEET', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', icon: 'fa-id-card' };
+    }
+    const defaults = [
+        { tag: 'DISPATCH', bg: 'bg-blue-50 text-blue-700 border-blue-200/80', icon: 'fa-truck-fast' },
+        { tag: 'CAPACITY', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', icon: 'fa-warehouse' },
+        { tag: 'FLEET', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', icon: 'fa-id-card' }
+    ];
+    return defaults[idx % defaults.length];
+}
+
 function renderBrief(b) {
     if (!b) return;
     if (b.greeting) {
@@ -1057,12 +1127,17 @@ function renderBrief(b) {
     if (Array.isArray(b.operational_bullets) && b.operational_bullets.length) {
         const bEl = document.getElementById('aiBriefBullets');
         if (bEl) {
-            bEl.innerHTML = b.operational_bullets.map(text => `
-                <div class="kwdc-signal-row">
-                    <span class="kwdc-signal-badge"><i class="fas fa-check"></i></span>
-                    <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">${text}</span>
-                </div>
-            `).join('');
+            bEl.innerHTML = b.operational_bullets.map((text, idx) => {
+                const cat = getCategoryForBullet(text, idx);
+                return `
+                    <div class="kwdc-insight-row">
+                        <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border ${cat.bg} flex-shrink-0 mt-0.5">
+                            <i class="fas ${cat.icon} text-[9px]"></i> ${cat.tag}
+                        </span>
+                        <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">${text}</span>
+                    </div>
+                `;
+            }).join('');
         }
     }
     if (b.recommended_action) {
