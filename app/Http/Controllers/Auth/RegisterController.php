@@ -4,15 +4,14 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Models\Driver;
-use App\Models\PropertyOwner;
-use App\Models\EquipmentOwner;
 use App\Models\SecurityAgency;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use App\Services\AdminEmailService;
+use App\Services\ActivationCodeService;
 
 class RegisterController extends Controller
 {
@@ -21,11 +20,13 @@ class RegisterController extends Controller
     protected $redirectTo = '/dashboard';
 
     protected $adminEmailService;
+    protected $activationCodeService;
 
-    public function __construct(AdminEmailService $adminEmailService)
+    public function __construct(AdminEmailService $adminEmailService, ActivationCodeService $activationCodeService)
     {
         $this->middleware('guest');
         $this->adminEmailService = $adminEmailService;
+        $this->activationCodeService = $activationCodeService;
     }
 
     /**
@@ -39,24 +40,25 @@ class RegisterController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
             'role' => ['required', 'string', 'in:client,driver,property_owner,equipment_owner,security_agency'],
         ];
 
         // Conditional validation based on role
-        if ($data['role'] === 'driver') {
+        if (($data['role'] ?? null) === 'driver') {
             $rules['vehicle_type'] = ['nullable', 'string', 'max:50'];
             $rules['license_number'] = ['nullable', 'string', 'max:50'];
         }
 
-        if ($data['role'] === 'property_owner') {
+        if (($data['role'] ?? null) === 'property_owner') {
             $rules['company_name'] = ['nullable', 'string', 'max:255'];
         }
 
-        if ($data['role'] === 'equipment_owner') {
+        if (($data['role'] ?? null) === 'equipment_owner') {
             $rules['equipment_type'] = ['nullable', 'string', 'max:255'];
         }
 
-        if ($data['role'] === 'security_agency') {
+        if (($data['role'] ?? null) === 'security_agency') {
             $rules['agency_name'] = ['required', 'string', 'max:255'];
             $rules['registration_number'] = ['required', 'string', 'max:100'];
         }
@@ -70,64 +72,49 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        // 1. Create the user
+        $roleFlags = $this->roleFlags($data['role']);
+
         $user = User::create([
             'user_code' => $this->generateUserCode($data['role']),
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'phone' => $data['phone'] ?? null,
+            'address' => $data['address'] ?? null,
             'role' => $data['role'],
+            'user_type' => $data['role'],
             'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
+            'email_verified_at' => null,
+        ] + $roleFlags);
 
-        // 2. Create role-specific profile
-        switch ($data['role']) {
-            case 'driver':
-                Driver::create([
-                    'user_id' => $user->id,
-                    'vehicle_type' => $data['vehicle_type'] ?? 'Standard',
-                    'license_number' => $data['license_number'] ?? null,
-                ]);
-                break;
-
-            case 'property_owner':
-                PropertyOwner::create([
-                    'user_id' => $user->id,
-                    'company_name' => $data['company_name'] ?? null,
-                ]);
-                break;
-
-            case 'equipment_owner':
-                EquipmentOwner::create([
-                    'user_id' => $user->id,
-                    'equipment_type' => $data['equipment_type'] ?? null,
-                ]);
-                break;
-
-            case 'security_agency':
-                SecurityAgency::create([
-                    'user_id' => $user->id,
-                    'agency_name' => $data['agency_name'],
-                    'registration_number' => $data['registration_number'],
-                    'status' => 'pending',  // Admin will approve later
-                ]);
-                break;
-
-            // Client does not need a separate profile
-            case 'client':
-            default:
-                break;
+        if ($data['role'] === 'security_agency') {
+            SecurityAgency::create([
+                'user_id' => $user->id,
+                'agency_name' => $data['agency_name'],
+                'registration_number' => $data['registration_number'],
+                'status' => 'pending',
+            ]);
         }
 
-        // 3. Send admin notification (existing)
-        $this->adminEmailService->notifyNewUser($user);
+        $this->activationCodeService->send($user);
 
-        // 4. Send welcome email (existing)
-        $this->sendWelcomeEmail($user);
+        if (! $this->phaseOneDemo()) {
+            $this->sendWelcomeEmail($user);
+            $this->sendAdminRegistrationNotice($user);
+        }
 
         return $user;
+    }
+
+    private function roleFlags(string $role): array
+    {
+        return [
+            'is_admin' => false,
+            'is_client' => $role === 'client',
+            'is_driver' => $role === 'driver',
+            'is_property_owner' => $role === 'property_owner',
+            'is_equipment_owner' => $role === 'equipment_owner',
+        ];
     }
 
     /**
@@ -164,11 +151,29 @@ class RegisterController extends Controller
         }
     }
 
+    private function sendAdminRegistrationNotice($user): void
+    {
+        try {
+            $this->adminEmailService->notifyNewUser($user);
+        } catch (\Throwable $e) {
+            Log::warning('Admin registration notice skipped: ' . $e->getMessage(), [
+                'user_id' => $user->id,
+            ]);
+        }
+    }
+
+    private function phaseOneDemo(): bool
+    {
+        return (bool) config('kwdc.demo') && app()->environment('local');
+    }
+
     /**
      * The user has been registered – redirect to dashboard.
      */
     protected function registered(\Illuminate\Http\Request $request, $user)
     {
-        return redirect()->route('dashboard');
+        return redirect()
+            ->route('activation.notice', ['email' => $user->email])
+            ->with('status', session('status', 'We sent an activation code to your email.'));
     }
 }

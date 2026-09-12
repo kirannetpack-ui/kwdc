@@ -6,17 +6,29 @@ use Illuminate\Http\Request;
 use App\Models\Box;
 use App\Models\Warehouse;
 use App\Models\Stock;
+use Illuminate\Support\Facades\Schema;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Symfony\Component\HttpFoundation\Response;
 
 class BoxController extends Controller
 {
     public function index()
     {
-        $boxes = Box::whereHas('warehouse', function($q) {
-            $q->where('owner_id', auth()->id());
-        })->orWhere('client_id', auth()->id())
-        ->latest()
-        ->paginate(20);
+        $user = auth()->user();
+
+        $boxes = Box::with('warehouse')
+            ->where(function ($query) use ($user) {
+                if (($user->role ?? null) === 'admin') {
+                    return;
+                }
+
+                $query->where('client_id', $user->id)
+                    ->orWhereHas('warehouse', function ($warehouseQuery) use ($user) {
+                        $this->whereWarehouseOwner($warehouseQuery, $user->id);
+                    });
+            })
+            ->latest()
+            ->paginate(20);
         
         return view('client.boxes.index', compact('boxes'));
     }
@@ -45,20 +57,20 @@ public function store(Request $request)
     $batchId = 'BATCH-' . date('Ymd') . '-' . strtoupper(uniqid());
     
     // Handle file uploads
-    $invoicePath = $request->file('invoice_document')->store('boxes/documents/invoices', 'public');
+    $invoicePath = $request->file('invoice_document')->store('boxes/documents/invoices', 'private_uploads');
     $packingPath = null;
     $insurancePath = null;
     $otherPaths = [];
     
     if ($request->hasFile('packing_list_document')) {
-        $packingPath = $request->file('packing_list_document')->store('boxes/documents/packing_lists', 'public');
+        $packingPath = $request->file('packing_list_document')->store('boxes/documents/packing_lists', 'private_uploads');
     }
     if ($request->hasFile('insurance_document')) {
-        $insurancePath = $request->file('insurance_document')->store('boxes/documents/insurance', 'public');
+        $insurancePath = $request->file('insurance_document')->store('boxes/documents/insurance', 'private_uploads');
     }
     if ($request->hasFile('other_documents')) {
         foreach ($request->file('other_documents') as $file) {
-            $otherPaths[] = $file->store('boxes/documents/others', 'public');
+            $otherPaths[] = $file->store('boxes/documents/others', 'private_uploads');
         }
     }
     
@@ -106,7 +118,7 @@ public function store(Request $request)
 
     public function getQR($id)
 {
-    $box = Box::with('warehouse')->findOrFail($id);
+    $box = $this->findAccessibleBox($id);
     
     return response()->json([
         'qr_data' => $box->generateQRData(),
@@ -123,27 +135,72 @@ public function store(Request $request)
     
     public function track($id)
 {
-    $box = Box::with('warehouse')->findOrFail($id);
+    $box = $this->findAccessibleBox($id);
     return view('client.boxes.track', compact('box'));
 }
 
     
 public function getDocuments($id)
 {
-    $box = Box::findOrFail($id);
+    $box = $this->findAccessibleBox($id);
+
     return response()->json([
-        'invoice_document' => $box->invoice_document,
-        'packing_list_document' => $box->packing_list_document,
-        'insurance_document' => $box->insurance_document,
-        'other_documents' => $box->other_documents,
+        'invoice_document' => $this->privateDocumentUrl($box->invoice_document),
+        'packing_list_document' => $this->privateDocumentUrl($box->packing_list_document),
+        'insurance_document' => $this->privateDocumentUrl($box->insurance_document),
+        'other_documents' => collect($box->other_documents ?? [])
+            ->filter()
+            ->map(fn (string $path) => $this->privateDocumentUrl($path))
+            ->values(),
     ]);
 }
     public function printLabel($id)
 {
-    $box = Box::with('warehouse')->findOrFail($id);
+    $box = $this->findAccessibleBox($id);
     $qrData = $box->generateQRData();
     
     return view('client.boxes.print', compact('box', 'qrData'));
 }
+
+    private function findAccessibleBox($id): Box
+    {
+        $box = Box::with('warehouse')->findOrFail($id);
+
+        abort_unless($this->canAccessBox(auth()->user(), $box), Response::HTTP_FORBIDDEN);
+
+        return $box;
+    }
+
+    private function canAccessBox($user, Box $box): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        if (($user->role ?? null) === 'admin') {
+            return true;
+        }
+
+        if ((int) $box->client_id === (int) $user->id) {
+            return true;
+        }
+
+        return (int) ($box->warehouse?->owner_id ?? 0) === (int) $user->id
+            || (int) ($box->warehouse?->user_id ?? 0) === (int) $user->id;
+    }
+
+    private function privateDocumentUrl(?string $path): ?string
+    {
+        return $path ? route('documents.private.show', ['path' => $path]) : null;
+    }
+
+    private function whereWarehouseOwner($query, int $userId): void
+    {
+        $query->where('user_id', $userId);
+
+        if (Schema::hasColumn('warehouses', 'owner_id')) {
+            $query->orWhere('owner_id', $userId);
+        }
+    }
 
 }

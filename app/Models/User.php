@@ -2,15 +2,16 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Auth\MustVerifyEmail as MustVerifyEmailTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\DispatchOrder;
+use App\Notifications\ProfessionalResetPasswordNotification;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, MustVerifyEmailTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -36,6 +37,8 @@ class User extends Authenticatable
         'user_type',                // Added to match your DB schema
         'preferred_location',       // Added to match your DB schema
         'email_verified_at',
+        'activation_code_hash',
+        'activation_expires_at',
     ];
 
     /**
@@ -46,6 +49,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'activation_code_hash',
     ];
 
     /**
@@ -55,6 +59,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'activation_expires_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
         'is_admin' => 'boolean',
@@ -107,6 +112,11 @@ class User extends Authenticatable
     public function isEquipmentOwner(): bool
     {
         return $this->role === 'equipment_owner' || $this->is_equipment_owner === true;
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ProfessionalResetPasswordNotification($token));
     }
 
     // ============================================================
@@ -206,5 +216,10 @@ class User extends Authenticatable
     public function dispatchOrders()
     {
         return $this->hasMany(DispatchOrder::class, 'driver_id');
+    }
+
+    public function reminders()
+    {
+        return $this->hasMany(UserReminder::class);
     }
 }

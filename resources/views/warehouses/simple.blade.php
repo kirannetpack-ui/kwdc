@@ -1,1 +1,0 @@
-"<x-app-layout><div class='p-6'><form method='POST' action='{{ route('warehouses.store') }}'>@csrf<button type='submit' class='bg-blue-500 text-white p-2'>Submit for Approval</button></form></div></x-app-layout>" 

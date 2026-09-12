@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
 use App\Models\Invoice;
 use App\Models\Transaction;
 use App\Services\PaymentService;
@@ -26,8 +26,11 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $invoices = Invoice::where('user_id', auth()->id())
-            ->where('status', 'unpaid')
+        $invoices = Invoice::where(function ($query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhere('client_id', auth()->id());
+            })
+            ->where('payment_status', 'unpaid')
             ->get();
         
         return view('payment.index', compact('invoices'));
@@ -40,28 +43,38 @@ class PaymentController extends Controller
     {
         $request->validate([
             'invoice_id' => 'required|exists:invoices,id',
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'nullable|numeric|min:1',
         ]);
 
-        $invoice = Invoice::findOrFail($request->invoice_id);
+        $invoice = $this->payableInvoice((int) $request->invoice_id);
+        $amount = $this->invoicePayableAmount($invoice);
+
+        if ($request->filled('amount') && round((float) $request->amount, 2) !== $amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment amount does not match the invoice total.',
+            ], 422);
+        }
         
         $result = $this->paymentService->initiateKhaltiPayment(
-            $request->amount,
+            $amount,
             $invoice->invoice_number,
             auth()->id(),
             $invoice->id
         );
 
         if ($result['success']) {
+            $this->retirePendingTransactions($invoice, 'khalti');
+
             // Store transaction
             Transaction::create([
                 'invoice_id' => $invoice->id,
                 'user_id' => auth()->id(),
-                'amount' => $request->amount,
+                'amount' => $amount,
                 'payment_method' => 'khalti',
                 'transaction_id' => $result['data']['pidx'],
                 'status' => 'pending',
-                'payment_details' => json_encode($result['data']),
+                'payment_details' => $result['data'],
             ]);
 
             return response()->json([
@@ -82,37 +95,56 @@ class PaymentController extends Controller
      */
     public function khaltiVerify(Request $request)
     {
-        $pidx = $request->pidx;
+        $pidx = trim((string) $request->input('pidx'));
 
         if (!$pidx) {
             return redirect()->route('payment.failure')
                 ->with('error', 'Invalid payment request.');
         }
 
+        $transaction = Transaction::where('transaction_id', $pidx)
+            ->where('user_id', auth()->id())
+            ->where('payment_method', 'khalti')
+            ->first();
+
+        if (!$transaction) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction was not found.');
+        }
+
+        if ($transaction->isCompleted()) {
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment already completed.');
+        }
+
+        if (!$transaction->isPending()) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction is no longer payable.');
+        }
+
         $result = $this->paymentService->verifyKhaltiPayment($pidx);
 
         if ($result['success'] && $result['status'] === 'Completed') {
-            // Update transaction
-            $transaction = Transaction::where('transaction_id', $pidx)->first();
-            if ($transaction) {
-                $transaction->markAsCompleted();
-                $transaction->payment_details = json_encode($result['data']);
-                $transaction->save();
-                
-                // Mark invoice as paid
-                $invoice = Invoice::find($transaction->invoice_id);
-                if ($invoice) {
-                    $invoice->status = 'paid';
-                    $invoice->paid_at = now();
-                    $invoice->save();
+            $providerAmount = ((float) Arr::get($result, 'data.total_amount', 0)) / 100;
+            if ($providerAmount && round($providerAmount, 2) !== round((float) $transaction->amount, 2)) {
+                $transaction->markAsFailed('Provider amount did not match the invoice transaction amount.');
 
-                    // Send admin notification for payment
-                    $this->adminEmailService->notifyPaymentReceived($transaction, $invoice);
-                    
-                    // Send receipt to customer
-                    $this->sendReceipt($transaction, $invoice);
-                }
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment amount mismatch. Please contact support.');
             }
+
+            $invoice = Invoice::where('id', $transaction->invoice_id)
+                ->where('payment_status', 'unpaid')
+                ->first();
+
+            if (!$invoice) {
+                $transaction->markAsFailed('Invoice is missing or no longer payable.');
+
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment invoice is no longer payable.');
+            }
+
+            $this->completeVerifiedTransaction($transaction, $invoice, 'khalti', $result['data']);
             
             return redirect()->route('payment.success')
                 ->with('success', 'Payment completed successfully!');
@@ -147,26 +179,38 @@ class PaymentController extends Controller
     {
         $request->validate([
             'invoice_id' => 'required|exists:invoices,id',
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'nullable|numeric|min:1',
         ]);
 
-        $invoice = Invoice::findOrFail($request->invoice_id);
+        $invoice = $this->payableInvoice((int) $request->invoice_id);
+        $amount = $this->invoicePayableAmount($invoice);
+
+        if ($request->filled('amount') && round((float) $request->amount, 2) !== $amount) {
+            return redirect()->back()
+                ->with('error', 'Payment amount does not match the invoice total.');
+        }
         
         $result = $this->paymentService->initiateEsewaPayment(
-            $request->amount,
+            $amount,
             $invoice->invoice_number,
             $invoice->id
         );
 
         if ($result['success']) {
+            $this->retirePendingTransactions($invoice, 'esewa');
+
             // Store transaction
             Transaction::create([
                 'invoice_id' => $invoice->id,
                 'user_id' => auth()->id(),
-                'amount' => $request->amount,
+                'amount' => $amount,
                 'payment_method' => 'esewa',
                 'transaction_id' => $result['pid'],
                 'status' => 'pending',
+                'payment_details' => [
+                    'payment_url' => $result['url'],
+                    'pid' => $result['pid'],
+                ],
             ]);
 
             return redirect($result['url']);
@@ -181,30 +225,65 @@ class PaymentController extends Controller
      */
     public function esewaSuccess(Request $request)
     {
-        $pid = $request->pid;
-        $refId = $request->refId;
+        $pid = trim((string) $request->input('pid'));
+        $refId = trim((string) $request->input('refId'));
+
+        if (!$pid || !$refId) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Invalid payment request.');
+        }
         
-        $transaction = Transaction::where('transaction_id', $pid)->first();
+        $transaction = Transaction::where('transaction_id', $pid)
+            ->where('user_id', auth()->id())
+            ->where('payment_method', 'esewa')
+            ->first();
         
-        if ($transaction) {
-            $transaction->update([
-                'status' => 'completed',
-                'payment_details' => json_encode([
-                    'refId' => $refId,
-                    'pid' => $pid,
-                ]),
-            ]);
-            
-            $invoice = Invoice::find($transaction->invoice_id);
-            if ($invoice) {
-                $invoice->status = 'paid';
-                $invoice->paid_at = now();
-                $invoice->save();
-            }
+        if (!$transaction) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction was not found.');
         }
 
-        return redirect()->route('payment.success')
-            ->with('success', 'Payment completed successfully!');
+        if ($transaction->isCompleted()) {
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment already completed.');
+        }
+
+        if (!$transaction->isPending()) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction is no longer payable.');
+        }
+
+        $verification = $this->paymentService->verifyEsewaPayment(
+            $pid,
+            $refId,
+            (float) $transaction->amount
+        );
+
+        if ($verification['success'] ?? false) {
+            $invoice = Invoice::where('id', $transaction->invoice_id)
+                ->where('payment_status', 'unpaid')
+                ->first();
+
+            if (!$invoice) {
+                $transaction->markAsFailed('Invoice is missing or no longer payable.');
+
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment invoice is no longer payable.');
+            }
+
+            $this->completeVerifiedTransaction($transaction, $invoice, 'esewa', $verification['data'] ?? [
+                'refId' => $refId,
+                'pid' => $pid,
+            ]);
+
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment completed successfully!');
+        }
+
+        $transaction->markAsFailed($verification['message'] ?? 'eSewa verification failed.');
+
+        return redirect()->route('payment.failure')
+            ->with('error', 'Payment verification failed. Please contact support.');
     }
 
     /**
@@ -243,5 +322,48 @@ class PaymentController extends Controller
             ->paginate(20);
         
         return view('payment.history', compact('transactions'));
+    }
+
+    private function payableInvoice(int $invoiceId): Invoice
+    {
+        return Invoice::where('id', $invoiceId)
+            ->where(function ($query) {
+                $query->where('user_id', auth()->id())
+                    ->orWhere('client_id', auth()->id());
+            })
+            ->where('payment_status', 'unpaid')
+            ->firstOrFail();
+    }
+
+    private function invoicePayableAmount(Invoice $invoice): float
+    {
+        $amount = $invoice->grand_total ?: ($invoice->amount ?? 0);
+
+        return round((float) $amount, 2);
+    }
+
+    private function completeVerifiedTransaction(Transaction $transaction, Invoice $invoice, string $method, array $details): void
+    {
+        $transaction->markAsCompleted();
+        $transaction->payment_details = $details;
+        $transaction->save();
+
+        $invoice->markAsPaid($method);
+
+        $this->adminEmailService->notifyPaymentReceived($transaction, $invoice);
+        $this->sendReceipt($transaction, $invoice);
+    }
+
+    private function retirePendingTransactions(Invoice $invoice, string $method): void
+    {
+        Transaction::where('invoice_id', $invoice->id)
+            ->where('user_id', auth()->id())
+            ->where('payment_method', $method)
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'failed',
+                'notes' => 'Retired after a newer payment session was created.',
+                'updated_at' => now(),
+            ]);
     }
 }

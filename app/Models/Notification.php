@@ -16,6 +16,15 @@ class Notification extends Model
         'message',
         'related_id',
         'related_type',
+        'notification_number',
+        'dispatch_order_id',
+        'pickup_request_id',
+        'recipient_email',
+        'recipient_name',
+        'subject',
+        'status',
+        'sent_at',
+        'error_message',
         'is_read',
         'read_at',
     ];
@@ -23,6 +32,7 @@ class Notification extends Model
     protected $casts = [
         'is_read' => 'boolean',
         'read_at' => 'datetime',
+        'sent_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

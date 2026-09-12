@@ -8,10 +8,11 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\DriverRate;
 use App\Models\Warehouse;
+use App\Models\WarehouseRequest;
 use App\Models\Stock;
+use App\Events\OrderDelivered;
 use App\Events\LocationUpdated;
 use App\Services\NotificationService;
-use App\Notifications\DispatchStatusUpdatedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -44,10 +45,16 @@ class DispatchController extends Controller
     {
         $warehouseRequest = null;
         if ($requestId) {
-            $warehouseRequest = \App\Models\WarehouseRequest::with('warehouse')->findOrFail($requestId);
+            $warehouseRequest = WarehouseRequest::with('warehouse')
+                ->when(!auth()->user()->isAdmin(), function ($query) {
+                    $query->where('client_id', auth()->id());
+                })
+                ->findOrFail($requestId);
         }
 
-        $clients = User::where('role', 'client')->get();
+        $clients = auth()->user()->isAdmin()
+            ? User::where('role', 'client')->get()
+            : User::where('id', auth()->id())->get();
         $drivers = User::where('role', 'driver')->get();
         $vehicles = Vehicle::all();
 
@@ -55,55 +62,71 @@ class DispatchController extends Controller
     } // <-- ✅ THIS BRACE IS NOW HERE
 
     public function directCreate()
-{
-    $clients = User::where('role', 'client')->get();
-    $drivers = User::where('role', 'driver')->get();
-    $vehicles = Vehicle::all();
+    {
+        $clients = auth()->user()->isAdmin()
+            ? User::where('role', 'client')->get()
+            : User::where('id', auth()->id())->get();
+        $drivers = User::where('role', 'driver')->get();
+        $vehicles = Vehicle::all();
 
-    // Get available drivers with their rates for AI recommendations
-    $availableDrivers = User::where('role', 'driver')
-        ->with(['driverRates' => function($q) {
-            $q->where('is_active', true);
-        }])
-        ->get()
-        ->map(function($driver) {
-            $rate = $driver->driverRates->first();
-            return [
-                'id' => $driver->id,
-                'name' => $driver->name,
-                'phone' => $driver->phone ?? 'N/A',
-                'vehicle_type' => $driver->vehicle_type ?? 'Standard',
-                'price' => $rate ? $rate->price_per_km * 10 : 500,
-                'rating' => $driver->average_rating ?? 4,
-            ];
-        });
+        // Get available drivers with their rates for AI recommendations
+        $availableDrivers = User::where('role', 'driver')
+            ->with(['driverRates' => function($q) {
+                $q->where('is_active', true);
+            }])
+            ->get()
+            ->map(function($driver) {
+                $rate = $driver->driverRates->first();
+                return [
+                    'id' => $driver->id,
+                    'name' => $driver->name,
+                    'phone' => $driver->phone ?? 'N/A',
+                    'vehicle_type' => $driver->vehicle_type ?? 'Standard',
+                    'price' => $rate ? $rate->price_per_km * 10 : 500,
+                    'rating' => $driver->average_rating ?? 4,
+                ];
+            });
 
-    // ✅ FIX: Use explicit query with correct foreign key 'user_id'
-    $assignedWarehouses = Warehouse::where('user_id', Auth::id())->get();
-    $stocks = Stock::where('user_id', Auth::id())->get();
+        $assignedWarehouses = Warehouse::where('user_id', Auth::id())->get();
+        $stocks = Stock::where('user_id', Auth::id())->get();
 
-    return view('dispatch.direct-create', compact(
-        'clients', 'drivers', 'vehicles', 'availableDrivers',
-        'assignedWarehouses', 'stocks'
-    ));
-}
+        return view('dispatch.direct-create', compact(
+            'clients', 'drivers', 'vehicles', 'availableDrivers',
+            'assignedWarehouses', 'stocks'
+        ));
+    }
 
 
     public function store(Request $request)
     {
+        if (!$request->has('delivery_stops') && $request->filled('delivery_address')) {
+            $request->merge([
+                'delivery_stops' => [[
+                    'address' => $request->delivery_address,
+                    'recipient_name' => $request->input('recipient_name', $request->user()->name),
+                    'recipient_phone' => $request->input('recipient_phone', $request->user()->phone ?? 'N/A'),
+                ]],
+            ]);
+        }
+
         $validator = Validator::make($request->all(), [
             'pickup_address' => 'required|string|max:500',
-            'driver_id' => 'required|exists:users,id',
+            'driver_id' => 'nullable|exists:users,id',
             'vehicle_type' => 'nullable|string',
             'delivery_stops' => 'required|array|min:1',
             'delivery_stops.*.address' => 'required|string|max:500',
             'delivery_stops.*.recipient_name' => 'required|string|max:100',
             'delivery_stops.*.recipient_phone' => 'required|string|max:20',
+            'delivery_stops.*.latitude' => 'nullable|numeric|between:-90,90',
+            'delivery_stops.*.longitude' => 'nullable|numeric|between:-180,180',
             'total_distance' => 'nullable|numeric|min:0',
+            'base_price' => 'nullable|numeric|min:0',
             'total_price' => 'nullable|numeric|min:0',
             'client_id' => 'nullable|exists:users,id',
             'pickup_contact_person' => 'nullable|string|max:100',
             'pickup_contact_phone' => 'nullable|string|max:20',
+            'pickup_latitude' => 'nullable|numeric|between:-90,90',
+            'pickup_longitude' => 'nullable|numeric|between:-180,180',
             'bill_type' => 'nullable|string',
             'pan_number' => 'nullable|string|max:50',
         ]);
@@ -122,16 +145,23 @@ class DispatchController extends Controller
         DB::beginTransaction();
 
         try {
-            $clientId = $request->client_id ?? auth()->id();
+            $clientId = $this->dispatchClientId($request);
+            $basePrice = (float) ($request->input('total_price', $request->input('base_price', 0)));
+            $firstDeliveryStop = collect($request->input('delivery_stops', []))->first();
 
             $dispatch = DispatchOrder::create([
                 'client_id' => $clientId,
                 'driver_id' => $request->driver_id,
                 'pickup_address' => $request->pickup_address,
+                'delivery_address' => $request->delivery_address ?? ($firstDeliveryStop['address'] ?? null),
                 'pickup_contact_person' => $request->pickup_contact_person,
                 'pickup_contact_phone' => $request->pickup_contact_phone,
+                'pickup_latitude' => $request->pickup_latitude,
+                'pickup_longitude' => $request->pickup_longitude,
                 'total_distance' => $request->total_distance ?? 0,
-                'base_price' => $request->total_price ?? 0,
+                'base_price' => $basePrice,
+                'driver_earning' => $basePrice * 0.75,
+                'admin_margin' => $basePrice * 0.25,
                 'status' => 'pending',
                 'tracking_id' => 'TRK-' . strtoupper(Str::random(8)),
                 'bill_type' => $request->bill_type ?? 'regular',
@@ -141,10 +171,12 @@ class DispatchController extends Controller
             foreach ($request->delivery_stops as $index => $stopData) {
                 DeliveryStop::create([
                     'dispatch_order_id' => $dispatch->id,
-                    'stop_order' => $stopData['stop_order'] ?? ($index + 1),
+                    'stop_number' => $stopData['stop_number'] ?? $stopData['stop_order'] ?? ($index + 1),
                     'address' => $stopData['address'],
                     'recipient_name' => $stopData['recipient_name'],
                     'recipient_phone' => $stopData['recipient_phone'],
+                    'latitude' => $stopData['latitude'] ?? null,
+                    'longitude' => $stopData['longitude'] ?? null,
                     'notes' => $stopData['notes'] ?? null,
                     'status' => 'pending',
                 ]);
@@ -183,12 +215,18 @@ class DispatchController extends Controller
     {
         $dispatch = DispatchOrder::with(['client', 'driver', 'deliveryStops', 'vehicle'])
             ->findOrFail($id);
+
+        abort_unless($this->canViewDispatch($dispatch), 403);
+
         return view('dispatch.show', compact('dispatch'));
     }
 
     public function edit($id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
+
         $clients = User::where('role', 'client')->get();
         $drivers = User::where('role', 'driver')->get();
         $vehicles = Vehicle::all();
@@ -198,6 +236,8 @@ class DispatchController extends Controller
     public function update(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
 
         $validator = Validator::make($request->all(), [
             'pickup_address' => 'required|string|max:500',
@@ -221,6 +261,9 @@ class DispatchController extends Controller
     public function destroy($id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
+
         $dispatch->delete();
         return redirect()->route('dispatch.index')->with('success', 'Dispatch deleted!');
     }
@@ -230,7 +273,7 @@ class DispatchController extends Controller
         $validator = Validator::make($request->all(), [
             'pickup_stops' => 'required|array|min:1',
             'delivery_stops' => 'required|array|min:1',
-            'total_distance' => 'nullable|numeric|min:0',
+            'total_distance' => 'required|numeric|min:0',
             'vehicle_type' => 'nullable|string',
         ]);
 
@@ -241,13 +284,13 @@ class DispatchController extends Controller
             ], 422);
         }
 
-        $totalDistance = $request->total_distance ?? (count($request->delivery_stops) * 5 + 5);
+        $totalDistance = (float) $request->total_distance;
         $basePrice = $totalDistance * 20;
         $marginPercentage = 10;
         $marginAmount = $basePrice * ($marginPercentage / 100);
         $finalPrice = $basePrice + $marginAmount;
 
-        $explanation = "AI estimated distance: {$totalDistance}km, base rate: रू20/km, margin: {$marginPercentage}%";
+        $explanation = "Road distance: {$totalDistance} km. Base rate: NPR 20/km, margin: {$marginPercentage}%.";
 
         return response()->json([
             'success' => true,
@@ -304,6 +347,10 @@ class DispatchController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canManageDispatch($dispatch), 403);
+
+        $oldStatus = $dispatch->status;
         $status = $request->status;
 
         if (!in_array($status, ['pending', 'in_progress', 'delivered', 'cancelled'])) {
@@ -314,26 +361,18 @@ class DispatchController extends Controller
 
         if ($status === 'delivered') {
             $dispatch->delivered_at = now();
+            if (!$dispatch->driver_earning) {
+                $dispatch->driver_earning = (float) $dispatch->base_price * 0.75;
+            }
         }
 
         $dispatch->save();
 
-        $notificationService = new NotificationService();
-        $notification = new DispatchStatusUpdatedNotification($dispatch);
+        NotificationService::notifyStatusUpdate($dispatch, 'dispatch', $oldStatus, $status);
 
-        if ($dispatch->client_id) {
-            $client = User::find($dispatch->client_id);
-            if ($client) {
-                $notificationService->send($client, $notification);
-            }
+        if ($oldStatus !== 'delivered' && $status === 'delivered') {
+            event(new OrderDelivered($dispatch, 'dispatch'));
         }
-        if ($dispatch->driver_id) {
-            $driver = User::find($dispatch->driver_id);
-            if ($driver) {
-                $notificationService->send($driver, $notification);
-            }
-        }
-        $notificationService->sendToAdmins($notification);
 
         return response()->json(['success' => true]);
     }
@@ -374,23 +413,28 @@ class DispatchController extends Controller
     public function enableTracking(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canViewDispatch($dispatch), 403);
+
         $dispatch->tracking_enabled = true;
-        $dispatch->tracking_token = Str::random(32);
+        $dispatch->tracking_token = $dispatch->tracking_token ?: Str::random(40);
         $dispatch->save();
 
         return response()->json([
             'success' => true,
             'tracking_token' => $dispatch->tracking_token,
-            'tracking_url' => route('dispatch.track', $dispatch->id),
+            'tracking_url' => $this->trackingUrl($dispatch),
         ]);
     }
 
-    public function track($id)
+    public function track(Request $request, $id)
     {
         $dispatch = DispatchOrder::with(['driver', 'deliveryStops'])
             ->where('id', $id)
             ->where('tracking_enabled', true)
             ->firstOrFail();
+
+        abort_unless($this->canTrackDispatch($dispatch, $request), 403);
 
         return view('dispatch.track', compact('dispatch'));
     }
@@ -398,6 +442,9 @@ class DispatchController extends Controller
     public function rate(Request $request, $id)
     {
         $dispatch = DispatchOrder::findOrFail($id);
+
+        abort_unless($this->canRateDispatch($dispatch), 403);
+
         $request->validate([
             'rating' => 'required|integer|between:1,5',
             'feedback' => 'nullable|string|max:500',
@@ -412,10 +459,82 @@ class DispatchController extends Controller
 
     public function updateStopStatus(Request $request, $stopId)
     {
-        $stop = DeliveryStop::findOrFail($stopId);
+        $stop = DeliveryStop::with('dispatchOrder')->findOrFail($stopId);
+
+        abort_unless($this->canManageDispatch($stop->dispatchOrder), 403);
+
         $stop->status = $request->status;
         $stop->save();
 
         return response()->json(['success' => true]);
+    }
+
+    private function canViewDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->isAdmin()
+            || $dispatch->client_id === $user->id
+            || $dispatch->driver_id === $user->id;
+    }
+
+    private function canManageDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->isAdmin()
+            || $dispatch->driver_id === $user->id;
+    }
+
+    private function canRateDispatch(DispatchOrder $dispatch): bool
+    {
+        $user = auth()->user();
+
+        if (!$user) {
+            return false;
+        }
+
+        return $user->isAdmin()
+            || $dispatch->client_id === $user->id;
+    }
+
+    private function dispatchClientId(Request $request): int
+    {
+        $user = $request->user();
+
+        if (!$user->isAdmin()) {
+            return $user->id;
+        }
+
+        return (int) ($request->input('client_id') ?: $user->id);
+    }
+
+    private function canTrackDispatch(DispatchOrder $dispatch, Request $request): bool
+    {
+        if ($this->canViewDispatch($dispatch)) {
+            return true;
+        }
+
+        $token = (string) $request->query('token', '');
+
+        return filled($dispatch->tracking_token)
+            && filled($token)
+            && hash_equals($dispatch->tracking_token, $token);
+    }
+
+    private function trackingUrl(DispatchOrder $dispatch): string
+    {
+        return route('dispatch.track', [
+            'id' => $dispatch->id,
+            'token' => $dispatch->tracking_token,
+        ]);
     }
 }

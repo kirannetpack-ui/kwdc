@@ -13,8 +13,11 @@
             <p class="text-muted small">View and manage your property details</p>
         </div>
         <div>
-            <a href="{{ route('warehouses.index') }}" class="btn btn-outline-secondary me-2">
+            <a href="{{ route('property.approved') }}" class="btn btn-outline-secondary me-2">
                 <i class="fas fa-arrow-left me-2"></i>Back to Properties
+            </a>
+            <a href="{{ route('warehouses.pdf', $warehouse->id) }}" class="btn btn-primary me-2" style="background:#ea580c; border-color:#ea580c; color:#fff;">
+                <i class="fas fa-file-pdf me-2"></i>Certificate PDF
             </a>
             <a href="{{ route('property.warehouses.edit', $warehouse->id) }}" class="btn btn-warning">
                 <i class="fas fa-edit me-2"></i>Edit
@@ -223,16 +226,16 @@
                 </div>
                 <div class="card-body">
                     @if($warehouse->ownership_document)
-                        <p><i class="fas fa-check-circle text-success me-2"></i>Ownership Document <a href="{{ asset('storage/' . $warehouse->ownership_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
+                        <p><i class="fas fa-check-circle text-success me-2"></i>Ownership Document <a href="{{ route('documents.private.show', ['path' => $warehouse->ownership_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
                     @endif
                     @if($warehouse->tax_document)
-                        <p><i class="fas fa-check-circle text-success me-2"></i>Tax Document <a href="{{ asset('storage/' . $warehouse->tax_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
+                        <p><i class="fas fa-check-circle text-success me-2"></i>Tax Document <a href="{{ route('documents.private.show', ['path' => $warehouse->tax_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
                     @endif
                     @if($warehouse->fire_safety_document)
-                        <p><i class="fas fa-check-circle text-success me-2"></i>Fire Safety Document <a href="{{ asset('storage/' . $warehouse->fire_safety_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
+                        <p><i class="fas fa-check-circle text-success me-2"></i>Fire Safety Document <a href="{{ route('documents.private.show', ['path' => $warehouse->fire_safety_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
                     @endif
                     @if($warehouse->building_approval_document)
-                        <p><i class="fas fa-check-circle text-success me-2"></i>Building Approval <a href="{{ asset('storage/' . $warehouse->building_approval_document) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
+                        <p><i class="fas fa-check-circle text-success me-2"></i>Building Approval <a href="{{ route('documents.private.show', ['path' => $warehouse->building_approval_document]) }}" target="_blank" class="btn btn-sm btn-outline-primary float-end">View</a></p>
                     @endif
                     @if(!$warehouse->ownership_document && !$warehouse->tax_document && !$warehouse->fire_safety_document && !$warehouse->building_approval_document)
                         <p class="text-muted text-center">No documents uploaded</p>

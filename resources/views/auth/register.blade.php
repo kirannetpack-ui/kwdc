@@ -4,435 +4,482 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>KTM-WDC - Register</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>KTM-WDC | Register</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * { font-family: 'Inter', sans-serif; }
-        body { 
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        :root {
+            --ink: #101724;
+            --muted: #62728a;
+            --line: #dbe4ef;
+            --gold: #f5a524;
+            --green: #0f766e;
+            --blue: #2563eb;
+            --red: #dc2626;
+            --paper: #ffffff;
+            --soft: #f5f7fb;
+            --radius: 28px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             margin: 0;
-            padding: 20px;
+            color: var(--ink);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                linear-gradient(120deg, rgba(16, 23, 36, .94), rgba(16, 23, 36, .78)),
+                url("{{ asset('images/landing-logistics.svg') }}") right bottom / min(780px, 66vw) auto no-repeat,
+                #101724;
         }
-        .register-card {
-            background: white;
-            border-radius: 24px;
-            padding: 48px;
-            width: 100%;
-            max-width: 600px;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.3);
-            max-height: 95vh;
-            overflow-y: auto;
-            transition: all 0.3s ease;
-        }
-        .register-card::-webkit-scrollbar { width: 6px; }
-        .register-card::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
-        .register-card::-webkit-scrollbar-thumb { background: #f59e0b; border-radius: 10px; }
-        
-        .register-header { text-align: center; margin-bottom: 32px; }
-        .register-header .logo {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            border-radius: 20px;
-            display: flex;
+
+        a { color: inherit; }
+
+        .auth-shell {
+            width: min(1240px, calc(100% - 32px));
+            min-height: 100vh;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: minmax(300px, .85fr) minmax(420px, 680px);
+            gap: clamp(36px, 5vw, 76px);
             align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 36px;
-            color: white;
-            box-shadow: 0 8px 30px rgba(245, 158, 11, 0.3);
+            padding: 42px 0;
         }
-        .register-header h1 { 
-            font-size: 28px; 
-            font-weight: 800; 
-            color: #1f2937;
-            letter-spacing: -0.5px;
+
+        .brand-side { color: white; }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 34px;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 22px;
         }
-        .register-header p { 
-            color: #6b7280; 
-            font-size: 15px;
-            margin-top: 4px;
+
+        .brand-mark {
+            width: 48px;
+            height: 48px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            color: #111827;
+            background: var(--gold);
+            box-shadow: 0 18px 38px rgba(245, 165, 36, .24);
         }
-        
-        .form-group { margin-bottom: 20px; }
+
+        .brand-side h1 {
+            max-width: 620px;
+            margin: 0 0 20px;
+            font-size: clamp(40px, 5.6vw, 70px);
+            line-height: .98;
+            letter-spacing: 0;
+        }
+
+        .brand-side p {
+            max-width: 560px;
+            margin: 0;
+            color: #c9d3e3;
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        .feature-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 30px;
+            max-width: 520px;
+        }
+
+        .feature {
+            display: grid;
+            grid-template-columns: 42px 1fr;
+            gap: 12px;
+            align-items: center;
+            padding: 13px;
+            border: 1px solid rgba(219, 228, 239, .16);
+            border-radius: 22px;
+            background: rgba(255, 255, 255, .08);
+            color: #e5edf8;
+            backdrop-filter: blur(12px);
+        }
+
+        .feature i {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 18px;
+            color: #101724;
+            background: var(--gold);
+        }
+
+        .feature strong { display: block; font-size: 14px; }
+        .feature span { color: #c9d3e3; font-size: 13px; line-height: 1.4; }
+
+        .register-card {
+            width: 100%;
+            max-height: calc(100vh - 52px);
+            overflow-y: auto;
+            padding: clamp(30px, 4vw, 46px);
+            border: 1px solid rgba(219, 228, 239, .92);
+            border-radius: var(--radius);
+            background: rgba(255, 255, 255, .97);
+            box-shadow: 0 28px 80px rgba(0, 0, 0, .34);
+            backdrop-filter: blur(18px);
+        }
+
+        .register-card::-webkit-scrollbar { width: 8px; }
+        .register-card::-webkit-scrollbar-track { background: transparent; }
+        .register-card::-webkit-scrollbar-thumb { background: rgba(98, 114, 138, .42); border-radius: 999px; }
+
+        .card-head { margin-bottom: 26px; }
+        .card-head span { color: var(--green); font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; }
+        .card-head h2 { margin: 8px 0 8px; font-size: 31px; line-height: 1.08; letter-spacing: 0; }
+        .card-head p { margin: 0; color: var(--muted); line-height: 1.55; }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .form-group { margin-bottom: 18px; }
         .form-group label {
             display: block;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 6px;
+            margin-bottom: 7px;
+            color: #25364d;
             font-size: 14px;
-            letter-spacing: -0.2px;
+            font-weight: 800;
         }
-        .form-group label i { margin-right: 6px; color: #f59e0b; }
-        .form-group input, .form-group select, .form-group textarea {
+
+        .form-group label i { margin-right: 7px; color: var(--green); }
+
+        input,
+        select,
+        textarea {
             width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            background: #f9fafb;
-            box-sizing: border-box;
+            min-height: 46px;
+            padding: 12px 13px;
+            border: 1px solid #cfd9e6;
+            border-radius: 18px;
+            color: var(--ink);
+            font: inherit;
+            background: #ffffff;
+            transition: border-color .16s ease, box-shadow .16s ease;
         }
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+
+        textarea { min-height: 76px; resize: vertical; }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
             outline: none;
-            border-color: #f59e0b;
-            box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.12);
-            background: white;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 4px rgba(245, 165, 36, .16);
         }
-        .form-group textarea { resize: vertical; min-height: 60px; }
-        .form-group select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; }
-        .helper-text { font-size: 12px; color: #6b7280; margin-top: 4px; display: flex; align-items: center; gap: 4px; }
-        .helper-text i { color: #9ca3af; }
-        
+
+        .helper-text {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 5px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
         .role-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(138px, 1fr));
             gap: 10px;
-            margin-top: 4px;
+            margin-top: 7px;
         }
+
         .role-option {
-            padding: 14px 10px;
-            border: 2px solid #e5e7eb;
-            border-radius: 14px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            background: #f9fafb;
             position: relative;
+            min-height: 116px;
+            padding: 14px 12px;
+            border: 1px solid #dbe4ef;
+            border-radius: 22px;
+            background: #ffffff;
+            cursor: pointer;
+            text-align: left;
+            transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
         }
-        .role-option:hover { 
-            border-color: #f59e0b; 
-            background: #fffbeb; 
-            transform: translateY(-2px);
-        }
+
+        .role-option:hover,
         .role-option.selected {
-            border-color: #f59e0b;
-            background: #fffbeb;
-            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+            border-color: var(--gold);
+            box-shadow: 0 10px 24px rgba(15, 23, 42, .08), 0 0 0 4px rgba(245, 165, 36, .12);
+            transform: translateY(-1px);
         }
-        .role-option i { font-size: 28px; display: block; margin-bottom: 6px; }
-        .role-option .role-name { font-size: 13px; font-weight: 700; color: #374151; display: block; }
-        .role-option .role-desc { font-size: 10px; color: #6b7280; display: block; margin-top: 2px; }
+
+        .role-option > i {
+            width: 36px;
+            height: 36px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 10px;
+            border-radius: 18px;
+            color: white !important;
+            background: var(--blue);
+        }
+
+        .role-option:nth-child(2) > i { background: var(--gold); color: #111827 !important; }
+        .role-option:nth-child(3) > i { background: #7c3aed; }
+        .role-option:nth-child(4) > i { background: var(--green); }
+        .role-option:nth-child(5) > i { background: var(--red); }
+        .role-name { display: block; color: var(--ink); font-size: 13px; font-weight: 900; }
+        .role-desc { display: block; margin-top: 3px; color: var(--muted); font-size: 11px; line-height: 1.35; }
         .role-option input[type="radio"] { display: none; }
-        .role-option .check-mark {
+
+        .check-mark {
             position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #f59e0b;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 10px;
+            top: 10px;
+            right: 10px;
+            width: 22px;
+            height: 22px;
             display: none;
-            align-items: center;
-            justify-content: center;
+            place-items: center;
+            border-radius: 999px;
+            color: #111827;
+            background: var(--gold);
+            font-size: 11px;
         }
-        .role-option.selected .check-mark { display: flex; }
-        
-        .agency-fields { 
-            background: #f3f4f6; 
-            padding: 16px; 
-            border-radius: 12px; 
-            margin-top: 12px;
+
+        .role-option.selected .check-mark { display: grid; }
+
+        .agency-fields {
             display: none;
-            border-left: 4px solid #f59e0b;
+            margin: 4px 0 18px;
+            padding: 18px;
+            border: 1px solid #cfe7e3;
+            border-left: 4px solid var(--green);
+            border-radius: 24px;
+            background: #f0fdfa;
         }
+
         .agency-fields.show { display: block; }
-        .agency-fields .form-group { margin-bottom: 14px; }
+        .agency-fields h4 { margin: 0 0 16px; color: #0f3f3a; font-size: 17px; font-weight: 900; }
         .agency-fields .form-group:last-child { margin-bottom: 0; }
-        .agency-fields label { font-size: 13px; }
-        
+
+        .terms-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            margin: 2px 0 18px;
+            color: #45556f;
+            font-size: 14px;
+            line-height: 1.55;
+            font-weight: 700;
+        }
+
+        .terms-row input { width: 16px; min-height: 16px; margin-top: 3px; accent-color: var(--gold); }
+        .terms-row a, .switch-link a { color: var(--green); font-weight: 900; text-decoration: none; }
+
         .btn-register {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 8px;
-            display: flex;
+            min-height: 50px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            letter-spacing: 0.3px;
+            border: 0;
+            border-radius: 18px;
+            color: #111827;
+            background: var(--gold);
+            font: inherit;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 16px 30px rgba(245, 165, 36, .24);
+            transition: transform .16s ease, background-color .16s ease;
         }
-        .btn-register:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 35px rgba(245, 158, 11, 0.4);
-        }
-        .btn-register:active { transform: scale(0.97); }
-        .btn-register i { font-size: 18px; }
-        
-        .login-link {
+
+        .btn-register:hover { background: #c77700; color: white; transform: translateY(-1px); }
+
+        .switch-link {
+            margin-top: 22px;
+            padding-top: 20px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
             text-align: center;
-            margin-top: 20px;
-            color: #6b7280;
             font-size: 14px;
-            border-top: 1px solid #e5e7eb;
-            padding-top: 18px;
+            font-weight: 700;
         }
-        .login-link a { color: #f59e0b; font-weight: 600; text-decoration: none; }
-        .login-link a:hover { text-decoration: underline; }
-        
-        .error-box {
-            background: #fee2e2;
-            border: 1px solid #fca5a5;
-            border-radius: 12px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            color: #dc2626;
-            font-size: 14px;
-        }
-        .error-box ul { margin: 0; padding-left: 20px; }
+
+        .error-box,
         .success-box {
-            background: #d1fae5;
-            border: 1px solid #6ee7b7;
-            border-radius: 12px;
-            padding: 12px 16px;
             margin-bottom: 20px;
-            color: #065f46;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            padding: 13px 15px;
+            border-radius: 18px;
+            font-size: 14px;
         }
-        
-        .form-row { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 16px; 
+
+        .error-box { color: #991b1b; border: 1px solid #fecaca; background: #fef2f2; }
+        .success-box { color: #065f46; border: 1px solid #a7f3d0; background: #ecfdf5; }
+        .error-box ul { margin: 8px 0 0; padding-left: 20px; }
+
+        @media (max-width: 980px) {
+            .auth-shell {
+                grid-template-columns: 1fr;
+                align-items: start;
+                gap: 30px;
+                padding: 28px 0;
+            }
+
+            .register-card { max-height: none; }
+            .brand-side h1 { font-size: 42px; }
+            .brand-side p { font-size: 16px; }
         }
-        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
-        
-        /* Improve scrollbar appearance */
-        .register-card::-webkit-scrollbar-thumb:hover { background: #d97706; }
+
+        @media (max-width: 640px) {
+            .form-row { grid-template-columns: 1fr; gap: 0; }
+            .register-card { padding: 24px; }
+            .role-grid { grid-template-columns: 1fr; }
+        }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/kwdc-auth.css') }}">
+    <script src="{{ asset('js/kwdc-auth.js') }}" defer></script>
 </head>
 <body>
-    <div class="register-card">
-        <div class="register-header">
-            <div class="logo"><i class="fas fa-user-plus"></i></div>
-            <h1>Create Account</h1>
-            <p>Join the KTM-WDC Logistics & Warehouse Network</p>
-        </div>
+    <main class="auth-shell">
+        <section class="brand-side">
+            <a class="brand" href="{{ route('landing') }}">
+                <span class="brand-mark"><i class="fas fa-warehouse"></i></span>
+                <span>KTM-WDC</span>
+            </a>
+        </section>
 
-        @if(session('success'))
-        <div class="success-box">
-            <i class="fas fa-check-circle fa-lg"></i> {{ session('success') }}
-        </div>
-        @endif
-
-        @if($errors->any())
-        <div class="error-box">
-            <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following:</strong>
-            <ul class="mt-2">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
-            
-            <!-- Basic Information -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="name"><i class="fas fa-user"></i> Full Name</label>
-                    <input type="text" name="name" id="name" value="{{ old('name') }}" 
-                           placeholder="e.g. Rajesh Sharma" required autofocus>
-                </div>
-                <div class="form-group">
-                    <label for="email"><i class="fas fa-envelope"></i> Email Address</label>
-                    <input type="email" name="email" id="email" value="{{ old('email') }}" 
-                           placeholder="your@email.com" required>
-                </div>
+        <section class="register-card">
+            <div class="card-head">
+                <h2>Create your account.</h2>
             </div>
 
-<div class="form-row">
-    <div class="form-group">
-        <label for="date_of_birth"><i class="fas fa-birthday-cake"></i> Date of Birth</label>
-        <input type="date" name="date_of_birth" id="date_of_birth" value="{{ old('date_of_birth') }}" 
-               placeholder="Select your date of birth" required>
-        <div class="helper-text"><i class="fas fa-info-circle"></i> We'll send you birthday wishes!</div>
-    </div>
-</div>
+            @if(session('success'))
+            <div class="success-box">
+                <i class="fas fa-check-circle"></i> {{ session('success') }}
+            </div>
+            @endif
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="phone"><i class="fas fa-phone"></i> Phone Number</label>
-                    <input type="text" name="phone" id="phone" value="{{ old('phone') }}" 
-                           placeholder="e.g. 9800000000" required>
-                    <div class="helper-text"><i class="fas fa-info-circle"></i> Used for order updates</div>
-                </div>
-                <div class="form-group">
-                    <label for="address"><i class="fas fa-map-pin"></i> Address</label>
-                    <input type="text" name="address" id="address" value="{{ old('address') }}" 
-                           placeholder="Your physical address (optional)">
-                </div>
+            @if($errors->any())
+            <div class="error-box">
+                <strong><i class="fas fa-exclamation-triangle"></i> Please fix the following:</strong>
+                <ul>
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="password"><i class="fas fa-lock"></i> Password</label>
-                    <input type="password" name="password" id="password" 
-                           placeholder="Min 8 characters" required>
-                    <div class="helper-text"><i class="fas fa-shield-alt"></i> Must be at least 8 characters</div>
-                </div>
-                <div class="form-group">
-                    <label for="password_confirmation"><i class="fas fa-check-circle"></i> Confirm Password</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" 
-                           placeholder="Re-enter password" required>
-                </div>
-            </div>
-            
-            <!-- Role Selection -->
-            <div class="form-group">
-                <label><i class="fas fa-user-tag"></i> I want to register as</label>
-                <div class="role-grid" id="roleSelector">
-                    <label class="role-option {{ old('role', 'client') == 'client' ? 'selected' : '' }}">
-                        <input type="radio" name="role" value="client" {{ old('role', 'client') == 'client' ? 'checked' : '' }}>
-                        <span class="check-mark"><i class="fas fa-check"></i></span>
-                        <i class="fas fa-user-circle" style="color: #3b82f6;"></i>
-                        <span class="role-name">Client</span>
-                        <span class="role-desc">Request warehouse & services</span>
-                    </label>
-                    <label class="role-option {{ old('role') == 'driver' ? 'selected' : '' }}">
-                        <input type="radio" name="role" value="driver" {{ old('role') == 'driver' ? 'checked' : '' }}>
-                        <span class="check-mark"><i class="fas fa-check"></i></span>
-                        <i class="fas fa-truck" style="color: #f59e0b;"></i>
-                        <span class="role-name">Driver</span>
-                        <span class="role-desc">Transport & delivery</span>
-                    </label>
-                    <label class="role-option {{ old('role') == 'property_owner' ? 'selected' : '' }}">
-                        <input type="radio" name="role" value="property_owner" {{ old('role') == 'property_owner' ? 'checked' : '' }}>
-                        <span class="check-mark"><i class="fas fa-check"></i></span>
-                        <i class="fas fa-warehouse" style="color: #8b5cf6;"></i>
-                        <span class="role-name">Property Owner</span>
-                        <span class="role-desc">List warehouse space</span>
-                    </label>
-                    <label class="role-option {{ old('role') == 'equipment_owner' ? 'selected' : '' }}">
-                        <input type="radio" name="role" value="equipment_owner" {{ old('role') == 'equipment_owner' ? 'checked' : '' }}>
-                        <span class="check-mark"><i class="fas fa-check"></i></span>
-                        <i class="fas fa-tools" style="color: #10b981;"></i>
-                        <span class="role-name">Equipment Owner</span>
-                        <span class="role-desc">Equipment rental</span>
-                    </label>
-                    <label class="role-option {{ old('role') == 'security_agency' ? 'selected' : '' }}">
-                        <input type="radio" name="role" value="security_agency" {{ old('role') == 'security_agency' ? 'checked' : '' }}>
-                        <span class="check-mark"><i class="fas fa-check"></i></span>
-                        <i class="fas fa-shield-alt" style="color: #ef4444;"></i>
-                        <span class="role-name">Security Agency</span>
-                        <span class="role-desc">Partner for security services</span>
-                    </label>
-                </div>
-                <div class="helper-text" style="margin-top: 8px;">
-                    <i class="fas fa-info-circle"></i> Choose the role that best fits your business
-                </div>
-            </div>
+            @endif
 
-            <!-- Security Agency Fields (Hidden by default) -->
-            <div id="agencyFields" class="agency-fields {{ old('role') == 'security_agency' ? 'show' : '' }}">
-                <h4 style="margin: 0 0 12px 0; font-size: 16px; font-weight: 700; color: #1e3c72;">
-                    <i class="fas fa-building"></i> Agency Details
-                </h4>
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="agency_name"><i class="fas fa-signature"></i> Agency Name</label>
-                        <input type="text" name="agency_name" id="agency_name" value="{{ old('agency_name') }}" 
-                               placeholder="e.g. Everest Security Solutions">
+                        <label for="name"><i class="fas fa-user"></i>Full Name</label>
+                        <input type="text" name="name" id="name" value="{{ old('name') }}" placeholder="e.g. Rajesh Sharma" required autofocus>
                     </div>
                     <div class="form-group">
-                        <label for="registration_number"><i class="fas fa-id-card"></i> Registration Number</label>
-                        <input type="text" name="registration_number" id="registration_number" value="{{ old('registration_number') }}" 
-                               placeholder="Company registration #">
+                        <label for="email"><i class="fas fa-envelope"></i>Email Address</label>
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" placeholder="you@company.com" required>
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="license_number"><i class="fas fa-certificate"></i> License Number</label>
-                        <input type="text" name="license_number" id="license_number" value="{{ old('license_number') }}" 
-                               placeholder="Security license #">
-                    </div>
-                    <div class="form-group">
-                        <label for="pan_vat_number"><i class="fas fa-file-invoice"></i> PAN / VAT Number</label>
-                        <input type="text" name="pan_vat_number" id="pan_vat_number" value="{{ old('pan_vat_number') }}" 
-                               placeholder="PAN or VAT #">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="year_established"><i class="fas fa-calendar-alt"></i> Year Established</label>
-                        <input type="number" name="year_established" id="year_established" value="{{ old('year_established') }}" 
-                               placeholder="e.g. 2015" min="1900" max="{{ date('Y') }}">
-                    </div>
-                    <div class="form-group">
-                        <label for="services_offered"><i class="fas fa-concierge-bell"></i> Services Offered</label>
-                        <input type="text" name="services_offered" id="services_offered" value="{{ old('services_offered') }}" 
-                               placeholder="e.g. CCTV, Patrol, Access Control">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="phone"><i class="fas fa-phone"></i> Agency Phone</label>
-                        <input type="text" name="phone" id="phone" value="{{ old('phone') }}" 
-                               placeholder="Primary contact number">
-                    </div>
-                    <div class="form-group">
-                        <label for="emergency_phone"><i class="fas fa-phone-alt"></i> Emergency Phone</label>
-                        <input type="text" name="emergency_phone" id="emergency_phone" value="{{ old('emergency_phone') }}" 
-                               placeholder="24/7 emergency contact">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="certifications"><i class="fas fa-award"></i> Certifications (comma separated)</label>
-                    <input type="text" name="certifications" id="certifications" value="{{ old('certifications') }}" 
-                           placeholder="e.g. ISO 9001, NSI Gold">
-                </div>
-                <div class="form-group">
-                    <label for="address"><i class="fas fa-map-marker-alt"></i> Agency Address</label>
-                    <input type="text" name="address" id="address" value="{{ old('address') }}" 
-                           placeholder="Full address of agency">
-                </div>
-            </div>
 
-            <div class="form-group" style="margin-bottom: 12px;">
-                <label style="font-weight: normal; font-size: 14px; display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <input type="checkbox" name="terms" {{ old('terms') ? 'checked' : '' }} required>
-                    <span>I agree to the <a href="#" style="color: #f59e0b; text-decoration: none; font-weight: 600;">Terms of Service</a> and <a href="#" style="color: #f59e0b; text-decoration: none; font-weight: 600;">Privacy Policy</a></span>
-                </label>
-            </div>
-            
-            <button type="submit" class="btn-register">
-                <i class="fas fa-user-plus"></i> Create Account
-            </button>
-        </form>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone"><i class="fas fa-phone"></i>Phone Number</label>
+                        <input type="text" name="phone" id="phone" value="{{ old('phone') }}" placeholder="e.g. 9800000000" required>
+                        <div class="helper-text"><i class="fas fa-info-circle"></i>For updates.</div>
+                    </div>
+                </div>
 
-        <div class="login-link">
-            Already have an account? <a href="{{ route('login') }}">Sign In</a>
-        </div>
-    </div>
+                <div class="form-group">
+                    <label for="address"><i class="fas fa-map-pin"></i>Address</label>
+                    <input type="text" name="address" id="address" value="{{ old('address') }}" placeholder="Your physical address (optional)">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password"><i class="fas fa-lock"></i>Password</label>
+                        <input type="password" name="password" id="password" placeholder="Min 8 characters" required>
+                        <div class="helper-text"><i class="fas fa-shield-alt"></i>Minimum 8 characters.</div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password_confirmation"><i class="fas fa-check-circle"></i>Confirm Password</label>
+                        <input type="password" name="password_confirmation" id="password_confirmation" placeholder="Re-enter password" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-user-tag"></i>I want to register as</label>
+                    <div class="role-grid" id="roleSelector">
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'client' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="client" {{ old('role', request('role', 'client')) == 'client' ? 'checked' : '' }}>
+                            <span class="check-mark"><i class="fas fa-check"></i></span>
+                            <i class="fas fa-user-circle"></i>
+                            <span class="role-name">Client</span>
+                            <span class="role-desc">Request services</span>
+                        </label>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'driver' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="driver" {{ old('role', request('role', 'client')) == 'driver' ? 'checked' : '' }}>
+                            <span class="check-mark"><i class="fas fa-check"></i></span>
+                            <i class="fas fa-truck"></i>
+                            <span class="role-name">Driver</span>
+                            <span class="role-desc">Transport work</span>
+                        </label>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'property_owner' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="property_owner" {{ old('role', request('role', 'client')) == 'property_owner' ? 'checked' : '' }}>
+                            <span class="check-mark"><i class="fas fa-check"></i></span>
+                            <i class="fas fa-warehouse"></i>
+                            <span class="role-name">Property Owner</span>
+                            <span class="role-desc">List space</span>
+                        </label>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'equipment_owner' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="equipment_owner" {{ old('role', request('role', 'client')) == 'equipment_owner' ? 'checked' : '' }}>
+                            <span class="check-mark"><i class="fas fa-check"></i></span>
+                            <i class="fas fa-tools"></i>
+                            <span class="role-name">Equipment Owner</span>
+                            <span class="role-desc">Rental work</span>
+                        </label>
+                        <label class="role-option {{ old('role', request('role', 'client')) == 'security_agency' ? 'selected' : '' }}">
+                            <input type="radio" name="role" value="security_agency" {{ old('role', request('role', 'client')) == 'security_agency' ? 'checked' : '' }}>
+                            <span class="check-mark"><i class="fas fa-check"></i></span>
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="role-name">Security Agency</span>
+                            <span class="role-desc">Security work</span>
+                        </label>
+                    </div>
+                    <div class="helper-text"><i class="fas fa-info-circle"></i>Select one role.</div>
+                </div>
+
+                <div id="agencyFields" class="agency-fields {{ old('role', request('role', 'client')) == 'security_agency' ? 'show' : '' }}">
+                    <div class="form-row">
+                        <div class="form-group"><label for="agency_name">Agency name</label><input id="agency_name" name="agency_name" maxlength="255" value="{{ old('agency_name') }}"></div>
+                        <div class="form-group"><label for="registration_number">Registration number</label><input id="registration_number" name="registration_number" maxlength="100" value="{{ old('registration_number') }}"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-register">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="switch-link">
+                Already have an account? <a href="{{ route('login') }}">Sign in</a>
+            </div>
+        </section>
+    </main>
 
     <script>
-        // Role selection toggle
         document.querySelectorAll('.role-option').forEach(option => {
             option.addEventListener('click', function() {
                 document.querySelectorAll('.role-option').forEach(o => o.classList.remove('selected'));
                 this.classList.add('selected');
                 this.querySelector('input[type="radio"]').checked = true;
-                // Show/hide agency fields
                 toggleAgencyFields();
             });
         });
@@ -442,24 +489,26 @@
             const agencyFields = document.getElementById('agencyFields');
             if (selectedRole && selectedRole.value === 'security_agency') {
                 agencyFields.classList.add('show');
-                // Make fields required (optional)
                 document.querySelectorAll('#agencyFields input, #agencyFields textarea').forEach(input => {
                     if (input.name && input.name !== 'phone' && input.name !== 'address') {
                         input.required = true;
+                        input.disabled = false;
                     }
                 });
             } else {
                 agencyFields.classList.remove('show');
                 document.querySelectorAll('#agencyFields input, #agencyFields textarea').forEach(input => {
                     input.required = false;
+                    input.disabled = true;
                 });
             }
         }
 
-        // On page load, check if security agency is selected
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', toggleAgencyFields);
+        document.querySelectorAll('input[name="role"]').forEach(input => input.addEventListener('change', () => {
+            document.querySelectorAll('.role-option').forEach(option => option.classList.toggle('selected', option.querySelector('input').checked));
             toggleAgencyFields();
-        });
+        }));
     </script>
 </body>
 </html>

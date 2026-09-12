@@ -54,6 +54,15 @@ class SecurityPersonnelController extends Controller
         }
     }
 
+    protected function ensureAgencyOwnsPersonnel(SecurityPersonnel $personnel): SecurityAgency
+    {
+        $agency = $this->getAgency();
+
+        abort_unless($personnel->agency_id === $agency->id, 403);
+
+        return $agency;
+    }
+
     public function index()
     {
         $agency = $this->getAgency();
@@ -104,12 +113,15 @@ class SecurityPersonnelController extends Controller
 
     public function edit(SecurityPersonnel $personnel)
     {
-        $this->authorize('view', $personnel); // optional policy
+        $this->ensureAgencyOwnsPersonnel($personnel);
+
         return view('security.personnel.edit', compact('personnel'));
     }
 
     public function update(Request $request, SecurityPersonnel $personnel)
     {
+        $agency = $this->ensureAgencyOwnsPersonnel($personnel);
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
@@ -131,7 +143,6 @@ class SecurityPersonnelController extends Controller
 
         $personnel->update($validated);
 
-        $agency = $this->getAgency();
         $this->notifyAgency(
             $agency,
             'security_personnel_updated',
@@ -145,7 +156,7 @@ class SecurityPersonnelController extends Controller
 
     public function destroy(SecurityPersonnel $personnel)
     {
-        $agency = $this->getAgency();
+        $agency = $this->ensureAgencyOwnsPersonnel($personnel);
         $personnelName = $personnel->name;
         $personnel->delete();
 

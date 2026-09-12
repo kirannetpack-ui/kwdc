@@ -111,18 +111,71 @@ class PickupRequestController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
+
+        $pickupStops = $request->input('pickup_stops');
+
+        if (!$pickupStops && $request->has('delivery_stops')) {
+            $pickupStops = collect($request->input('delivery_stops', []))
+                ->map(function ($stop) use ($user) {
+                    return [
+                        'address' => $stop['address'] ?? '',
+                        'contact_name' => $stop['contact_name'] ?? $stop['recipient_name'] ?? $user->name,
+                        'contact_phone' => $stop['contact_phone'] ?? $stop['recipient_phone'] ?? ($user->phone ?? 'N/A'),
+                        'items_description' => $stop['items_description'] ?? $stop['notes'] ?? null,
+                        'estimated_weight' => $stop['estimated_weight'] ?? 0,
+                        'latitude' => $stop['latitude'] ?? null,
+                        'longitude' => $stop['longitude'] ?? null,
+                    ];
+                })
+                ->values()
+                ->all();
+        }
+
+        if (!$pickupStops && $request->filled('pickup_address')) {
+            $pickupStops = [[
+                'address' => $request->pickup_address,
+                'contact_name' => $request->input('contact_person', $request->input('pickup_contact_person', $user->name)),
+                'contact_phone' => $request->input('contact_phone', $request->input('pickup_contact_phone', $user->phone ?? 'N/A')),
+                'items_description' => $request->input('description', $request->input('items_description')),
+                'estimated_weight' => $request->input('estimated_boxes', $request->input('weight', 0)),
+                'latitude' => $request->pickup_latitude,
+                'longitude' => $request->pickup_longitude,
+            ]];
+        }
+
+        if ($pickupStops) {
+            $request->merge(['pickup_stops' => $pickupStops]);
+        }
+
+        if (!$request->filled('total_price') && $request->filled('base_price')) {
+            $request->merge(['total_price' => $request->base_price]);
+        }
         
         $validator = Validator::make($request->all(), [
-            'destination_warehouse_id' => 'required|exists:warehouses,id',
+            'destination_warehouse_id' => 'nullable|exists:warehouses,id',
+            'pickup_address' => 'nullable|string|max:500',
+            'destination_address' => 'nullable|string|max:500',
+            'pickup_latitude' => 'nullable|numeric|between:-90,90',
+            'pickup_longitude' => 'nullable|numeric|between:-180,180',
+            'destination_latitude' => 'nullable|numeric|between:-90,90',
+            'destination_longitude' => 'nullable|numeric|between:-180,180',
+            'description' => 'nullable|string',
+            'items_description' => 'nullable|string',
+            'estimated_boxes' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'scheduled_date' => 'nullable|date',
+            'scheduled_time' => 'nullable',
             'pickup_stops' => 'required|array|min:1',
             'pickup_stops.*.address' => 'required|string|max:500',
             'pickup_stops.*.contact_name' => 'required|string|max:255',
             'pickup_stops.*.contact_phone' => 'required|string|max:20',
             'pickup_stops.*.items_description' => 'nullable|string',
             'pickup_stops.*.estimated_weight' => 'nullable|numeric|min:0',
-            'total_distance' => 'required|numeric|min:0',
-            'total_price' => 'required|numeric|min:0',
-            'driver_id' => 'required|exists:users,id',
+            'pickup_stops.*.latitude' => 'nullable|numeric|between:-90,90',
+            'pickup_stops.*.longitude' => 'nullable|numeric|between:-180,180',
+            'total_distance' => 'nullable|numeric|min:0',
+            'total_price' => 'nullable|numeric|min:0',
+            'driver_id' => 'nullable|exists:users,id',
             'bill_type' => 'nullable|in:regular,vat,pan',
             'pan_number' => 'nullable|string|max:50',
         ]);
@@ -140,6 +193,14 @@ class PickupRequestController extends Controller
             // Generate tracking ID and invoice number
             $trackingId = $this->generateTrackingId();
             $invoiceNo = $this->generateInvoiceNumber();
+            $totalDistance = (float) $request->input('total_distance', max(count($request->pickup_stops) * 4, 4));
+            $totalPrice = (float) $request->input('total_price', max($totalDistance * 80, 500));
+            $taxAmount = $request->bill_type === 'vat' ? round($totalPrice * 0.13, 2) : 0;
+            $destinationAddress = $request->destination_address
+                ?? optional(Warehouse::find($request->destination_warehouse_id))->address
+                ?? optional(Warehouse::find($request->destination_warehouse_id))->location
+                ?? ($request->pickup_stops[0]['address'] ?? null);
+            $firstStop = collect($request->input('pickup_stops', []))->first();
             
             // Create pickup request
             $pickup = PickupRequest::create([
@@ -148,11 +209,28 @@ class PickupRequestController extends Controller
                 'warehouse_id' => $request->destination_warehouse_id,
                 'tracking_id' => $trackingId,
                 'invoice_no' => $invoiceNo,
-                'total_distance' => $request->total_distance,
-                'total_price' => $request->total_price,
+                'pickup_address' => $request->pickup_address ?? ($request->pickup_stops[0]['address'] ?? null),
+                'destination_address' => $destinationAddress,
+                'pickup_latitude' => $request->pickup_latitude,
+                'pickup_longitude' => $request->pickup_longitude,
+                'destination_latitude' => $request->destination_latitude ?? ($firstStop['latitude'] ?? null),
+                'destination_longitude' => $request->destination_longitude ?? ($firstStop['longitude'] ?? null),
+                'items_description' => $request->items_description ?? $request->description,
+                'weight' => $request->weight ?? $request->estimated_boxes,
+                'scheduled_date' => $request->scheduled_date,
+                'scheduled_time' => $request->scheduled_time,
+                'total_distance' => $totalDistance,
+                'total_price' => $totalPrice,
+                'driver_earning' => $totalPrice * 0.75,
+                'admin_margin' => $totalPrice * 0.25,
+                'tax_amount' => $taxAmount,
+                'grand_total' => $totalPrice + $taxAmount,
                 'status' => 'pending',
                 'bill_type' => $request->bill_type ?? 'regular',
                 'pan_number' => $request->pan_number ?? null,
+                'payment_status' => 'pending',
+                'payment_due_date' => now()->addDays(7),
+                'notes' => $request->notes,
             ]);
             
             // Create pickup stops
@@ -165,12 +243,14 @@ class PickupRequestController extends Controller
                     'contact_phone' => $stop['contact_phone'],
                     'items_description' => $stop['items_description'] ?? null,
                     'estimated_weight' => $stop['estimated_weight'] ?? 0,
+                    'latitude' => $stop['latitude'] ?? null,
+                    'longitude' => $stop['longitude'] ?? null,
                     'status' => 'pending',
                 ]);
             }
             
             // Generate invoice
-            $invoice = $this->invoiceService->generatePickupInvoice($pickup);
+            $this->invoiceService->generatePickupInvoice($pickup->load('stops'));
             
             // Send notifications
             $this->sendNotifications($pickup);
@@ -185,6 +265,7 @@ class PickupRequestController extends Controller
                     'message' => $message,
                     'pickup_id' => $pickup->id,
                     'tracking_id' => $trackingId,
+                    'redirect_url' => route('pickup.show', $pickup->id),
                 ]);
             }
             
@@ -274,11 +355,14 @@ class PickupRequestController extends Controller
         // Create notification for status change
         $this->createStatusNotification($pickup, $oldStatus);
         
-        return response()->json([
-            'success' => true,
-            'message' => 'Status updated successfully',
-            'status' => $pickup->status,
-        ]);
+        if ($request->wantsJson() || $request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Status updated successfully',
+                'status' => $pickup->status,
+            ]);
+        }
+        return back()->with('success', 'Pickup status updated to ' . ucfirst(str_replace('_', ' ', $pickup->status)));
     }
 
     /**
@@ -335,7 +419,7 @@ class PickupRequestController extends Controller
     }
 
     /**
-     * AJAX: Get AI-recommended drivers for a Pickup
+     * AJAX: Get recommended drivers for a Pickup.
      */
     public function getDriverRecommendations(Request $request)
     {
@@ -352,24 +436,20 @@ class PickupRequestController extends Controller
         $totalDistance = $request->total_distance;
         $clientVehicleSelection = $request->vehicle_type ?? 'Standard';
 
-        // 1. Fetch all active drivers
         $drivers = \App\Models\User::where('role', 'driver')
             ->where('is_active', true)
             ->get();
 
-        // 2. Format drivers with mock distance (Replace with real map API later)
         $driverData = $drivers->map(function($driver) use ($totalDistance) {
-            $distance = max(0.5, abs(($totalDistance / 2) + (rand(-100, 100) / 100)));
             return [
                 'id' => $driver->id,
                 'name' => $driver->name,
                 'rating' => $driver->avg_rating ?? 4.0,
-                'distance_km' => round($distance, 1),
+                'distance_km' => null,
                 'base_price' => 400,
             ];
         })->toArray();
 
-        // 3. Let AI recommend the best drivers AND Vehicle
         $aiResponse = $this->aiService->recommendDrivers($driverData, $pickupAddress, $totalDistance, $clientVehicleSelection);
 
         return response()->json([
@@ -483,15 +563,17 @@ class PickupRequestController extends Controller
      */
     private function sendNotifications($pickup)
     {
-        // Notify driver
-        Notification::create([
-            'user_id' => $pickup->driver_id,
-            'type' => 'new_pickup',
-            'title' => 'New Pickup Assignment',
-            'message' => 'You have been assigned a new pickup. Tracking ID: ' . $pickup->tracking_id,
-            'related_id' => $pickup->id,
-            'related_type' => 'pickup',
-        ]);
+        if ($pickup->driver_id) {
+            Notification::create([
+                'user_id' => $pickup->driver_id,
+                'type' => 'new_pickup',
+                'title' => 'New Pickup Assignment',
+                'message' => 'You have been assigned a new pickup. Tracking ID: ' . $pickup->tracking_id,
+                'related_id' => $pickup->id,
+                'related_type' => 'pickup',
+                'pickup_request_id' => $pickup->id,
+            ]);
+        }
         
         // Notify client
         Notification::create([
@@ -501,10 +583,15 @@ class PickupRequestController extends Controller
             'message' => 'Your pickup request has been created. Tracking ID: ' . $pickup->tracking_id,
             'related_id' => $pickup->id,
             'related_type' => 'pickup',
+            'pickup_request_id' => $pickup->id,
         ]);
         
         // Send admin notification
-        $this->adminEmailService->notifyNewPickup($pickup);
+        try {
+            $this->adminEmailService->notifyNewPickup($pickup);
+        } catch (\Throwable $e) {
+            Log::warning('Admin pickup email notification failed: ' . $e->getMessage());
+        }
     }
 
     /**

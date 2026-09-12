@@ -13,7 +13,7 @@
                         <i class="fas fa-exclamation-circle text-danger" style="font-size: 64px;"></i>
                     </div>
                     <h1 class="display-1 fw-bold text-danger">500</h1>
-                    <h2 class="mb-4">Something Went Wrong</h2>
+                    <h2 class="mb-4">Something went wrong</h2>
                     <p class="text-muted mb-4">
                         We're experiencing some technical difficulties. Our team has been notified and is working on a fix.
                     </p>
@@ -36,8 +36,8 @@
         background: #f59e0b;
         color: white;
         border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
+        padding: 12px 22px;
+        border-radius: 18px;
         transition: all 0.3s ease;
     }
     .btn-orange:hover {

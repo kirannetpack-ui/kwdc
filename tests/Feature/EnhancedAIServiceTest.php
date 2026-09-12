@@ -24,11 +24,28 @@ class EnhancedAIServiceTest extends TestCase
 
         $this->assertIsArray($health);
         $this->assertArrayHasKey('gemini', $health);
-        // At least Gemini should be configured
-        $this->assertTrue(
-            $health['gemini'] === '✅' || env('GEMINI_API_KEY'),
-            'Gemini API key should be configured'
-        );
+        $this->assertContains($health['gemini'], ['set', 'missing', 'disabled']);
+        $this->assertArrayHasKey('external_ai', $health);
+    }
+
+    public function test_free_ai_mode_does_not_call_external_provider(): void
+    {
+        config([
+            'services.ai.provider' => 'free',
+            'services.openai.api_key' => 'test-key',
+        ]);
+
+        $this->assertNull($this->aiService->chat(
+            'Return JSON.',
+            'Create a dispatch plan.',
+            'json',
+            'openai'
+        ));
+
+        $health = $this->aiService->healthCheck();
+        $this->assertSame('free', $health['mode']);
+        $this->assertSame('disabled', $health['external_ai']);
+        $this->assertSame('disabled', $health['openai']);
     }
 
     public function test_semantic_search_finds_relevant_documents(): void

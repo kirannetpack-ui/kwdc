@@ -294,8 +294,13 @@
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
             <h3 class="section-title">📝 Additional Information</h3>
             <div class="mb-4">
-                <label class="block text-gray-700 font-semibold mb-2">Description</label>
-                <textarea name="description" rows="3" class="w-full px-4 py-2 border rounded-lg">{{ old('description', $warehouse->description) }}</textarea>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="block text-gray-700 font-semibold mb-0">Description</label>
+                    <button type="button" class="text-xs px-2.5 py-1 rounded bg-orange-100 hover:bg-orange-200 text-orange-800 font-semibold transition border border-orange-200" id="btnAiWarehouseEditCopy" onclick="generateAiWarehouseEditCopy()">
+                        <i class="fas fa-wand-magic-sparkles me-1 text-orange-600"></i> AI Generate Description
+                    </button>
+                </div>
+                <textarea name="description" id="warehouse_edit_description" rows="5" class="w-full px-4 py-2 border rounded-lg">{{ old('description', $warehouse->description) }}</textarea>
             </div>
             <div>
                 <label class="block text-gray-700 font-semibold mb-2">⭐ Special Features / Amenities</label>
@@ -374,7 +379,7 @@
     
     async function getAddress(lat, lng) {
         try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+            const res = await fetch(`/maps/reverse?lat=${lat}&lon=${lng}&format=json`);
             const data = await res.json();
             if (data.display_name) document.getElementById('address').value = data.display_name;
         } catch(e) { console.error(e); }
@@ -382,7 +387,7 @@
     
     async function geocodeAddress(address) {
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)},Nepal&format=json&limit=1`);
+            const response = await fetch(`/maps/search?q=${encodeURIComponent(address)},Nepal&format=json&limit=1`);
             const data = await response.json();
             if (data && data.length > 0) {
                 return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
@@ -528,6 +533,64 @@
             coldFields.classList.add('hidden');
         }
     });
+
+    async function generateAiWarehouseEditCopy() {
+        const name = document.querySelector('input[name="name"]')?.value || 'Kathmandu Warehouse';
+        const address = document.querySelector('input[name="address"]')?.value || 'Kathmandu';
+        const city = document.querySelector('input[name="city"]')?.value || '';
+        const sqft = document.querySelector('input[name="total_sqft"]')?.value || document.querySelector('input[name="area_sqft"]')?.value || 5000;
+        const price = document.querySelector('input[name="price_per_sqft"]')?.value || document.querySelector('input[name="price"]')?.value || 35;
+
+        const btn = document.getElementById('btnAiWarehouseEditCopy');
+        const descArea = document.getElementById('warehouse_edit_description') || document.querySelector('textarea[name="description"]');
+        
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Drafting...';
+        }
+
+        try {
+            const response = await fetch('/ai/warehouse-copy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    location: address ? `${address}, ${city}` : city,
+                    total_sqft: parseFloat(sqft) || 5000,
+                    price_per_sqft: parseFloat(price) || 35
+                })
+            });
+
+            const res = await response.json();
+            if (res.success && res.copy) {
+                let fullText = `${res.copy.title}\n\n${res.copy.description}\n\nKey Facility Highlights:\n`;
+                if (Array.isArray(res.copy.highlights)) {
+                    fullText += res.copy.highlights.map(h => `• ${h}`).join('\n');
+                }
+                if (res.copy.ideal_for) {
+                    fullText += `\n\nIdeal For: ${res.copy.ideal_for}`;
+                }
+                if (descArea) {
+                    descArea.value = fullText;
+                    descArea.focus();
+                }
+            } else {
+                alert('Unable to generate copy right now.');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Failed to generate copy.');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-wand-magic-sparkles me-1 text-orange-600"></i> AI Generate Description';
+            }
+        }
+    }
     
     initMap();
 </script>

@@ -35,16 +35,40 @@ class ClientRequestHandler extends Controller
             'required_area' => 'required|numeric|min:1',
             'duration_months' => 'required|integer|min:1',
             'purpose' => 'required|string',
+            'preferred_start_date' => 'nullable|date',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_phone' => 'nullable|string|max:20',
+            'invoice' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'packing_list' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'insurance' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
         ]);
-        
-        WarehouseRequest::create([
+
+        $data = [
             'client_id' => auth()->id(),
             'warehouse_id' => $request->warehouse_id,
             'required_area' => $request->required_area,
+            'space_required' => $request->required_area,
             'duration_months' => $request->duration_months,
             'purpose' => $request->purpose,
+            'preferred_start_date' => $request->preferred_start_date,
+            'contact_person' => $request->contact_person,
+            'contact_phone' => $request->contact_phone,
             'status' => 'pending',
-        ]);
+        ];
+
+        if ($request->hasFile('invoice')) {
+            $data['invoice_path'] = $request->file('invoice')->store('warehouse-requests/documents/invoices', 'private_uploads');
+        }
+
+        if ($request->hasFile('packing_list')) {
+            $data['packing_list_path'] = $request->file('packing_list')->store('warehouse-requests/documents/packing-lists', 'private_uploads');
+        }
+
+        if ($request->hasFile('insurance')) {
+            $data['insurance_path'] = $request->file('insurance')->store('warehouse-requests/documents/insurance', 'private_uploads');
+        }
+
+        WarehouseRequest::create($data);
         
         return redirect()->route('my-requests.index')
             ->with('success', 'Request submitted successfully');

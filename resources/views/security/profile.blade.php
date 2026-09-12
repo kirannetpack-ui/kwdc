@@ -93,21 +93,21 @@
                         <label class="form-label">Registration Certificate</label>
                         <input type="file" name="registration_certificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                         @if($agency->registration_certificate_path)
-                            <a href="{{ Storage::disk('public')->url($agency->registration_certificate_path) }}" target="_blank" class="btn btn-sm btn-link mt-2 p-0">View current file</a>
+                            <a href="{{ route('documents.private.show', ['path' => $agency->registration_certificate_path]) }}" target="_blank" class="btn btn-sm btn-link mt-2 p-0">View current file</a>
                         @endif
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">License Certificate</label>
                         <input type="file" name="license_certificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                         @if($agency->license_certificate_path)
-                            <a href="{{ Storage::disk('public')->url($agency->license_certificate_path) }}" target="_blank" class="btn btn-sm btn-link mt-2 p-0">View current file</a>
+                            <a href="{{ route('documents.private.show', ['path' => $agency->license_certificate_path]) }}" target="_blank" class="btn btn-sm btn-link mt-2 p-0">View current file</a>
                         @endif
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">PAN / VAT Certificate</label>
                         <input type="file" name="pan_vat_certificate" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                         @if($agency->pan_vat_certificate_path)
-                            <a href="{{ Storage::disk('public')->url($agency->pan_vat_certificate_path) }}" target="_blank" class="btn btn-sm btn-link mt-2 p-0">View current file</a>
+                            <a href="{{ route('documents.private.show', ['path' => $agency->pan_vat_certificate_path]) }}" target="_blank" class="btn btn-sm btn-link mt-2 p-0">View current file</a>
                         @endif
                     </div>
                 </div>

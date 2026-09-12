@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Invoice extends Model
 {
     protected $fillable = [
-        'invoice_number', 'order_type', 'order_id', 'client_id', 'warehouse_id',
+        'invoice_number', 'user_id', 'client_id', 'warehouse_request_id', 'order_type', 'order_id',
+        'amount', 'status', 'due_date',
         'subtotal', 'discount', 'tax_rate', 'tax_amount', 'grand_total',
         'payment_status', 'payment_method', 'payment_due_date', 'paid_at',
         'billing_type', 'pan_number', 'billing_address', 'notes', 'items', 'qr_code'
@@ -17,8 +18,10 @@ class Invoice extends Model
 
     protected $casts = [
         'items' => 'array',
+        'due_date' => 'date',
         'payment_due_date' => 'date',
         'paid_at' => 'date',
+        'amount' => 'decimal:2',
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
@@ -33,6 +36,11 @@ class Invoice extends Model
     public function warehouse(): BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    public function warehouseRequest(): BelongsTo
+    {
+        return $this->belongsTo(WarehouseRequest::class, 'warehouse_request_id');
     }
 
     public function order(): MorphTo

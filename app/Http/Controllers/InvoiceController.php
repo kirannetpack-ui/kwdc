@@ -47,13 +47,28 @@ class InvoiceController extends Controller
         return view('invoices.index', compact('invoices', 'stats'));
     }
 
+    private function authorizeInvoice(Invoice $invoice): void
+    {
+        $user = Auth::user();
+        if ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin') {
+            return;
+        }
+        $isOwner = ($invoice->client_id && $invoice->client_id === $user->id)
+            || ($invoice->user_id && $invoice->user_id === $user->id)
+            || ($invoice->warehouse_request_id && optional($invoice->warehouseRequest)->client_id === $user->id);
+        abort_unless($isOwner, 403, 'Unauthorized access to this invoice.');
+    }
+
     public function show(Invoice $invoice)
     {
+        $this->authorizeInvoice($invoice);
+        $invoice->load(['client', 'warehouse', 'warehouseRequest.warehouse']);
         return view('invoices.show', compact('invoice'));
     }
 
     public function download(Invoice $invoice)
     {
+        $this->authorizeInvoice($invoice);
         return $this->invoiceService->downloadInvoice($invoice);
     }
 

@@ -27,19 +27,27 @@ class SecurityAgencyController extends Controller
 
     public function approve(SecurityAgency $agency)
     {
+        abort_unless($agency->status === 'pending', 409, 'This security agency has already been reviewed.');
         $agency->status = 'approved';
         $agency->approved_at = now();
         $agency->is_verified = true;
         $agency->save();
 
-        // Send approval email
-        Mail::to($agency->user->email)->send(new AgencyApprovedMail($agency));
+        // Send approval email safely
+        try {
+            if ($agency->user?->email) {
+                Mail::to($agency->user->email)->send(new AgencyApprovedMail($agency));
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Security agency approval email failed: ' . $e->getMessage());
+        }
 
         return redirect()->back()->with('success', 'Security agency approved successfully!');
     }
 
     public function reject(Request $request, SecurityAgency $agency)
     {
+        abort_unless($agency->status === 'pending', 409, 'This security agency has already been reviewed.');
         $agency->status = 'suspended';
         $agency->admin_notes = $request->reason;
         $agency->save();

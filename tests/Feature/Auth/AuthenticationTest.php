@@ -19,7 +19,7 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_authenticate_using_the_login_screen(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['email_verified_at' => now(), 'is_active' => true]);
 
         $response = $this->post('/login', [
             'email' => $user->email,
@@ -32,7 +32,7 @@ class AuthenticationTest extends TestCase
 
     public function test_users_can_not_authenticate_with_invalid_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['email_verified_at' => now(), 'is_active' => true]);
 
         $this->post('/login', [
             'email' => $user->email,
@@ -50,5 +50,18 @@ class AuthenticationTest extends TestCase
 
         $this->assertGuest();
         $response->assertRedirect('/');
+    }
+
+    public function test_unverified_users_are_sent_to_activation(): void
+    {
+        $user = User::factory()->unverified()->create(['is_active' => true]);
+
+        $response = $this->post('/login', [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertGuest();
+        $response->assertRedirect(route('activation.notice', ['email' => $user->email], false));
     }
 }

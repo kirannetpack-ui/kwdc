@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Schema;
 use App\Services\EnhancedAIService;
 use App\Services\SmartAIService;
+use App\Services\AssistantActionPlanner;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,7 +30,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->singleton(SmartAIService::class, function ($app) {
-            return new SmartAIService($app->make(EnhancedAIService::class));
+            return new SmartAIService(
+                $app->make(EnhancedAIService::class),
+                $app->make(AssistantActionPlanner::class)
+            );
         });
     }
 }

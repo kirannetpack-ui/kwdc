@@ -314,7 +314,7 @@
     @endif
 
     <!-- Documents -->
-    @if($warehouse->ownership_document || $warehouse->tax_clearance_document || $warehouse->fire_safety_certificate || $warehouse->building_approval_document)
+    @if($warehouse->ownership_document || $warehouse->tax_document || $warehouse->fire_safety_document || $warehouse->building_approval_document)
     <div class="bg-white rounded-xl shadow-md overflow-hidden">
         <div class="bg-gray-50 px-6 py-3 border-b">
             <h3 class="text-lg font-bold text-gray-800"><i class="fas fa-file-alt mr-2 text-orange-500"></i> Legal Documents</h3>
@@ -324,25 +324,25 @@
                 @if($warehouse->ownership_document)
                 <div>
                     <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                    <a href="{{ Storage::url($warehouse->ownership_document) }}" target="_blank" class="text-blue-500 hover:underline">Ownership Document</a>
+                    <a href="{{ route('documents.private.show', ['path' => $warehouse->ownership_document]) }}" target="_blank" class="text-blue-500 hover:underline">Ownership Document</a>
                 </div>
                 @endif
-                @if($warehouse->tax_clearance_document)
+                @if($warehouse->tax_document)
                 <div>
                     <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                    <a href="{{ Storage::url($warehouse->tax_clearance_document) }}" target="_blank" class="text-blue-500 hover:underline">Tax Clearance Certificate</a>
+                    <a href="{{ route('documents.private.show', ['path' => $warehouse->tax_document]) }}" target="_blank" class="text-blue-500 hover:underline">Tax Clearance Certificate</a>
                 </div>
                 @endif
-                @if($warehouse->fire_safety_certificate)
+                @if($warehouse->fire_safety_document)
                 <div>
                     <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                    <a href="{{ Storage::url($warehouse->fire_safety_certificate) }}" target="_blank" class="text-blue-500 hover:underline">Fire Safety Certificate</a>
+                    <a href="{{ route('documents.private.show', ['path' => $warehouse->fire_safety_document]) }}" target="_blank" class="text-blue-500 hover:underline">Fire Safety Certificate</a>
                 </div>
                 @endif
                 @if($warehouse->building_approval_document)
                 <div>
                     <i class="fas fa-file-pdf text-red-500 mr-2"></i>
-                    <a href="{{ Storage::url($warehouse->building_approval_document) }}" target="_blank" class="text-blue-500 hover:underline">Building Approval Document</a>
+                    <a href="{{ route('documents.private.show', ['path' => $warehouse->building_approval_document]) }}" target="_blank" class="text-blue-500 hover:underline">Building Approval Document</a>
                 </div>
                 @endif
             </div>

@@ -9,6 +9,32 @@ class EquipmentController extends Controller
 {
    
 
+    private function equipmentRules(): array
+    {
+        return [
+            'name' => 'required|string|max:255',
+            'type' => 'required|string|max:100',
+            'location' => 'required|string|max:255',
+            'model' => 'nullable|string|max:255',
+            'year' => 'nullable|integer|between:1900,2100',
+            'description' => 'nullable|string|max:5000',
+            'status' => 'nullable|in:available,in_use,maintenance,unavailable',
+            'daily_rate' => 'nullable|numeric|min:0',
+            'weekly_rate' => 'nullable|numeric|min:0',
+            'monthly_rate' => 'nullable|numeric|min:0',
+            'security_deposit' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
+            'engine_power' => 'nullable|numeric|min:0',
+            'bucket_capacity' => 'nullable|numeric|min:0',
+            'max_reach' => 'nullable|numeric|min:0',
+            'front_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'side_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'working_photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'registration_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+            'insurance_doc' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:10240',
+        ];
+    }
+
     public function create()
     {
         return view('equipment.register');
@@ -16,12 +42,7 @@ class EquipmentController extends Controller
 
   public function store(Request $request)
 {
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'type' => 'required|string',
-        'location' => 'required|string',
-        'daily_rate' => 'nullable|numeric|min:0',
-    ]);
+    $request->validate($this->equipmentRules());
 
     // Get the actual column names from your table
     $data = [
@@ -56,10 +77,10 @@ class EquipmentController extends Controller
 
     // Handle document uploads
     if ($request->hasFile('registration_doc')) {
-        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'public');
+        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'private_uploads');
     }
     if ($request->hasFile('insurance_doc')) {
-        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'public');
+        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'private_uploads');
     }
 
     // Remove any null values
@@ -73,7 +94,7 @@ class EquipmentController extends Controller
             ->with('success', 'Equipment registered successfully.');
     } catch (\Exception $e) {
         \Log::error('Equipment creation error: ' . $e->getMessage());
-        return back()->withErrors(['error' => 'Failed to save: ' . $e->getMessage()])->withInput();
+        return back()->withErrors(['error' => 'Equipment could not be saved. Please try again.'])->withInput();
     }
 }
 
@@ -117,12 +138,7 @@ public function update(Request $request, $id)
 {
     $equipment = Equipment::where('owner_id', auth()->id())->findOrFail($id);
     
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'type' => 'required|string',
-        'location' => 'required|string',
-        'daily_rate' => 'nullable|numeric|min:0',
-    ]);
+    $request->validate($this->equipmentRules());
 
     $data = [
         'name' => $request->name,
@@ -155,10 +171,10 @@ public function update(Request $request, $id)
 
     // Handle document uploads
     if ($request->hasFile('registration_doc')) {
-        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'public');
+        $data['registration_doc'] = $request->file('registration_doc')->store('equipment/documents', 'private_uploads');
     }
     if ($request->hasFile('insurance_doc')) {
-        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'public');
+        $data['insurance_doc'] = $request->file('insurance_doc')->store('equipment/documents', 'private_uploads');
     }
 
     $data = array_filter($data, function($value) {

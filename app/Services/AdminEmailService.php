@@ -11,7 +11,7 @@ class AdminEmailService
 
     public function __construct()
     {
-        $this->adminEmail = env('ADMIN_EMAIL', 'kiran.kwdc@gmail.com');
+        $this->adminEmail = config('app.admin_email', 'admin@ktmwdc.com');
     }
 
     /**

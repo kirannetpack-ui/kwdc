@@ -1,0 +1,307 @@
+/* Modern Executive Workspace Appearance */
+body.kwdc-app-shell {
+    background: #f8fafc;
+    color: #0f172a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+    letter-spacing: -0.011em;
+}
+
+/* Premium Dark Sidebar */
+.kwdc-app-shell .sidebar {
+    background: #090e17 !important;
+    color: #f8fafc !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-brand {
+    padding: 24px 20px 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    margin-bottom: 8px;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-brand h1 {
+    color: #ffffff !important;
+    font-weight: 800;
+    font-size: 19px;
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+.kwdc-app-shell .sidebar .kwdc-sidebar-brand p {
+    color: #94a3b8 !important;
+    font-size: 11px;
+    font-weight: 500;
+    margin: 2px 0 0;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link {
+    color: #94a3b8 !important;
+    font-weight: 500;
+    font-size: 13px;
+    border-radius: 12px;
+    margin: 4px 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: color 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1), transform 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link:hover {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    transform: translateX(2px);
+}
+
+.kwdc-app-shell .sidebar .sidebar-link.active {
+    background: linear-gradient(135deg, #f97316 0%, #ea580c 100%) !important;
+    color: #ffffff !important;
+    font-weight: 700;
+    box-shadow: 0 4px 16px rgba(249, 115, 22, 0.35) !important;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link.active i {
+    color: #ffffff !important;
+}
+
+.kwdc-app-shell .sidebar .sidebar-link i {
+    width: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: inherit;
+    background: transparent !important;
+}
+
+.kwdc-app-shell .sidebar .section-header {
+    color: #64748b !important;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 18px 20px 6px;
+    display: block !important;
+}
+
+/* Modern Top Bar */
+.kwdc-app-shell .top-bar,
+.top-bar {
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02) !important;
+    padding: 0 28px !important;
+    min-height: 64px !important;
+    height: 64px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 40 !important;
+}
+
+.top-bar .dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Minimalist Top Bar Search / AI Button */
+.kwdc-topbar-search {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    height: 36px !important;
+    padding: 0 12px !important;
+    background: #f1f5f9 !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.18s ease !important;
+    width: 220px !important;
+    max-width: 260px !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-align: left !important;
+    text-decoration: none !important;
+}
+
+.kwdc-topbar-search:hover {
+    background: #e2e8f0 !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+.kwdc-topbar-search .kwdc-kbd {
+    margin-left: auto !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #64748b !important;
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 6px !important;
+    padding: 2px 6px !important;
+    line-height: 1 !important;
+    letter-spacing: 0.04em !important;
+    flex-shrink: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Card Surfaces */
+.kwdc-app-shell .main-content :is(.card, .kwdc-panel, .shadow-md, .shadow-lg) {
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04) !important;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #ffffff;
+}
+
+/* Universal Smooth Interactions */
+html {
+    scroll-behavior: smooth;
+}
+
+.kwdc-app-shell a:not([class*="fa-"]),
+.kwdc-app-shell button:not([class*="fa-"]),
+.kwdc-app-shell .btn,
+.kwdc-app-shell input,
+.kwdc-app-shell select,
+.kwdc-app-shell .sidebar-link,
+.kwdc-app-shell .kwdc-topbar-profile,
+.kwdc-app-shell .kwdc-chip-btn {
+    transition: color 0.16s ease, background-color 0.16s ease, border-color 0.16s ease, transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.kwdc-app-shell button:active:not(:disabled),
+.kwdc-app-shell .btn:active:not(:disabled),
+.kwdc-app-shell .kwdc-chip-btn:active,
+.kwdc-app-shell .sidebar-link:active {
+    transform: scale(0.98);
+}
+
+.page-content {
+    animation: kwdcPageIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes kwdcPageIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Floating AI Copilot Orb - Minimalist */
+.kwdc-app-shell .kwdc-assistant-launch,
+.kwdc-assistant-launch {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 99999 !important;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 50% !important;
+    background: #0f172a !important;
+    color: #f97316 !important;
+    border: 1.5px solid rgba(249, 115, 22, 0.4) !important;
+    box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.35), 0 0 20px rgba(249, 115, 22, 0.2) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    outline: none !important;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.kwdc-app-shell .kwdc-assistant-launch:hover,
+.kwdc-assistant-launch:hover {
+    transform: translateY(-3px) scale(1.06) !important;
+    background: #1e293b !important;
+    border-color: #f97316 !important;
+    color: #ffffff !important;
+    box-shadow: 0 14px 36px -4px rgba(15, 23, 42, 0.45), 0 0 28px rgba(249, 115, 22, 0.4) !important;
+}
+
+.kwdc-app-shell .kwdc-assistant-launch:active,
+.kwdc-assistant-launch:active {
+    transform: translateY(0) scale(0.96) !important;
+}
+
+/* Executive Dashboard Unified Hero & AI Brief */
+.kwdc-hero-welcome {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.kwdc-brief-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kwdc-brief-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+}
+
+.kwdc-signal-row {
+    background: #f8fafc;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all 0.16s ease;
+}
+
+.kwdc-signal-row:hover {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+.kwdc-signal-badge {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #10b981;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.kwdc-priority-box {
+    background: #fffbeb;
+    border: 1px solid #fef3c7;
+    border-left: 3.5px solid #f59e0b;
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: #78350f;
+    line-height: 1.5;
+}

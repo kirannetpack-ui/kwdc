@@ -46,7 +46,7 @@
     <div class="flex justify-between items-center mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-800">Create New Pickup Request</h1>
-            <p class="text-gray-500 mt-1">Schedule a pickup with dynamic AI-powered pricing and driver selection.</p>
+            <p class="text-gray-500 mt-1">Map, price, assign, collect.</p>
         </div>
         <a href="{{ route('pickup.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
             <i class="fas fa-arrow-left mr-2"></i>Back to Pickups
@@ -55,6 +55,8 @@
 
     <form id="pickupForm" method="POST" action="{{ route('pickup.store') }}">
         @csrf
+        <input type="hidden" name="total_price" id="total_price" value="0">
+        <input type="hidden" name="total_distance" id="total_distance" value="0">
         
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Main Form - 2 columns -->
@@ -72,7 +74,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pickup Address <span class="text-red-500">*</span></label>
                             <input type="text" name="pickup_address" id="pickup_address" required
                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500"
-                                   placeholder="Enter pickup address">
+                                   placeholder="Pickup location">
                         </div>
                         
                         <div class="grid grid-cols-2 gap-4">
@@ -134,7 +136,7 @@
                         <!-- Stop 1 will be added dynamically -->
                     </div>
                     
-                    <div id="stop-template" class="hidden">
+                    <template id="stop-template">
                         <div class="stop-card bg-gray-50 rounded-lg p-4 border border-gray-200 relative">
                             <button type="button" onclick="removeDeliveryStop(this)" class="absolute top-2 right-2 text-red-500 hover:text-red-700">
                                 <i class="fas fa-times"></i>
@@ -142,7 +144,9 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Delivery Address</label>
-                                    <input type="text" name="delivery_stops[__INDEX__][address]" class="stop-address w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Enter delivery address" required>
+                                    <input type="text" name="delivery_stops[__INDEX__][address]" class="stop-address w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Delivery location" required>
+                                    <input type="hidden" name="delivery_stops[__INDEX__][latitude]" class="stop-latitude">
+                                    <input type="hidden" name="delivery_stops[__INDEX__][longitude]" class="stop-longitude">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Recipient Name</label>
@@ -154,11 +158,11 @@
                                 </div>
                                 <div class="md:col-span-2">
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Notes (Optional)</label>
-                                    <textarea name="delivery_stops[__INDEX__][notes]" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Special instructions for this stop"></textarea>
+                                    <textarea name="delivery_stops[__INDEX__][notes]" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Notes"></textarea>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </template>
                 </div>
 
                 <!-- Map Display -->
@@ -196,6 +200,62 @@
 
             <!-- Sidebar - 1 column -->
             <div class="space-y-6">
+                <!-- AI Packaging & Vehicle Advisor -->
+                <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl shadow-md p-5 text-white border border-indigo-500/25">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-sm">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </span>
+                            <div>
+                                <h4 class="text-sm font-bold text-white leading-tight">AI Packaging & Vehicle</h4>
+                                <p class="text-[11px] text-indigo-200/70">Kathmandu Quick Pickup Engine</p>
+                            </div>
+                        </div>
+                        <button type="button" id="btnAiPickupAdvisor" onclick="runAiPickupAdvisor()" class="text-xs px-2.5 py-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold transition flex items-center gap-1 shadow-sm">
+                            <i class="fas fa-bolt text-[10px]"></i> Advise
+                        </button>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="block text-[11px] text-indigo-200/80 mb-1 font-medium">Describe items to collect:</label>
+                        <input type="text" id="aiPickupCargoDesc" class="w-full bg-white/10 border border-white/20 rounded-md px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="e.g. 3 boxes of electronics, 25kg, fragile">
+                    </div>
+
+                    <div id="aiPickupLoading" class="hidden text-center py-4 text-xs text-indigo-200">
+                        <div class="spinner-border spinner-border-sm text-orange-400 mb-1" role="status"></div>
+                        <p>Analyzing courier vehicle & packaging guidelines...</p>
+                    </div>
+
+                    <div id="aiPickupOutput" class="hidden space-y-2.5 text-xs">
+                        <div class="bg-white/10 rounded-lg p-3 border border-white/10">
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Suggested Vehicle:</span>
+                                <span id="aiPickupVehicle" class="font-bold text-amber-300"></span>
+                            </div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-slate-300 font-medium">Estimated ETA:</span>
+                                <span id="aiPickupEta" class="font-semibold text-white"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-300 font-medium">Estimated Rate:</span>
+                                <span id="aiPickupPrice" class="font-extrabold text-emerald-400"></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 rounded-lg p-2.5 border border-white/5 text-[11px] text-slate-200">
+                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-box-open mr-1"></i>Packaging Protocol:</p>
+                            <p id="aiPickupPackaging" class="text-slate-300 leading-relaxed mb-2"></p>
+                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-hand-holding mr-1"></i>Handling Precautions:</p>
+                            <p id="aiPickupHandling" class="text-slate-300 leading-relaxed"></p>
+                        </div>
+
+                        <button type="button" onclick="applyAiPickupAdvice()" class="w-full py-1.5 px-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
+                            <i class="fas fa-check-circle"></i> Apply to Pickup Form
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Drivers Section -->
                 <div class="bg-white rounded-xl shadow-md p-6">
                     <div class="flex justify-between items-center mb-4">
@@ -212,7 +272,7 @@
                     <!-- Loading indicator for AI -->
                     <div id="driver-loading" class="hidden text-center py-3">
                         <div class="spinner-border text-blue-500" role="status"></div>
-                        <p class="text-sm text-gray-500 mt-1">AI is analyzing drivers...</p>
+                        <p class="text-sm text-gray-500 mt-1">Finding best drivers...</p>
                     </div>
                     
                     <div id="drivers-list" class="space-y-3 max-h-96 overflow-y-auto">
@@ -254,7 +314,7 @@
                             <div class="text-center py-8 text-gray-500">
                                 <i class="fas fa-truck text-4xl mb-3"></i>
                                 <p>No drivers available at the moment.</p>
-                                <p class="text-sm">Please check back later or contact support.</p>
+                                <p class="text-sm">Try again shortly.</p>
                             </div>
                         @endif
                     </div>
@@ -301,7 +361,7 @@
                     </button>
                     <p class="text-xs text-gray-500 text-center mt-3">
                         <i class="fas fa-info-circle mr-1"></i>
-                        By creating this pickup, you agree to our terms and conditions
+                        Pickup stays editable after creation.
                     </p>
                 </div>
             </div>
@@ -320,6 +380,7 @@
 <script>
 let stopCount = 1;
 let totalDistance = 0;
+let selectedDriversPrice = 0;
 let mapInstance = null;
 let mapMarkers = [];
 
@@ -328,6 +389,8 @@ document.addEventListener('DOMContentLoaded', function() {
     addDeliveryStop();
     setupAutoComplete();
     initMap();
+    prefillPickupFromAssistant();
+    document.getElementById('calculateBtn')?.addEventListener('click', calculatePickupPrice);
 });
 
 function initMap() {
@@ -338,23 +401,22 @@ function initMap() {
     }).addTo(mapInstance);
 }
 
-// ------------------ PRODUCTION GEOCODING (Nominatim) ------------------
+// ------------------ LOCATION LOOKUP ------------------
 async function geocodeAddress(address) {
+    if (!address || address.trim().length < 3) return null;
     try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`);
-        if (!response.ok) throw new Error('Nominatim API error');
-        const data = await response.json();
-        if (data && data.length > 0) {
-            return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-        }
+        return await KwdcMaps.search(address);
     } catch (e) {
-        console.warn('Nominatim geocoding failed (fallback to mock):', e);
+        console.warn('Geocoding notice:', e);
     }
-    return null; // Fallback to mock if API fails
+    return null;
 }
 
+let mapRevision = 0;
 async function renderMapMarkers() {
+    const revision = ++mapRevision;
     if (!mapInstance) return;
+    document.querySelectorAll('#pickup_latitude, #pickup_longitude, #stops-container .stop-latitude, #stops-container .stop-longitude').forEach(input => { input.value = ''; });
 
     // Clear existing markers
     mapMarkers.forEach(m => mapInstance.removeLayer(m.marker));
@@ -364,32 +426,44 @@ async function renderMapMarkers() {
     
     // 1. Collect Pickup Address
     const pickup = document.getElementById('pickup_address').value;
-    if (pickup.trim() !== '') addresses.push({ address: pickup, title: 'Pickup Location', color: 'green' });
+    if (pickup.trim() !== '') {
+        addresses.push({
+            address: pickup,
+            title: 'Pickup',
+            color: 'green',
+            latInput: document.getElementById('pickup_latitude'),
+            lngInput: document.getElementById('pickup_longitude')
+        });
+    }
 
     // 2. Collect Delivery Stops
-    document.querySelectorAll('.stop-address').forEach((input, index) => {
+    document.querySelectorAll('#stops-container .stop-address').forEach((input, index) => {
         if (input.value.trim() !== '') {
             addresses.push({ 
                 address: input.value, 
                 title: `Delivery #${index + 1}`, 
-                color: 'red' 
+                color: 'red',
+                latInput: input.closest('.stop-card')?.querySelector('.stop-latitude'),
+                lngInput: input.closest('.stop-card')?.querySelector('.stop-longitude')
             });
         }
     });
 
     if (addresses.length === 0) return;
 
-    // Loop through and geocode sequentially with a delay to respect Nominatim rate limits
     for (const item of addresses) {
+        if (item.address.trim().length < 4) continue;
+        if (item.latInput) item.latInput.value = '';
+        if (item.lngInput) item.lngInput.value = '';
         let coords = await geocodeAddress(item.address);
+        if (revision !== mapRevision) return;
         
-        // Fallback mock coordinates if Nominatim failed
         if (!coords) {
-            coords = { 
-                lat: 27.7172 + (Math.random() - 0.5) * 0.1, 
-                lng: 85.3240 + (Math.random() - 0.5) * 0.1 
-            };
+            continue;
         }
+
+        if (item.latInput) item.latInput.value = coords.lat.toFixed(8);
+        if (item.lngInput) item.lngInput.value = coords.lng.toFixed(8);
 
         const marker = L.marker([coords.lat, coords.lng], { 
             icon: L.divIcon({
@@ -398,25 +472,29 @@ async function renderMapMarkers() {
                 iconSize: [14, 14],
                 iconAnchor: [7, 7]
             })
-        }).addTo(mapInstance)
-        .bindPopup(`<b>${item.title}</b><br>${item.address}`);
+        }).addTo(mapInstance);
+        const popup = document.createElement('div');
+        popup.textContent = item.title + ': ' + (coords.label || item.address);
+        marker.bindPopup(popup);
         
         mapMarkers.push({ title: item.title, marker });
 
-        // Small delay to avoid hitting Nominatim's 1 request per second limit
-        await new Promise(r => setTimeout(r, 500));
     }
 
     // Fit bounds to show all markers
     if (mapMarkers.length > 0) {
         const group = L.featureGroup(mapMarkers.map(m => m.marker));
-        mapInstance.fitBounds(group.getBounds().pad(0.2));
+        mapInstance.fitBounds(group.getBounds().pad(0.2), {maxZoom: 16});
     }
 }
 
 function setupAutoComplete() {
     // Setup Google Places Autocomplete if available
     const pickupInput = document.getElementById('pickup_address');
+    if (pickupInput) {
+        pickupInput.addEventListener('input', debounceLocationUpdate(renderMapMarkers));
+        pickupInput.addEventListener('blur', renderMapMarkers);
+    }
     if (pickupInput && typeof google !== 'undefined' && google.maps) {
         const autocomplete = new google.maps.places.Autocomplete(pickupInput);
         autocomplete.addListener('place_changed', function() {
@@ -430,15 +508,21 @@ function setupAutoComplete() {
     }
 }
 
+function debounceLocationUpdate(callback, wait = 650) {
+    let timeout;
+    return function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(callback, wait);
+    };
+}
+
 function addDeliveryStop() {
     const container = document.getElementById('stops-container');
     const template = document.getElementById('stop-template');
-    const newStop = template.cloneNode(true);
-    newStop.removeAttribute('id');
-    newStop.classList.remove('hidden');
+    const newStop = document.createElement('div');
     
     // Replace __INDEX__ with current stop count
-    const html = newStop.innerHTML.replace(/__INDEX__/g, stopCount);
+    const html = template.innerHTML.replace(/__INDEX__/g, stopCount);
     newStop.innerHTML = html;
     
     container.appendChild(newStop);
@@ -450,6 +534,8 @@ function addDeliveryStop() {
             calculatePickupPrice();  // Updates price
             renderMapMarkers();      // Updates map
         });
+        addressInput.addEventListener('input', debounceLocationUpdate(renderMapMarkers));
+        addressInput.addEventListener('blur', renderMapMarkers);
         if (typeof google !== 'undefined' && google.maps) {
             const autocomplete = new google.maps.places.Autocomplete(addressInput);
             autocomplete.addListener('place_changed', function() {
@@ -511,7 +597,62 @@ function selectWarehouseForPickup(element) {
     showToast('Warehouse selected: ' + name, 'success');
 }
 
-// ------------------ AI ENHANCED PRICE CALCULATION ------------------
+function prefillPickupFromAssistant() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.toString()) return;
+
+    const setValue = (id, value) => {
+        const input = document.getElementById(id);
+        if (input && value) input.value = value;
+    };
+
+    setValue('pickup_address', params.get('pickup_address'));
+    setValue('pickup_contact_person', params.get('pickup_contact_person'));
+    setValue('pickup_contact_phone', params.get('pickup_contact_phone'));
+    setValue('total_distance', params.get('total_distance'));
+    setValue('total_price', params.get('total_price'));
+
+    const firstStop = document.querySelector('.stop-card');
+    if (firstStop) {
+        const deliveryAddress = params.get('delivery_address');
+        const recipientName = params.get('recipient_name') || params.get('pickup_contact_person') || 'Customer';
+        const recipientPhone = params.get('recipient_phone') || params.get('pickup_contact_phone') || 'N/A';
+        const notes = params.get('items_description');
+
+        if (deliveryAddress) firstStop.querySelector('.stop-address').value = deliveryAddress;
+        const nameInput = firstStop.querySelector('input[name*="recipient_name"]');
+        const phoneInput = firstStop.querySelector('input[name*="recipient_phone"]');
+        const notesInput = firstStop.querySelector('textarea[name*="notes"]');
+        if (nameInput && recipientName) nameInput.value = recipientName;
+        if (phoneInput && recipientPhone) phoneInput.value = recipientPhone;
+        if (notesInput && notes) notesInput.value = notes;
+    }
+
+    const totalDistance = params.get('total_distance');
+    const totalPrice = params.get('total_price');
+    if (totalDistance) {
+        document.getElementById('total_distance_display').innerText = totalDistance + ' km';
+    }
+    if (totalPrice) {
+        document.getElementById('base_price_display').innerText = 'रू ' + totalPrice;
+        document.getElementById('total_price_display').innerText = 'रू ' + totalPrice;
+    }
+
+    renderMapMarkers();
+    showToast('Assistant filled the pickup form. Please review before saving.', 'info');
+}
+
+function clearPriceSummary(message = 'Unavailable') {
+    totalDistance = 0;
+    document.getElementById('total_distance_display').innerText = '0 km';
+    document.getElementById('base_price_display').innerText = message;
+    document.getElementById('margin_display').innerText = '-';
+    document.getElementById('total_price_display').innerText = message;
+    document.getElementById('total_price').value = '';
+    document.getElementById('total_distance').value = '';
+}
+
+// ------------------ PRICE CALCULATION ------------------
 async function calculatePickupPrice() {
     const pickup = document.getElementById('pickup_address').value;
     const stops = [];
@@ -525,8 +666,7 @@ async function calculatePickupPrice() {
 
     try {
         const vehicleType = document.getElementById('vehicle_type') ? document.getElementById('vehicle_type').value : 'Standard';
-        // Mock distance
-        const mockDistance = (stops.length + 1) * 5 + Math.floor(Math.random() * 10);
+        const roadDistance = await KwdcMaps.roadDistance([pickup, ...stops]);
         
         const response = await fetch('{{ route("pickup.calculate-price") }}', {
             method: 'POST',
@@ -536,7 +676,7 @@ async function calculatePickupPrice() {
             },
             body: JSON.stringify({
                 pickup_stops: [{ address: pickup }],
-                total_distance: mockDistance,
+                total_distance: roadDistance,
                 vehicle_type: vehicleType
             })
         });
@@ -549,58 +689,45 @@ async function calculatePickupPrice() {
             document.getElementById('margin_display').innerText = 'Admin Margin (' + data.margin_applied + ' - AI Analyzed)';
             document.getElementById('total_price_display').innerText = 'रू ' + data.final_price;
 
-            // Show AI explanation
             const tooltip = document.getElementById('ai-insight-tooltip');
             tooltip.classList.remove('hidden');
             tooltip.innerText = '🤖 ' + data.explanation;
 
-            // Update hidden fields
-            let totalPriceInput = document.querySelector('input[name="total_price"]');
-            if (!totalPriceInput) {
-                totalPriceInput = document.createElement('input');
-                totalPriceInput.type = 'hidden';
-                totalPriceInput.name = 'total_price';
-                document.getElementById('pickupForm').appendChild(totalPriceInput);
-            }
-            totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
+            document.getElementById('total_price').value = parseFloat(String(data.final_price).replace(/,/g, ''));
+            document.getElementById('total_distance').value = data.total_distance;
             
-            // Update Map with all markers after price calculation
             renderMapMarkers();
         } else {
-            alert(data.errors || 'Price calculation failed');
+            clearPriceSummary();
+            showToast(data.errors || 'Price calculation failed', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        priceDisplay.innerText = 'रू 0';
+        clearPriceSummary();
+        showToast('Route distance is unavailable. Check the addresses and try again.', 'error');
     } finally {
-        // Always update the map after a price calculation trigger
         renderMapMarkers();
     }
 }
 
 function updatePriceSummary(data = null) {
     if (data) {
-        document.getElementById('total_distance_display').innerHTML = data.total_distance + ' km';
-        document.getElementById('base_price_display').innerHTML = 'रू ' + data.base_price;
-        document.getElementById('margin_display').innerHTML = 'रू ' + data.margin_amount;
-        document.getElementById('total_price_display').innerHTML = 'रू ' + data.final_price;
+        document.getElementById('total_distance_display').innerText = data.total_distance + ' km';
+        document.getElementById('base_price_display').innerText = 'रू ' + data.base_price;
+        document.getElementById('margin_display').innerText = 'रू ' + data.margin_amount;
+        document.getElementById('total_price_display').innerText = 'रू ' + data.final_price;
         
-        let totalPriceInput = document.querySelector('input[name="total_price"]');
-        if (!totalPriceInput) {
-            totalPriceInput = document.createElement('input');
-            totalPriceInput.type = 'hidden';
-            totalPriceInput.name = 'total_price';
-            document.getElementById('pickupForm').appendChild(totalPriceInput);
-        }
-        totalPriceInput.value = parseFloat(data.final_price.replace(/,/g, ''));
+        document.getElementById('total_price').value = parseFloat(String(data.final_price).replace(/,/g, ''));
+        document.getElementById('total_distance').value = data.total_distance;
     } else if (selectedDriversPrice) {
         const totalPrice = selectedDriversPrice;
-        document.getElementById('total_price_display').innerHTML = 'रू ' + totalPrice.toFixed(2);
+        document.getElementById('total_price_display').innerText = 'रू ' + totalPrice.toFixed(2);
+        document.getElementById('total_price').value = totalPrice;
     }
 }
 
-// ------------------ AI DRIVER & VEHICLE RECOMMENDATION ------------------
-document.getElementById('findDriversBtn').addEventListener('click', function() {
+// ------------------ DRIVER & VEHICLE RECOMMENDATION ------------------
+document.getElementById('findDriversBtn').addEventListener('click', async function() {
     const pickup = document.getElementById('pickup_address').value;
     const stops = [];
     document.querySelectorAll('.stop-address').forEach(input => {
@@ -614,7 +741,14 @@ document.getElementById('findDriversBtn').addEventListener('click', function() {
     const loadingDiv = document.getElementById('driver-loading');
     loadingDiv.classList.remove('hidden');
 
-    const mockDistance = (stops.length + 1) * 5 + Math.floor(Math.random() * 10);
+    let roadDistance;
+    try {
+        roadDistance = await KwdcMaps.roadDistance([pickup, ...stops]);
+    } catch (error) {
+        loadingDiv.classList.add('hidden');
+        showToast(error.message, 'error');
+        return;
+    }
     const vehicleType = document.getElementById('vehicle_type') ? document.getElementById('vehicle_type').value : 'Standard';
 
     fetch('/pickup/recommend-drivers', {
@@ -625,7 +759,7 @@ document.getElementById('findDriversBtn').addEventListener('click', function() {
         },
         body: JSON.stringify({
             pickup_stops: [{ address: pickup }],
-            total_distance: mockDistance,
+            total_distance: roadDistance,
             vehicle_type: vehicleType
         })
     })
@@ -666,7 +800,7 @@ document.getElementById('findDriversBtn').addEventListener('click', function() {
                 }
             });
 
-            showToast('AI found ' + data.drivers.length + ' best drivers for you!', 'info');
+            showToast('Found ' + data.drivers.length + ' recommended drivers.', 'info');
         }
     })
     .catch(error => {
@@ -687,11 +821,6 @@ document.getElementById('pickupForm').addEventListener('submit', async function(
     
     if (!pickupAddress) {
         showToast('Please enter pickup address', 'error');
-        return;
-    }
-    
-    if (!driverId) {
-        showToast('Please select a driver', 'error');
         return;
     }
     
@@ -756,13 +885,96 @@ document.getElementById('pickupForm').addEventListener('submit', async function(
     }
 });
 
+let currentAiPickupAdvice = null;
+
+async function runAiPickupAdvisor() {
+    const pickup = document.getElementById('pickup_address')?.value?.trim() || '';
+    const cargoDesc = document.getElementById('aiPickupCargoDesc')?.value?.trim() || '';
+
+    const loading = document.getElementById('aiPickupLoading');
+    const output = document.getElementById('aiPickupOutput');
+    const btn = document.getElementById('btnAiPickupAdvisor');
+
+    if (!pickup && !cargoDesc) {
+        showToast('Please provide pickup address or describe cargo items.', 'info');
+        document.getElementById('aiPickupCargoDesc')?.focus();
+        return;
+    }
+
+    loading.classList.remove('hidden');
+    output.classList.add('hidden');
+    btn.disabled = true;
+
+    try {
+        const response = await fetch('/ai/pickup-advisor', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                pickup_address: pickup,
+                cargo_description: cargoDesc || 'Standard cargo packages',
+                fragile: cargoDesc.toLowerCase().includes('fragile') || cargoDesc.toLowerCase().includes('glass'),
+                urgency: 'normal'
+            })
+        });
+
+        const res = await response.json();
+        if (res.success && res.advice) {
+            currentAiPickupAdvice = res.advice;
+            document.getElementById('aiPickupVehicle').textContent = res.advice.suggested_vehicle || 'Pickup Truck';
+            document.getElementById('aiPickupEta').textContent = (res.advice.estimated_minutes || 45) + ' mins';
+            document.getElementById('aiPickupPrice').textContent = 'रू ' + Number(res.advice.estimated_price_npr || 0).toLocaleString();
+            document.getElementById('aiPickupPackaging').textContent = res.advice.packaging_advice || 'Standard boxed packaging.';
+            document.getElementById('aiPickupHandling').textContent = res.advice.handling_notes || 'Handle with care.';
+
+            output.classList.remove('hidden');
+            showToast('AI pickup recommendations generated!', 'success');
+        } else {
+            showToast('AI advisor unavailable right now.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Failed to consult AI pickup advisor.', 'error');
+    } finally {
+        loading.classList.add('hidden');
+        btn.disabled = false;
+    }
+}
+
+function applyAiPickupAdvice() {
+    if (!currentAiPickupAdvice) return;
+
+    // Apply notes to first stop if available
+    const firstNotes = document.querySelector('textarea[name^="delivery_stops"]');
+    if (firstNotes && currentAiPickupAdvice.packaging_advice) {
+        firstNotes.value = `[AI Advice: ${currentAiPickupAdvice.suggested_vehicle}] ${currentAiPickupAdvice.packaging_advice} | ${currentAiPickupAdvice.handling_notes}`;
+    }
+
+    // Pre-fill price if 0
+    if (currentAiPickupAdvice.estimated_price_npr) {
+        const priceEl = document.getElementById('total_price');
+        const priceDisplay = document.getElementById('total_price_display');
+        if (priceEl && (!priceEl.value || priceEl.value == '0')) {
+            priceEl.value = currentAiPickupAdvice.estimated_price_npr;
+            if (priceDisplay) priceDisplay.textContent = 'रू ' + Number(currentAiPickupAdvice.estimated_price_npr).toLocaleString();
+        }
+    }
+
+    showToast('AI packaging guidelines added to notes & fare pre-filled!', 'success');
+}
+
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = 'fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg z-50 animate-slide-up ' + 
         (type === 'success' ? 'bg-green-500 text-white' : 
          type === 'error' ? 'bg-red-500 text-white' : 
          'bg-blue-500 text-white');
-    toast.innerHTML = '<i class="fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle') + ' mr-2"></i>' + message;
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-' + (type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle') + ' mr-2';
+    toast.append(icon, document.createTextNode(message));
     document.body.appendChild(toast);
     
     setTimeout(() => {

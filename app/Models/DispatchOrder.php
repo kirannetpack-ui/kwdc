@@ -13,18 +13,26 @@ class DispatchOrder extends Model
         'client_id',
         'driver_id',
         'warehouse_id',
+        'warehouse_request_id',
         'tracking_id',
         'invoice_no',
         'pickup_address',
         'delivery_address',
+        'pickup_contact_person',
+        'pickup_contact_phone',
         'pickup_latitude',
         'pickup_longitude',
         'delivery_latitude',
         'delivery_longitude',
         'total_distance',
         'base_price',
+        'tax_amount',
+        'grand_total',
         'driver_earning',
         'commission',
+        'admin_margin',
+        'bill_type',
+        'pan_number',
         'status',
         'payment_status',
         'payment_method',
@@ -78,6 +86,14 @@ class DispatchOrder extends Model
     }
 
     /**
+     * Get the primary vehicle for the assigned driver.
+     */
+    public function vehicle()
+    {
+        return $this->hasOne(Vehicle::class, 'driver_id', 'driver_id');
+    }
+
+    /**
      * Get the warehouse associated with this dispatch order
      */
     public function warehouse()
@@ -99,6 +115,11 @@ class DispatchOrder extends Model
     public function stops()
     {
         return $this->hasMany(DeliveryStop::class);
+    }
+
+    public function deliveryStops()
+    {
+        return $this->stops();
     }
 
     // ==================== SCOPES ====================

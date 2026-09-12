@@ -53,6 +53,15 @@ class SecurityAssignmentController extends Controller
         }
     }
 
+    protected function ensureAgencyOwnsAssignment(SecurityAssignment $assignment): SecurityAgency
+    {
+        $agency = $this->getAgency();
+
+        abort_unless($assignment->agency_id === $agency->id, 403);
+
+        return $agency;
+    }
+
     public function index()
     {
         $agency = $this->getAgency();
@@ -119,12 +128,14 @@ class SecurityAssignmentController extends Controller
 
     public function show(SecurityAssignment $assignment)
     {
+        $this->ensureAgencyOwnsAssignment($assignment);
+
         return view('security.assignments.show', compact('assignment'));
     }
 
     public function edit(SecurityAssignment $assignment)
     {
-        $agency = $this->getAgency();
+        $agency = $this->ensureAgencyOwnsAssignment($assignment);
         $personnel = $agency->personnel()
             ->where('status', 'active')
             ->pluck('name', 'id');
@@ -135,6 +146,8 @@ class SecurityAssignmentController extends Controller
 
     public function update(Request $request, SecurityAssignment $assignment)
     {
+        $agency = $this->ensureAgencyOwnsAssignment($assignment);
+
         $validated = $request->validate([
             'warehouse_id'  => 'required|exists:warehouses,id',
             'personnel_id'  => 'nullable|exists:security_personnels,id',
@@ -149,7 +162,6 @@ class SecurityAssignmentController extends Controller
         ]);
 
         if (!empty($validated['personnel_id'])) {
-            $agency = $this->getAgency();
             $belongsToAgency = $agency->personnel()
                 ->where('id', $validated['personnel_id'])
                 ->exists();
@@ -162,7 +174,7 @@ class SecurityAssignmentController extends Controller
         $assignment->update($validated);
 
         $this->notifyAgency(
-            $this->getAgency(),
+            $agency,
             'security_assignment_updated',
             'Assignment updated',
             "Assignment for warehouse #{$assignment->warehouse_id} was updated successfully.",
@@ -175,7 +187,7 @@ class SecurityAssignmentController extends Controller
 
     public function destroy(SecurityAssignment $assignment)
     {
-        $agency = $this->getAgency();
+        $agency = $this->ensureAgencyOwnsAssignment($assignment);
         $warehouseId = $assignment->warehouse_id;
         $assignment->delete();
 

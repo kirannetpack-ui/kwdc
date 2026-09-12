@@ -72,17 +72,17 @@
         <h3 class="text-lg font-bold mb-4">Documents</h3>
         <div class="flex flex-wrap gap-3">
             @if($box->invoice_document)
-            <a href="{{ Storage::url($box->invoice_document) }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded-lg">
+            <a href="{{ route('documents.private.show', ['path' => $box->invoice_document]) }}" target="_blank" class="bg-blue-500 text-white px-4 py-2 rounded-lg">
                 <i class="fas fa-file-invoice mr-2"></i> Invoice
             </a>
             @endif
             @if($box->packing_list_document)
-            <a href="{{ Storage::url($box->packing_list_document) }}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg">
+            <a href="{{ route('documents.private.show', ['path' => $box->packing_list_document]) }}" target="_blank" class="bg-green-500 text-white px-4 py-2 rounded-lg">
                 <i class="fas fa-boxes mr-2"></i> Packing List
             </a>
             @endif
             @if($box->insurance_document)
-            <a href="{{ Storage::url($box->insurance_document) }}" target="_blank" class="bg-orange-500 text-white px-4 py-2 rounded-lg">
+            <a href="{{ route('documents.private.show', ['path' => $box->insurance_document]) }}" target="_blank" class="bg-orange-500 text-white px-4 py-2 rounded-lg">
                 <i class="fas fa-shield-alt mr-2"></i> Insurance
             </a>
             @endif

@@ -35,12 +35,49 @@ class ProfileController extends Controller
             'state' => 'nullable|string',
             'country' => 'nullable|string',
             'postal_code' => 'nullable|string',
+            'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:3072',
+            'password' => 'nullable|string|min:8|confirmed',
         ]);
 
-        $user->update($request->all());
+        $emailChanged = $request->email !== $user->email;
+
+        $user->fill($request->only([
+            'name',
+            'email',
+            'phone',
+            'address',
+            'city',
+            'state',
+            'country',
+            'postal_code',
+        ]));
+
+        if ($request->hasFile('profile_photo')) {
+            $file = $request->file('profile_photo');
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            $dest = public_path('uploads/avatars');
+            if (!file_exists($dest)) {
+                mkdir($dest, 0755, true);
+            }
+            if ($user->profile_photo && file_exists(public_path($user->profile_photo))) {
+                @unlink(public_path($user->profile_photo));
+            }
+            $file->move($dest, $filename);
+            $user->profile_photo = 'uploads/avatars/' . $filename;
+        }
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+        }
+
+        $user->save();
 
         return redirect()->route('profile.edit')
-            ->with('success', 'Profile updated successfully!');
+            ->with('success', 'Profile and preferences updated successfully!');
     }
 
     public function updatePassword(Request $request)
@@ -99,5 +136,23 @@ class ProfileController extends Controller
 
         return redirect()->route('profile.contacts')
             ->with('success', 'Contact deleted successfully!');
+    }
+
+    public function destroy(Request $request)
+    {
+        $request->validateWithBag('userDeletion', [
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        Auth::logout();
+
+        $user->delete();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }
