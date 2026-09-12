@@ -398,7 +398,7 @@
 
         <!-- CENTER: QUICK SEARCH / COMMAND PILL -->
         <div class="hidden lg:flex items-center">
-            <button type="button" onclick="if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" class="kwdc-topbar-search" aria-label="Search or Ask AI">
+            <button type="button" onclick="event.stopPropagation(); if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" id="kwdcTopbarSearchBtn" class="kwdc-topbar-search" aria-label="Search or Ask AI">
                 <i class="fas fa-wand-magic-sparkles text-[11px] text-amber-500 flex-shrink-0"></i>
                 <span class="truncate">Search or Ask AI...</span>
                 <span class="kwdc-kbd">Ctrl+K</span>

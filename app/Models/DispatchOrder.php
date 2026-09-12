@@ -102,6 +102,14 @@ class DispatchOrder extends Model
     }
 
     /**
+     * Get the warehouse request associated with this dispatch order
+     */
+    public function warehouseRequest()
+    {
+        return $this->belongsTo(WarehouseRequest::class, 'warehouse_request_id');
+    }
+
+    /**
      * Get the inventory items for this dispatch order
      */
     public function items()

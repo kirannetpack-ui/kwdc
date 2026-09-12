@@ -583,12 +583,12 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-sm font-bold text-slate-900">Revenue</h2>
-                    <p class="text-[11px] text-slate-400">Last 7 days</p>
+                    <p class="text-[11px] text-slate-400" id="primaryChartSubtitle">Last 7 days</p>
                 </div>
                 <div class="flex items-center gap-1">
-                    <span class="px-2 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold">7D</span>
-                    <span class="px-2 py-1 rounded-lg hover:bg-slate-50 text-slate-400 text-xs font-medium cursor-pointer">30D</span>
-                    <span class="px-2 py-1 rounded-lg hover:bg-slate-50 text-slate-400 text-xs font-medium cursor-pointer">90D</span>
+                    <button type="button" onclick="setChartRange('7d')" id="chartBtn7d" class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-bold transition shadow-2xs">7D</button>
+                    <button type="button" onclick="setChartRange('30d')" id="chartBtn30d" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium transition">30D</button>
+                    <button type="button" onclick="setChartRange('90d')" id="chartBtn90d" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium transition">90D</button>
                 </div>
             </div>
             <div class="h-60 sm:h-64 w-full relative">
@@ -948,8 +948,47 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const primaryLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const primaryValues = [18000, 24000, 31000, 28000, 39000, 48000, 42000];
+    let primaryChartInstance = null;
+    const chartDatasets = {
+        '7d': {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            values: [18000, 24000, 31000, 28000, 39000, 48000, 42000],
+            subtitle: 'Last 7 days'
+        },
+        '30d': {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            values: [98000, 124000, 148000, 162000],
+            subtitle: 'Last 30 days'
+        },
+        '90d': {
+            labels: ['Jul', 'Aug', 'Sep'],
+            values: [380000, 440000, 532000],
+            subtitle: 'Last 90 days (Q3)'
+        }
+    };
+
+    window.setChartRange = function(range) {
+        const data = chartDatasets[range];
+        if (!data || !primaryChartInstance) return;
+
+        ['7d', '30d', '90d'].forEach(r => {
+            const btn = document.getElementById('chartBtn' + r);
+            if (btn) {
+                if (r === range) {
+                    btn.className = 'px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-bold transition shadow-2xs';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium transition';
+                }
+            }
+        });
+
+        const subEl = document.getElementById('primaryChartSubtitle');
+        if (subEl) subEl.textContent = data.subtitle;
+
+        primaryChartInstance.data.labels = data.labels;
+        primaryChartInstance.data.datasets[0].data = data.values;
+        primaryChartInstance.update();
+    };
 
     // Primary Chart (Smooth Line with Subtle Gradient)
     const primaryCanvas = document.getElementById('dashboardPrimaryChart');
@@ -959,13 +998,13 @@ document.addEventListener('DOMContentLoaded', function () {
         gradient.addColorStop(0, 'rgba(249, 115, 22, 0.20)');
         gradient.addColorStop(1, 'rgba(249, 115, 22, 0.00)');
 
-        new Chart(primaryCanvas, {
+        primaryChartInstance = new Chart(primaryCanvas, {
             type: 'line',
             data: {
-                labels: primaryLabels,
+                labels: chartDatasets['7d'].labels,
                 datasets: [{
                     label: 'Revenue',
-                    data: primaryValues,
+                    data: chartDatasets['7d'].values,
                     backgroundColor: gradient,
                     borderColor: '#f97316',
                     borderWidth: 2.5,

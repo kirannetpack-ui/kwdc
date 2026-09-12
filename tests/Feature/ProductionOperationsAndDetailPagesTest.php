@@ -133,4 +133,29 @@ class ProductionOperationsAndDetailPagesTest extends TestCase
         $resp2 = $this->actingAs($admin)->post("/admin/approve/{$warehouse->id}");
         $resp2->assertStatus(409);
     }
+
+    public function test_admin_can_view_dispatch_orders_index(): void
+    {
+        Mail::fake();
+        $admin = User::factory()->create(['role' => 'admin', 'is_admin' => true, 'is_active' => true]);
+        $client = User::factory()->create(['role' => 'client', 'is_client' => true, 'is_active' => true]);
+        $driver = User::factory()->create(['role' => 'driver', 'is_driver' => true, 'is_active' => true]);
+
+        $order = \App\Models\DispatchOrder::create([
+            'client_id' => $client->id,
+            'driver_id' => $driver->id,
+            'tracking_id' => 'TRK-TEST-999',
+            'pickup_address' => 'Kathmandu Valley Hub',
+            'delivery_address' => 'Pokhara Depot',
+            'base_price' => 5000,
+            'grand_total' => 5650,
+            'status' => 'in_transit',
+        ]);
+
+        $response = $this->actingAs($admin)->get('/admin/dispatch');
+        $response->assertStatus(200);
+        $response->assertSee('All Dispatch Orders');
+        $response->assertSee('TRK-TEST-999');
+        $response->assertSee($client->name);
+    }
 }

@@ -188,6 +188,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== TOGGLE CHAT WINDOW =====
     launchBtn.addEventListener('click', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         const isHidden = chatWindow.style.display === 'none' || chatWindow.style.display === '';
         if (isHidden) {
             window.openKwdcAssistant();
@@ -199,7 +200,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== CLOSE BUTTON =====
     if (closeBtn) {
-        closeBtn.addEventListener('click', function() {
+        closeBtn.addEventListener('click', function(e) {
+            if (e) e.stopPropagation();
             chatWindow.style.display = 'none';
             if (isListening) {
                 if (typeof stopMediaRecorderVoice === 'function') stopMediaRecorderVoice();
@@ -218,8 +220,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Close on click outside
+    // Close on click outside (ignoring clicks on launch triggers)
     document.addEventListener('click', function(e) {
+        if (e.target.closest('.kwdc-topbar-search') || e.target.closest('#kwdcTopbarSearchBtn') || e.target.closest('#voiceLaunchBtn') || e.target.closest('.kwdc-assistant-launch')) {
+            return;
+        }
         if (chatWindow.style.display === 'flex') {
             const container = document.getElementById('voice-assistant-container');
             if (container && !container.contains(e.target)) {
