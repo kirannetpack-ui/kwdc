@@ -253,17 +253,50 @@
 let mapInstance = null;
 let mapMarker = null;
 
-document.addEventListener('DOMContentLoaded', function() {
+function setupEquipmentCreatePage() {
     initMap();
     setupAutoComplete();
     autoCalculateDuration();
+}
+
+if (document.readyState !== 'loading') {
+    setupEquipmentCreatePage();
+} else {
+    document.addEventListener('DOMContentLoaded', setupEquipmentCreatePage);
+}
+document.addEventListener('kwdc:page-loaded', function() {
+    initMap();
 });
 
 function initMap() {
-    mapInstance = L.map('map').setView([27.7172, 85.3240], 13);
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+    if (typeof L === 'undefined') {
+        setTimeout(initMap, 100);
+        return;
+    }
+
+    if (mapEl._leaflet_id) {
+        mapEl._leaflet_id = null;
+        mapEl.innerHTML = '';
+    }
+
+    mapInstance = L.map(mapEl, {
+        zoomControl: true,
+        scrollWheelZoom: false
+    }).setView([27.7172, 85.3240], 13);
+    mapEl._leaflet_map = mapInstance;
+
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors'
     }).addTo(mapInstance);
+
+    const resize = () => { if (mapInstance) mapInstance.invalidateSize(); };
+    setTimeout(resize, 80);
+    setTimeout(resize, 250);
+    setTimeout(resize, 600);
+    window.addEventListener('resize', resize);
 }
 
 async function geocodeAddress(address) {

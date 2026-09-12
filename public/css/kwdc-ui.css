@@ -1929,8 +1929,15 @@ tr[data-record-url]:focus-visible,
    ========================================================= */
 .kwdc-live-map,
 .kwdc-pickup-map,
+.kwdc-map-container,
+.kwdc-location-map,
 #liveMap,
-#pickupRouteMap {
+#pickupRouteMap,
+#liveTrackMap,
+#warehouseLocationMap,
+#warehouseCreateMap,
+.kwdc-app-shell #map,
+#map {
     height: 380px !important;
     min-height: 380px !important;
     width: 100% !important;

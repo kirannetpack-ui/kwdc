@@ -945,10 +945,11 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
+(function() {
     let primaryChartInstance = null;
+    let activityChartInstance = null;
+
     const chartDatasets = {
         '7d': {
             labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -990,201 +991,226 @@ document.addEventListener('DOMContentLoaded', function () {
         primaryChartInstance.update();
     };
 
-    // Primary Chart (Smooth Line with Subtle Gradient)
-    const primaryCanvas = document.getElementById('dashboardPrimaryChart');
-    if (primaryCanvas) {
-        const ctx = primaryCanvas.getContext('2d');
-        const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-        gradient.addColorStop(0, 'rgba(249, 115, 22, 0.20)');
-        gradient.addColorStop(1, 'rgba(249, 115, 22, 0.00)');
+    function initDashboardCharts() {
+        if (typeof Chart === 'undefined') {
+            console.warn('[KWDC Dashboard] Chart.js not loaded yet, retrying...');
+            setTimeout(initDashboardCharts, 100);
+            return;
+        }
 
-        primaryChartInstance = new Chart(primaryCanvas, {
-            type: 'line',
-            data: {
-                labels: chartDatasets['7d'].labels,
-                datasets: [{
-                    label: 'Revenue',
-                    data: chartDatasets['7d'].values,
-                    backgroundColor: gradient,
-                    borderColor: '#f97316',
-                    borderWidth: 2.5,
-                    pointBackgroundColor: '#ffffff',
-                    pointBorderColor: '#f97316',
-                    pointBorderWidth: 2,
-                    pointRadius: 3.5,
-                    pointHoverRadius: 5.5,
-                    tension: 0.35,
-                    fill: true,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(15, 23, 42, 0.90)',
-                        padding: 10,
-                        cornerRadius: 10,
-                        titleFont: { weight: 'bold', size: 11 },
-                        callbacks: {
-                            label: function(context) {
-                                return ' NPR ' + Number(context.parsed.y).toLocaleString();
+        // Primary Chart (Smooth Line with Subtle Gradient)
+        const primaryCanvas = document.getElementById('dashboardPrimaryChart');
+        if (primaryCanvas) {
+            const existingPrimary = Chart.getChart(primaryCanvas);
+            if (existingPrimary) existingPrimary.destroy();
+
+            const ctx = primaryCanvas.getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.20)');
+            gradient.addColorStop(1, 'rgba(249, 115, 22, 0.00)');
+
+            primaryChartInstance = new Chart(primaryCanvas, {
+                type: 'line',
+                data: {
+                    labels: chartDatasets['7d'].labels,
+                    datasets: [{
+                        label: 'Revenue',
+                        data: chartDatasets['7d'].values,
+                        backgroundColor: gradient,
+                        borderColor: '#f97316',
+                        borderWidth: 2.5,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#f97316',
+                        pointBorderWidth: 2,
+                        pointRadius: 3.5,
+                        pointHoverRadius: 5.5,
+                        tension: 0.35,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.90)',
+                            padding: 10,
+                            cornerRadius: 10,
+                            titleFont: { weight: 'bold', size: 11 },
+                            callbacks: {
+                                label: function(context) {
+                                    return ' NPR ' + Number(context.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f8fafc' },
+                            ticks: { color: '#94a3b8', font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Doughnut Chart (Capacity Distribution)
+        const activityCanvas = document.getElementById('dashboardActivityChart');
+        if (activityCanvas) {
+            const existingActivity = Chart.getChart(activityCanvas);
+            if (existingActivity) existingActivity.destroy();
+
+            activityChartInstance = new Chart(activityCanvas, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Leased (78%)', 'Free (22%)'],
+                    datasets: [{
+                        data: [78, 22],
+                        backgroundColor: ['#f97316', '#e2e8f0'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff',
+                        hoverOffset: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '74%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                boxWidth: 6,
+                                padding: 14,
+                                font: { size: 11, weight: '600' },
+                                color: '#64748b'
                             }
                         }
                     }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: '#f8fafc' },
-                        ticks: { color: '#94a3b8', font: { size: 11 } }
-                    }
                 }
-            }
-        });
+            });
+        }
     }
 
-    // Doughnut Chart (Capacity Distribution)
-    const activityCanvas = document.getElementById('dashboardActivityChart');
-    if (activityCanvas) {
-        new Chart(activityCanvas, {
-            type: 'doughnut',
-            data: {
-                labels: ['Leased (78%)', 'Free (22%)'],
-                datasets: [{
-                    data: [78, 22],
-                    backgroundColor: ['#f97316', '#e2e8f0'],
-                    borderWidth: 2,
-                    borderColor: '#ffffff',
-                    hoverOffset: 3
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '74%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            usePointStyle: true,
-                            boxWidth: 6,
-                            padding: 14,
-                            font: { size: 11, weight: '600' },
-                            color: '#64748b'
-                        }
-                    }
-                }
-            }
-        });
-    }
-});
+    const dashboardStats = @json($stats ?? []);
 
-const dashboardStats = @json($stats ?? []);
+    window.refreshDashboardAiBrief = async function(force = false) {
+        const loading = document.getElementById('aiBriefLoading');
+        const content = document.getElementById('aiBriefContent');
+        const icon = document.getElementById('aiBriefRefreshIcon');
+        const cacheKey = 'kwdc_dashboard_brief_' + (document.querySelector('meta[name="user-id"]')?.content || 'user');
 
-async function refreshDashboardAiBrief(force = false) {
-    const loading = document.getElementById('aiBriefLoading');
-    const content = document.getElementById('aiBriefContent');
-    const icon = document.getElementById('aiBriefRefreshIcon');
-    const cacheKey = 'kwdc_dashboard_brief_' + (document.querySelector('meta[name="user-id"]')?.content || 'user');
-
-    if (!force) {
-        try {
-            const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-            if (cached && (Date.now() - cached.timestamp < 30 * 60 * 1000)) {
-                renderBrief(cached.data);
-                return;
-            }
-        } catch (e) {}
-    }
-
-    if (loading) loading.classList.remove('hidden');
-    if (content) content.classList.add('opacity-40');
-    if (icon) icon.classList.add('fa-spin');
-
-    try {
-        const response = await fetch('/ai/dashboard-brief', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({ stats: dashboardStats })
-        });
-
-        const res = await response.json();
-        if (res.success && res.brief) {
-            renderBrief(res.brief);
+        if (!force) {
             try {
-                localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: res.brief }));
+                const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+                if (cached && (Date.now() - cached.timestamp < 30 * 60 * 1000)) {
+                    renderBrief(cached.data);
+                    return;
+                }
             } catch (e) {}
         }
-    } catch (e) {
-        console.warn('Could not fetch daily brief', e);
-    } finally {
-        if (loading) loading.classList.add('hidden');
-        if (content) content.classList.remove('opacity-40');
-        if (icon) icon.classList.remove('fa-spin');
-    }
-}
 
-function getCategoryForBullet(text, idx) {
-    const t = (text || '').toLowerCase();
-    if (t.includes('dispatch') || t.includes('delivery') || t.includes('order') || t.includes('transit')) {
-        return { tag: 'DISPATCH', bg: 'bg-blue-50 text-blue-700 border-blue-200/80', icon: 'fa-truck-fast' };
-    }
-    if (t.includes('warehouse') || t.includes('storage') || t.includes('capacity') || t.includes('occupancy') || t.includes('facility')) {
-        return { tag: 'CAPACITY', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', icon: 'fa-warehouse' };
-    }
-    if (t.includes('driver') || t.includes('vehicle') || t.includes('fleet') || t.includes('asset') || t.includes('truck')) {
-        return { tag: 'FLEET', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', icon: 'fa-id-card' };
-    }
-    const defaults = [
-        { tag: 'DISPATCH', bg: 'bg-blue-50 text-blue-700 border-blue-200/80', icon: 'fa-truck-fast' },
-        { tag: 'CAPACITY', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', icon: 'fa-warehouse' },
-        { tag: 'FLEET', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', icon: 'fa-id-card' }
-    ];
-    return defaults[idx % defaults.length];
-}
+        if (loading) loading.classList.remove('hidden');
+        if (content) content.classList.add('opacity-40');
+        if (icon) icon.classList.add('fa-spin');
 
-function renderBrief(b) {
-    if (!b) return;
-    if (b.greeting) {
-        const gEl = document.getElementById('aiBriefGreeting');
-        if (gEl) gEl.textContent = b.greeting;
+        try {
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const response = await fetch('/ai/dashboard-brief', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfMeta ? csrfMeta.content : '',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ stats: dashboardStats })
+            });
+
+            const res = await response.json();
+            if (res.success && res.brief) {
+                renderBrief(res.brief);
+                try {
+                    localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: res.brief }));
+                } catch (e) {}
+            }
+        } catch (e) {
+            console.warn('Could not fetch daily brief', e);
+        } finally {
+            if (loading) loading.classList.add('hidden');
+            if (content) content.classList.remove('opacity-40');
+            if (icon) icon.classList.remove('fa-spin');
+        }
+    };
+
+    function getCategoryForBullet(text, idx) {
+        const t = (text || '').toLowerCase();
+        if (t.includes('dispatch') || t.includes('delivery') || t.includes('order') || t.includes('transit')) {
+            return { tag: 'DISPATCH', bg: 'bg-blue-50 text-blue-700 border-blue-200/80', icon: 'fa-truck-fast' };
+        }
+        if (t.includes('warehouse') || t.includes('storage') || t.includes('capacity') || t.includes('occupancy') || t.includes('facility')) {
+            return { tag: 'CAPACITY', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', icon: 'fa-warehouse' };
+        }
+        if (t.includes('driver') || t.includes('vehicle') || t.includes('fleet') || t.includes('asset') || t.includes('truck')) {
+            return { tag: 'FLEET', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', icon: 'fa-id-card' };
+        }
+        const defaults = [
+            { tag: 'DISPATCH', bg: 'bg-blue-50 text-blue-700 border-blue-200/80', icon: 'fa-truck-fast' },
+            { tag: 'CAPACITY', bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80', icon: 'fa-warehouse' },
+            { tag: 'FLEET', bg: 'bg-amber-50 text-amber-700 border-amber-200/80', icon: 'fa-id-card' }
+        ];
+        return defaults[idx % defaults.length];
     }
-    if (b.key_metrics_summary) {
-        const sEl = document.getElementById('aiBriefSummary');
-        if (sEl) sEl.textContent = b.key_metrics_summary;
-    }
-    if (Array.isArray(b.operational_bullets) && b.operational_bullets.length) {
-        const bEl = document.getElementById('aiBriefBullets');
-        if (bEl) {
-            bEl.innerHTML = b.operational_bullets.map((text, idx) => {
-                const cat = getCategoryForBullet(text, idx);
-                return `
-                    <div class="kwdc-insight-row">
-                        <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border ${cat.bg} flex-shrink-0 mt-0.5">
-                            <i class="fas ${cat.icon} text-[9px]"></i> ${cat.tag}
-                        </span>
-                        <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">${text}</span>
-                    </div>
-                `;
-            }).join('');
+
+    function renderBrief(b) {
+        if (!b) return;
+        if (b.greeting) {
+            const gEl = document.getElementById('aiBriefGreeting');
+            if (gEl) gEl.textContent = b.greeting;
+        }
+        if (b.key_metrics_summary) {
+            const sEl = document.getElementById('aiBriefSummary');
+            if (sEl) sEl.textContent = b.key_metrics_summary;
+        }
+        if (Array.isArray(b.operational_bullets) && b.operational_bullets.length) {
+            const bEl = document.getElementById('aiBriefBullets');
+            if (bEl) {
+                bEl.innerHTML = b.operational_bullets.map((text, idx) => {
+                    const cat = getCategoryForBullet(text, idx);
+                    return `
+                        <div class="kwdc-insight-row">
+                            <span class="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border ${cat.bg} flex-shrink-0 mt-0.5">
+                                <i class="fas ${cat.icon} text-[9px]"></i> ${cat.tag}
+                            </span>
+                            <span class="text-xs text-slate-700 font-medium leading-relaxed flex-1">${text}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+        if (b.recommended_action) {
+            const aEl = document.getElementById('aiBriefAction');
+            if (aEl) aEl.textContent = b.recommended_action;
         }
     }
-    if (b.recommended_action) {
-        const aEl = document.getElementById('aiBriefAction');
-        if (aEl) aEl.textContent = b.recommended_action;
-    }
-}
 
-refreshDashboardAiBrief(false);
+    function runDashboardInit() {
+        initDashboardCharts();
+        window.refreshDashboardAiBrief(false);
+    }
+
+    if (document.readyState !== 'loading') {
+        runDashboardInit();
+    } else {
+        document.addEventListener('DOMContentLoaded', runDashboardInit);
+    }
+    document.addEventListener('kwdc:page-loaded', runDashboardInit);
+})();
 </script>
 @endpush

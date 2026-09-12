@@ -283,18 +283,51 @@
 
 @push('scripts')
 @if($warehouse->latitude && $warehouse->longitude)
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const map = L.map('map').setView([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}], 15);
+(function() {
+    function initPropertyWarehouseMap() {
+        const mapEl = document.getElementById('map');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(initPropertyWarehouseMap, 100);
+            return;
+        }
+
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
+
+        const map = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}], 15);
+        mapEl._leaflet_map = map;
+
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(map);
+
         L.marker([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}])
             .addTo(map)
-            .bindPopup('<strong>{{ $warehouse->name }}</strong><br>{{ $warehouse->address ?? $warehouse->location }}');
-    });
+            .bindPopup('<strong>{{ addslashes($warehouse->name) }}</strong><br>{{ addslashes($warehouse->address ?? $warehouse->location ?? "") }}')
+            .openPopup();
+
+        const resize = () => { map.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
+    }
+
+    if (document.readyState !== 'loading') {
+        initPropertyWarehouseMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initPropertyWarehouseMap);
+    }
+    document.addEventListener('kwdc:page-loaded', initPropertyWarehouseMap);
+})();
 </script>
 @endif
 @endpush

@@ -6,6 +6,21 @@
 (function () {
     'use strict';
 
+    // Hook DOMContentLoaded: if document is already ready, run callback on next tick
+    const originalAddEventListener = document.addEventListener;
+    document.addEventListener = function (type, listener, options) {
+        if (type === 'DOMContentLoaded' && (document.readyState === 'interactive' || document.readyState === 'complete')) {
+            setTimeout(() => {
+                try {
+                    listener.call(document, new Event('DOMContentLoaded'));
+                } catch (err) {
+                    console.error('[KWDC Flow] Deferred DOMContentLoaded error:', err);
+                }
+            }, 10);
+        }
+        return originalAddEventListener.call(document, type, listener, options);
+    };
+
     const progressEl = () => document.getElementById('kwdc-page-progress');
     let isNavigating = false;
 
@@ -86,7 +101,11 @@
         scripts.forEach(oldScript => {
             const newScript = document.createElement('script');
             Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
-            newScript.textContent = oldScript.textContent;
+            if (!oldScript.src) {
+                newScript.textContent = '{\n' + oldScript.textContent + '\n}';
+            } else {
+                newScript.textContent = oldScript.textContent;
+            }
             oldScript.parentNode.replaceChild(newScript, oldScript);
         });
     }
@@ -188,25 +207,51 @@
                 history.pushState({ url: nextUrl.href }, doc.title, nextUrl.href);
             }
 
+            // Remove previous page-specific dynamic scripts to prevent script stacking
+            document.querySelectorAll('script[data-kwdc-page-script]').forEach(s => s.remove());
+
             // Execute scripts embedded in the new content
             executeScripts(contentEl);
 
             // Re-execute scripts that were in @push('scripts') if found in response
             const pushedScripts = Array.from(doc.querySelectorAll('body > script:not([src*="bootstrap"]):not([src*="jquery"]):not([src*="kwdc-flow"]):not([src*="voice-assistant"])'));
             pushedScripts.forEach(script => {
-                const s = document.createElement('script');
-                Array.from(script.attributes).forEach(attr => s.setAttribute(attr.name, attr.value));
-                s.textContent = script.textContent;
-                document.body.appendChild(s);
+                const src = script.getAttribute('src');
+                if (src) {
+                    // Skip libraries already loaded globally in head
+                    if (src.includes('leaflet') || src.includes('chart.js') || src.includes('bootstrap') || src.includes('jquery') || src.includes('voice-assistant') || src.includes('kwdc-flow')) {
+                        return;
+                    }
+                    const s = document.createElement('script');
+                    Array.from(script.attributes).forEach(attr => s.setAttribute(attr.name, attr.value));
+                    s.setAttribute('data-kwdc-page-script', 'true');
+                    document.body.appendChild(s);
+                } else {
+                    const s = document.createElement('script');
+                    Array.from(script.attributes).forEach(attr => s.setAttribute(attr.name, attr.value));
+                    s.setAttribute('data-kwdc-page-script', 'true');
+                    // Wrap in block scope so top-level const/let declarations never conflict across repeated page visits
+                    s.textContent = '{\n' + script.textContent + '\n}';
+                    document.body.appendChild(s);
+                }
             });
 
-            // Dispatch global event for interactive components
+            // Dispatch global events for interactive components
             document.dispatchEvent(new CustomEvent('kwdc:page-loaded', { detail: { url: nextUrl.href } }));
 
-            // If Leaflet map container exists, re-initialize if function present
-            if (document.getElementById('map') && typeof window.initKwdcMap === 'function') {
-                try { window.initKwdcMap(); } catch (e) {}
-            }
+            // Invalidate Leaflet maps automatically on navigation
+            const resizeAllMaps = () => {
+                window.dispatchEvent(new Event('resize'));
+                const mapEls = document.querySelectorAll('.leaflet-container, [id*="map" i], #liveMap, #pickupRouteMap, #warehouseLocationMap, #liveTrackMap');
+                mapEls.forEach(el => {
+                    if (el._leaflet_map) {
+                        try { el._leaflet_map.invalidateSize(); } catch (e) {}
+                    }
+                });
+            };
+            setTimeout(resizeAllMaps, 80);
+            setTimeout(resizeAllMaps, 250);
+            setTimeout(resizeAllMaps, 600);
 
         } catch (err) {
             console.warn('[KWDC Flow] Client-side navigation failed, falling back to full reload:', err);

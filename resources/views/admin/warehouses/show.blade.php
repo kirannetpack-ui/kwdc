@@ -403,17 +403,52 @@
 @endpush
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-    @if($warehouse->latitude && $warehouse->longitude)
-    var map = L.map('map').setView([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}], 15);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
-    L.marker([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}]).addTo(map)
-        .bindPopup('<b>{{ $warehouse->name }}</b><br>{{ $warehouse->location }}')
-        .openPopup();
-    @endif
+(function() {
+    function initAdminWarehouseMap() {
+        const mapEl = document.getElementById('map');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(initAdminWarehouseMap, 100);
+            return;
+        }
+
+        @if($warehouse->latitude && $warehouse->longitude)
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
+
+        const map = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}], 15);
+        mapEl._leaflet_map = map;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        L.marker([{{ $warehouse->latitude }}, {{ $warehouse->longitude }}]).addTo(map)
+            .bindPopup('<b>{{ addslashes($warehouse->name) }}</b><br>{{ addslashes($warehouse->location ?? "") }}')
+            .openPopup();
+
+        const resize = () => { map.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
+        @endif
+    }
+
+    if (document.readyState !== 'loading') {
+        initAdminWarehouseMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initAdminWarehouseMap);
+    }
+    document.addEventListener('kwdc:page-loaded', initAdminWarehouseMap);
+})();
 </script>
 @endpush
 @endsection

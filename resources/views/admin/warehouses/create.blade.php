@@ -717,23 +717,40 @@ function previewImage(input, previewId) {
 // ============================================================
 let map, marker;
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if Leaflet is loaded
+function initAdminWarehouseCreateMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
     if (typeof L === 'undefined') {
-        console.error('Leaflet library not loaded');
+        setTimeout(initAdminWarehouseCreateMap, 100);
         return;
+    }
+
+    if (mapEl._leaflet_id) {
+        mapEl._leaflet_id = null;
+        mapEl.innerHTML = '';
     }
     
     const defaultLat = 27.7172;
     const defaultLng = 85.3240;
     
     // Initialize map
-    map = L.map('map').setView([defaultLat, defaultLng], 13);
+    map = L.map(mapEl, {
+        zoomControl: true,
+        scrollWheelZoom: false
+    }).setView([defaultLat, defaultLng], 13);
+    mapEl._leaflet_map = map;
     
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
+
+    const resize = () => { map.invalidateSize(); };
+    setTimeout(resize, 80);
+    setTimeout(resize, 250);
+    setTimeout(resize, 600);
+    window.addEventListener('resize', resize);
     
     // Add marker
     marker = L.marker([defaultLat, defaultLng], {
@@ -767,7 +784,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (locationInput && locationInput.value && locationInput.value.length > 5) {
         geocodeAddress(locationInput.value);
     }
-});
+}
+
+if (document.readyState !== 'loading') {
+    initAdminWarehouseCreateMap();
+} else {
+    document.addEventListener('DOMContentLoaded', initAdminWarehouseCreateMap);
+}
+document.addEventListener('kwdc:page-loaded', initAdminWarehouseCreateMap);
 
 // ============================================================
 // REVERSE GEOCODING

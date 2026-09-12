@@ -177,13 +177,36 @@
     
     // Initialize Map
     function initMap(lat = 27.7172, lng = 85.3240) {
+        const mapEl = document.getElementById('routeMap');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(() => initMap(lat, lng), 100);
+            return;
+        }
+
+        if (mapEl._leaflet_id && !routeMap) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
+
         if (routeMap) {
             routeMap.setView([lat, lng], 13);
         } else {
-            routeMap = L.map('routeMap').setView([lat, lng], 13);
+            routeMap = L.map(mapEl, {
+                zoomControl: true,
+                scrollWheelZoom: false
+            }).setView([lat, lng], 13);
+            mapEl._leaflet_map = routeMap;
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(routeMap);
+
+            const resize = () => { if (routeMap) routeMap.invalidateSize(); };
+            setTimeout(resize, 80);
+            setTimeout(resize, 250);
+            setTimeout(resize, 600);
+            window.addEventListener('resize', resize);
         }
         
         // Click on map to set pickup
@@ -410,5 +433,10 @@
     
     initMap();
     attachStopEvents();
+    document.addEventListener('kwdc:page-loaded', function() {
+        routeMap = null;
+        pickupMarker = null;
+        initMap();
+    });
 </script>
 @endsection

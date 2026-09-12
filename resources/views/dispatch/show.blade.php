@@ -149,7 +149,7 @@
                     </div>
                 </div>
 
-                <div id="liveMap" class="kwdc-live-map"></div>
+                <div id="liveMap" class="kwdc-live-map" style="height: 380px; min-height: 380px; width: 100%;"></div>
                 <p class="text-xs text-gray-500">Live GPS tracking and route position updates in real-time.</p>
             </div>
         </div>
@@ -173,8 +173,8 @@
                         <dd class="font-bold text-gray-900 mt-0.5">{{ number_format((float) ($dispatch->total_distance ?? 0), 1) }} km</dd>
                     </div>
                     <div>
-                        <dt class="text-xs text-gray-400 font-semibold uppercase">Delivery Base Fare</dt>
-                        <dd class="text-2xl font-bold text-orange-600 mt-0.5">NPR {{ number_format((float) ($dispatch->base_price ?? 0), 2) }}</dd>
+                        <dt class="text-xs text-gray-400 font-semibold uppercase">Estimated Total</dt>
+                        <dd class="text-xl font-bold text-orange-600 mt-0.5">NPR {{ number_format((float) ($dispatch->total_price ?? 0), 2) }}</dd>
                     </div>
                     <div>
                         <dt class="text-xs text-gray-400 font-semibold uppercase">Payment Status</dt>
@@ -197,50 +197,78 @@
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.15.0/dist/echo.iife.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mapEl = document.getElementById('liveMap');
-    if (!mapEl) return;
+(function() {
+    function initDispatchShowMap() {
+        const mapEl = document.getElementById('liveMap');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(initDispatchShowMap, 100);
+            return;
+        }
 
-    const initialLat = {{ $dispatch->current_latitude ?? 27.7172 }};
-    const initialLng = {{ $dispatch->current_longitude ?? 85.3240 }};
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
 
-    const map = L.map(mapEl).setView([initialLat, initialLng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+        const initialLat = {{ $dispatch->current_latitude ?? 27.7172 }};
+        const initialLng = {{ $dispatch->current_longitude ?? 85.3240 }};
 
-    let driverMarker = L.marker([initialLat, initialLng], {
-        icon: L.divIcon({
-            className: 'custom-driver-pin',
-            html: '<div style="background:#ea580c; width:18px; height:18px; border-radius:50%; border:3px solid white; box-shadow:0 0 10px rgba(0,0,0,0.35);"></div>',
-            iconSize: [18, 18],
-            iconAnchor: [9, 9]
-        })
-    }).addTo(map).bindPopup('<b>Driver Location</b>');
+        const map = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([initialLat, initialLng], 13);
+        mapEl._leaflet_map = map;
 
-    setTimeout(() => map.invalidateSize(), 300);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-    @if($dispatch->driver_id)
-    if (typeof Echo !== 'undefined' && typeof Pusher !== 'undefined') {
-        window.Pusher = Pusher;
-        window.Echo = new Echo({
-            broadcaster: 'reverb',
-            key: "{{ config('broadcasting.connections.reverb.key') }}",
-            wsHost: "{{ config('broadcasting.connections.reverb.options.host') }}",
-            wsPort: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
-            forceTLS: false,
-            enabledTransports: ['ws', 'wss'],
-        });
+        const driverMarker = L.marker([initialLat, initialLng], {
+            icon: L.divIcon({
+                className: 'custom-driver-pin',
+                html: '<div style="background:#ea580c; width:22px; height:22px; border-radius:50%; border:3px solid white; box-shadow:0 3px 12px rgba(234,88,12,0.45); display:flex; align-items:center; justify-content:center;"><div style="width:6px; height:6px; background:white; border-radius:50%;"></div></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            })
+        }).addTo(map).bindPopup('<b>Driver Location</b>');
 
-        window.Echo.channel('dispatch.{{ $dispatch->id }}')
-            .listen('.location.updated', (e) => {
-                if (e.latitude && e.longitude) {
-                    driverMarker.setLatLng([e.latitude, e.longitude]);
-                    map.panTo([e.latitude, e.longitude]);
-                }
+        const resize = () => { map.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
+
+        @if($dispatch->driver_id)
+        if (typeof Echo !== 'undefined' && typeof Pusher !== 'undefined') {
+            window.Pusher = Pusher;
+            window.Echo = new Echo({
+                broadcaster: 'reverb',
+                key: "{{ config('broadcasting.connections.reverb.key') }}",
+                wsHost: "{{ config('broadcasting.connections.reverb.options.host') }}",
+                wsPort: {{ (int) config('broadcasting.connections.reverb.options.port', 8080) }},
+                forceTLS: false,
+                enabledTransports: ['ws', 'wss'],
             });
+
+            window.Echo.channel('dispatch.{{ $dispatch->id }}')
+                .listen('.location.updated', (e) => {
+                    if (e.latitude && e.longitude) {
+                        driverMarker.setLatLng([e.latitude, e.longitude]);
+                        map.panTo([e.latitude, e.longitude]);
+                    }
+                });
+        }
+        @endif
     }
-    @endif
-});
+
+    if (document.readyState !== 'loading') {
+        initDispatchShowMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initDispatchShowMap);
+    }
+    document.addEventListener('kwdc:page-loaded', initDispatchShowMap);
+})();
 </script>
 @endpush

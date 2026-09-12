@@ -932,20 +932,38 @@ function previewImage(input, previewId) {
 // ============================================================
 let map, marker;
 
-document.addEventListener('DOMContentLoaded', function() {
+function initPropertyCreateMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
     if (typeof L === 'undefined') {
-        console.error('Leaflet library not loaded');
+        setTimeout(initPropertyCreateMap, 100);
         return;
+    }
+
+    if (mapEl._leaflet_id) {
+        mapEl._leaflet_id = null;
+        mapEl.innerHTML = '';
     }
     
     const defaultLat = 27.7172;
     const defaultLng = 85.3240;
     
-    map = L.map('map').setView([defaultLat, defaultLng], 13);
+    map = L.map(mapEl, {
+        zoomControl: true,
+        scrollWheelZoom: false
+    }).setView([defaultLat, defaultLng], 13);
+    mapEl._leaflet_map = map;
     
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
+
+    const resize = () => { map.invalidateSize(); };
+    setTimeout(resize, 80);
+    setTimeout(resize, 250);
+    setTimeout(resize, 600);
+    window.addEventListener('resize', resize);
     
     marker = L.marker([defaultLat, defaultLng], {
         draggable: true
@@ -971,7 +989,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (locationInput && locationInput.value && locationInput.value.length > 5) {
         geocodeAddress(locationInput.value);
     }
-});
+}
+
+if (document.readyState !== 'loading') {
+    initPropertyCreateMap();
+} else {
+    document.addEventListener('DOMContentLoaded', initPropertyCreateMap);
+}
+document.addEventListener('kwdc:page-loaded', initPropertyCreateMap);
 
 function reverseGeocode(lat, lng) {
     const url = `/maps/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;

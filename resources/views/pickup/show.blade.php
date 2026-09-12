@@ -147,7 +147,7 @@
                 <h2 class="text-base font-bold text-gray-900 flex items-center">
                     <i class="fas fa-map-marked-alt text-orange-500 mr-2"></i> Route Map
                 </h2>
-                <div id="pickupRouteMap" class="kwdc-pickup-map"></div>
+                <div id="pickupRouteMap" class="kwdc-pickup-map" style="height: 380px; min-height: 380px; width: 100%;"></div>
             </div>
         </div>
 
@@ -166,7 +166,7 @@
                         @endif
                     </div>
                     <div>
-                        <dt class="text-xs text-gray-400 font-semibold uppercase">Distance</dt>
+                        <dt class="text-xs text-gray-400 font-semibold uppercase">Total Distance</dt>
                         <dd class="font-bold text-gray-900 mt-0.5">{{ number_format((float) ($pickup->total_distance ?? 0), 1) }} km</dd>
                     </div>
                     <div>
@@ -190,19 +190,54 @@
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const mapEl = document.getElementById('pickupRouteMap');
-    if (!mapEl) return;
+(function() {
+    function initPickupShowMap() {
+        const mapEl = document.getElementById('pickupRouteMap');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(initPickupShowMap, 100);
+            return;
+        }
 
-    const map = L.map(mapEl).setView([27.7172, 85.3240], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
 
-    L.marker([27.7172, 85.3240]).addTo(map).bindPopup('<b>Kathmandu Hub</b>').openPopup();
-    setTimeout(() => map.invalidateSize(), 300);
-});
+        const map = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([27.7172, 85.3240], 12);
+        mapEl._leaflet_map = map;
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        L.marker([27.7172, 85.3240], {
+            icon: L.divIcon({
+                className: 'custom-hub-pin',
+                html: '<div style="background:#f97316; width:22px; height:22px; border-radius:50%; border:3px solid white; box-shadow:0 3px 12px rgba(249,115,22,0.45); display:flex; align-items:center; justify-content:center;"><div style="width:6px; height:6px; background:white; border-radius:50%;"></div></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            })
+        }).addTo(map).bindPopup('<b>Kathmandu Hub</b>').openPopup();
+
+        const resize = () => { map.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
+    }
+
+    if (document.readyState !== 'loading') {
+        initPickupShowMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initPickupShowMap);
+    }
+    document.addEventListener('kwdc:page-loaded', initPickupShowMap);
+})();
 </script>
 @endpush

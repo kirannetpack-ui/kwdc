@@ -78,7 +78,7 @@
                     </span>
                 </div>
 
-                <div id="liveTrackMap" class="track-map-container"></div>
+                <div id="liveTrackMap" class="track-map-container" style="height: 380px; min-height: 380px; width: 100%;"></div>
 
                 <div class="flex items-center justify-between text-xs text-slate-500 pt-1">
                     <span><i class="fas fa-route text-orange-500 mr-1"></i> Transit Route: Kathmandu &bull; Central Highway Corridor</span>
@@ -124,9 +124,9 @@
         <!-- Sidebar Details -->
         <div class="space-y-6">
             <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
-                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 pb-3">Fleet Operator</h3>
+                <h3 class="text-sm font-bold uppercase tracking-wider text-slate-400">Driver &amp; Vehicle Status</h3>
                 <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-lg">
+                    <div class="w-11 h-11 rounded-2xl bg-orange-50 text-orange-600 flex items-center justify-center font-bold text-lg border border-orange-100">
                         <i class="fas fa-truck-moving"></i>
                     </div>
                     <div>
@@ -168,33 +168,59 @@
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mapEl = document.getElementById('liveTrackMap');
-    if (!mapEl) return;
+(function() {
+    function initDispatchTrackMap() {
+        const mapEl = document.getElementById('liveTrackMap');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(initDispatchTrackMap, 100);
+            return;
+        }
 
-    const lat = {{ $dispatch->current_latitude ?? 27.7172 }};
-    const lng = {{ $dispatch->current_longitude ?? 85.3240 }};
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
 
-    const map = L.map(mapEl).setView([lat, lng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+        const lat = {{ $dispatch->current_latitude ?? 27.7172 }};
+        const lng = {{ $dispatch->current_longitude ?? 85.3240 }};
 
-    const vehicleIcon = L.divIcon({
-        className: 'custom-vehicle-pin',
-        iconSize: [22, 22],
-        iconAnchor: [11, 11]
-    });
+        const map = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([lat, lng], 13);
+        mapEl._leaflet_map = map;
 
-    const marker = L.marker([lat, lng], { icon: vehicleIcon }).addTo(map)
-        .bindPopup('<b>Driver Live Position</b><br>Speed: 42 km/h &bull; Heading Hub')
-        .openPopup();
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
 
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 250);
-});
+        const vehicleIcon = L.divIcon({
+            className: 'custom-vehicle-pin',
+            html: '<div style="background:#ea580c; width:22px; height:22px; border-radius:50%; border:3px solid white; box-shadow:0 3px 12px rgba(234,88,12,0.45); display:flex; align-items:center; justify-content:center;"><i class="fas fa-truck text-white text-[10px]"></i></div>',
+            iconSize: [22, 22],
+            iconAnchor: [11, 11]
+        });
+
+        L.marker([lat, lng], { icon: vehicleIcon }).addTo(map)
+            .bindPopup('<b>Driver Live Position</b><br>Active Route Tracking')
+            .openPopup();
+
+        const resize = () => { map.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
+    }
+
+    if (document.readyState !== 'loading') {
+        initDispatchTrackMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initDispatchTrackMap);
+    }
+    document.addEventListener('kwdc:page-loaded', initDispatchTrackMap);
+})();
 </script>
 @endpush

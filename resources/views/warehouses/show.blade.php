@@ -237,7 +237,7 @@
                 <h2 class="text-base font-bold text-gray-900 flex items-center">
                     <i class="fas fa-map-marked-alt text-orange-500 mr-2"></i> Location Map
                 </h2>
-                <div id="warehouseLocationMap" class="kwdc-map-container"></div>
+                <div id="warehouseLocationMap" class="kwdc-map-container" style="height: 380px; min-height: 380px; width: 100%;"></div>
                 <p class="text-xs text-gray-500">
                     <i class="fas fa-info-circle mr-1"></i>
                     Coordinates: {{ number_format($lat, 4) }}, {{ number_format($lng, 4) }}
@@ -270,23 +270,58 @@
 @endsection
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const lat = {{ $lat }};
-    const lng = {{ $lng }};
-    const mapEl = document.getElementById('warehouseLocationMap');
-    if (!mapEl) return;
+(function() {
+    function initWarehouseShowMap() {
+        const lat = {{ $lat }};
+        const lng = {{ $lng }};
+        const mapEl = document.getElementById('warehouseLocationMap');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(initWarehouseShowMap, 100);
+            return;
+        }
 
-    const map = L.map(mapEl).setView([lat, lng], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
 
-    const marker = L.marker([lat, lng]).addTo(map);
-    marker.bindPopup('<b>{{ addslashes($warehouse->name) }}</b><br>{{ addslashes($warehouse->address ?? "Kathmandu Valley") }}').openPopup();
+        const map = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([lat, lng], 13);
+        mapEl._leaflet_map = map;
 
-    setTimeout(() => map.invalidateSize(), 300);
-});
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        }).addTo(map);
+
+        const marker = L.marker([lat, lng], {
+            icon: L.divIcon({
+                className: 'custom-warehouse-pin',
+                html: '<div style="background:#f97316; width:22px; height:22px; border-radius:50%; border:3px solid white; box-shadow:0 3px 12px rgba(249,115,22,0.45); display:flex; align-items:center; justify-content:center;"><i class="fas fa-warehouse text-white text-[10px]"></i></div>',
+                iconSize: [22, 22],
+                iconAnchor: [11, 11]
+            })
+        }).addTo(map);
+
+        marker.bindPopup('<b>{{ addslashes($warehouse->name) }}</b><br>{{ addslashes($warehouse->address ?? "Kathmandu Valley") }}').openPopup();
+
+        const resize = () => { map.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
+    }
+
+    if (document.readyState !== 'loading') {
+        initWarehouseShowMap();
+    } else {
+        document.addEventListener('DOMContentLoaded', initWarehouseShowMap);
+    }
+    document.addEventListener('kwdc:page-loaded', initWarehouseShowMap);
+})();
 </script>
 @endpush

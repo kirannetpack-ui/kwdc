@@ -370,7 +370,6 @@
 @endpush
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const verifyBtn = document.getElementById('verifyKatahoBtn');
@@ -431,12 +430,27 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (mapEl && typeof L !== 'undefined') {
+        if (mapEl._leaflet_id) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
         const startLat = parseFloat(latInput.value) || 27.7172;
         const startLng = parseFloat(lngInput.value) || 85.3240;
-        warehouseMap = L.map(mapEl).setView([startLat, startLng], 13);
+        warehouseMap = L.map(mapEl, {
+            zoomControl: true,
+            scrollWheelZoom: false
+        }).setView([startLat, startLng], 13);
+        mapEl._leaflet_map = warehouseMap;
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
             attribution: '&copy; OpenStreetMap contributors'
         }).addTo(warehouseMap);
+
+        const resize = () => { warehouseMap.invalidateSize(); };
+        setTimeout(resize, 80);
+        setTimeout(resize, 250);
+        setTimeout(resize, 600);
+        window.addEventListener('resize', resize);
 
         if (latInput.value && lngInput.value) {
             setWarehousePoint(startLat, startLng, 15);

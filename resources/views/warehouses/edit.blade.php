@@ -339,7 +339,6 @@
 @endpush
 
 @push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
     let map, marker;
     
@@ -348,13 +347,36 @@
     const existingLng = {{ $warehouse->longitude ?? 85.3240 }};
     
     function initMap(lat = existingLat, lng = existingLng) {
+        const mapEl = document.getElementById('map');
+        if (!mapEl) return;
+        if (typeof L === 'undefined') {
+            setTimeout(() => initMap(lat, lng), 100);
+            return;
+        }
+
+        if (mapEl._leaflet_id && !map) {
+            mapEl._leaflet_id = null;
+            mapEl.innerHTML = '';
+        }
+
         if (map) {
             map.setView([lat, lng], 15);
         } else {
-            map = L.map('map').setView([lat, lng], 15);
+            map = L.map(mapEl, {
+                zoomControl: true,
+                scrollWheelZoom: false
+            }).setView([lat, lng], 15);
+            mapEl._leaflet_map = map;
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+
+            const resize = () => { map.invalidateSize(); };
+            setTimeout(resize, 80);
+            setTimeout(resize, 250);
+            setTimeout(resize, 600);
+            window.addEventListener('resize', resize);
         }
         
         if (marker) map.removeLayer(marker);
@@ -593,6 +615,10 @@
     }
     
     initMap();
+    document.addEventListener('kwdc:page-loaded', function() {
+        map = null;
+        initMap();
+    });
 </script>
 @endpush
 @endsection
