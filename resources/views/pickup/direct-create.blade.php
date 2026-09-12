@@ -201,57 +201,61 @@
             <!-- Sidebar - 1 column -->
             <div class="space-y-6">
                 <!-- AI Packaging & Vehicle Advisor -->
-                <div class="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-xl shadow-md p-5 text-white border border-indigo-500/25">
-                    <div class="flex items-center justify-between mb-3">
+                <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200/80">
+                    <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-lg bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-sm">
+                            <span class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center text-sm font-bold">
                                 <i class="fas fa-wand-magic-sparkles"></i>
                             </span>
                             <div>
-                                <h4 class="text-sm font-bold text-white leading-tight">AI Packaging & Vehicle</h4>
-                                <p class="text-[11px] text-indigo-200/70">Kathmandu Quick Pickup Engine</p>
+                                <h4 class="text-sm font-bold text-slate-900 mb-0">AI Packaging & Vehicle</h4>
+                                <span class="text-[10px] text-slate-400 font-semibold">Gemini 3.5 Logistics</span>
                             </div>
                         </div>
-                        <button type="button" id="btnAiPickupAdvisor" onclick="runAiPickupAdvisor()" class="text-xs px-2.5 py-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold transition flex items-center gap-1 shadow-sm">
-                            <i class="fas fa-bolt text-[10px]"></i> Advise
+                        <button type="button" id="btnAiPickupAdvisor" onclick="runAiPickupAdvisor()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold transition border border-orange-200">
+                            <i class="fas fa-bolt"></i> Advise
                         </button>
                     </div>
 
                     <div class="mb-3">
-                        <label class="block text-[11px] text-indigo-200/80 mb-1 font-medium">Describe items to collect:</label>
-                        <input type="text" id="aiPickupCargoDesc" class="w-full bg-white/10 border border-white/20 rounded-md px-2.5 py-1.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-orange-400" placeholder="e.g. 3 boxes of electronics, 25kg, fragile">
+                        <label class="block text-xs font-medium text-slate-600 mb-1">Describe cargo / items to collect:</label>
+                        <input type="text" id="aiPickupCargoDesc" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="e.g. 3 boxes of electronics, 25kg, fragile">
                     </div>
 
-                    <div id="aiPickupLoading" class="hidden text-center py-4 text-xs text-indigo-200">
-                        <div class="spinner-border spinner-border-sm text-orange-400 mb-1" role="status"></div>
-                        <p>Analyzing courier vehicle & packaging guidelines...</p>
+                    <div id="aiPickupLoading" class="hidden text-center py-4 text-xs text-slate-500">
+                        <div class="spinner-border spinner-border-sm text-orange-500 mb-1" role="status"></div>
+                        <p class="font-medium">Analyzing courier vehicle & packaging guidelines...</p>
                     </div>
 
-                    <div id="aiPickupOutput" class="hidden space-y-2.5 text-xs">
-                        <div class="bg-white/10 rounded-lg p-3 border border-white/10">
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-slate-300 font-medium">Suggested Vehicle:</span>
-                                <span id="aiPickupVehicle" class="font-bold text-amber-300"></span>
-                            </div>
-                            <div class="flex justify-between items-center mb-1">
-                                <span class="text-slate-300 font-medium">Estimated ETA:</span>
-                                <span id="aiPickupEta" class="font-semibold text-white"></span>
+                    <div id="aiPickupOutput" class="hidden space-y-3 pt-2 text-xs">
+                        <div class="bg-slate-50 rounded-xl p-3 border border-slate-100 space-y-1.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500 font-medium">Suggested Vehicle:</span>
+                                <span id="aiPickupVehicle" class="font-bold text-slate-900"></span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-300 font-medium">Estimated Rate:</span>
-                                <span id="aiPickupPrice" class="font-extrabold text-emerald-400"></span>
+                                <span class="text-slate-500 font-medium">Estimated ETA:</span>
+                                <span id="aiPickupEta" class="font-bold text-slate-800"></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-500 font-medium">Estimated Rate:</span>
+                                <span id="aiPickupPrice" class="font-extrabold text-emerald-600"></span>
                             </div>
                         </div>
 
-                        <div class="bg-white/5 rounded-lg p-2.5 border border-white/5 text-[11px] text-slate-200">
-                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-box-open mr-1"></i>Packaging Protocol:</p>
-                            <p id="aiPickupPackaging" class="text-slate-300 leading-relaxed mb-2"></p>
-                            <p class="font-semibold text-orange-300 mb-0.5"><i class="fas fa-hand-holding mr-1"></i>Handling Precautions:</p>
-                            <p id="aiPickupHandling" class="text-slate-300 leading-relaxed"></p>
+                        <div class="bg-amber-50/70 border border-amber-200/70 rounded-xl p-3 text-xs text-slate-700 space-y-1.5">
+                            <div>
+                                <span class="font-bold text-amber-900 block mb-0.5"><i class="fas fa-box-open mr-1 text-amber-600"></i> Packaging Protocol:</span>
+                                <span id="aiPickupPackaging" class="leading-relaxed"></span>
+                            </div>
+                            <div class="pt-1 border-t border-amber-200/50">
+                                <span class="font-bold text-amber-900 block mb-0.5"><i class="fas fa-hand-holding mr-1 text-amber-600"></i> Handling Precautions:</span>
+                                <span id="aiPickupHandling" class="leading-relaxed"></span>
+                            </div>
                         </div>
 
-                        <button type="button" onclick="applyAiPickupAdvice()" class="w-full py-1.5 px-2 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition flex items-center justify-center gap-1.5 shadow-sm">
-                            <i class="fas fa-check-circle"></i> Apply to Pickup Form
+                        <button type="button" onclick="applyAiPickupAdvice()" class="w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-2xs">
+                            <i class="fas fa-check"></i> Apply to Pickup Form
                         </button>
                     </div>
                 </div>

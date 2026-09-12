@@ -29,3 +29,4 @@ bootstrap/cache/
 
 database/*.sqlite
 database/database.sqlite
+/public/uploads/

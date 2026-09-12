@@ -167,25 +167,25 @@
 
 <div class="max-w-7xl mx-auto space-y-6">
     <!-- AI Natural Language Quick-Add Bar -->
-    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-2xl p-4 sm:p-5 border border-indigo-500/25 shadow-sm text-white flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+    <div class="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-xs flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-            <span class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 border border-orange-500/30 flex items-center justify-center text-lg flex-shrink-0">
+            <span class="w-10 h-10 rounded-xl bg-orange-50 text-orange-600 border border-orange-200/70 flex items-center justify-center text-base flex-shrink-0">
                 <i class="fas fa-wand-magic-sparkles"></i>
             </span>
             <div>
-                <h3 class="text-sm font-bold text-white mb-0.5">Quick-Add Reminder with AI</h3>
-                <p class="text-xs text-indigo-200/70 mb-0">Type or speak (e.g. <em>"Call driver Ramesh tomorrow at 10 AM about Pokhara cargo"</em>)</p>
+                <h3 class="text-sm font-extrabold text-slate-900 mb-0.5">Quick-Add Reminder with AI</h3>
+                <p class="text-xs text-slate-500 mb-0">Natural language & voice scheduling &bull; Powered by Gemini 3.5</p>
             </div>
         </div>
         <form id="aiReminderForm" onsubmit="handleAiReminderQuickAdd(event)" class="flex items-center gap-2 flex-1 max-w-xl">
             <div class="relative flex-1">
-                <input type="text" id="aiReminderInput" class="w-full bg-white/10 border border-white/20 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-400" placeholder="Type reminder in natural English or Nepali...">
-                <button type="button" onclick="recordAiReminderVoice()" id="btnAiReminderMic" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-400 text-xs transition" title="Voice speak reminder">
+                <input type="text" id="aiReminderInput" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500" placeholder="Type reminder in natural English or Nepali (e.g. 'Call driver Ram tomorrow at 4pm')...">
+                <button type="button" onclick="recordAiReminderVoice()" id="btnAiReminderMic" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-500 text-xs transition" title="Voice speak reminder">
                     <i class="fas fa-microphone"></i>
                 </button>
             </div>
-            <button type="submit" id="btnAiReminderSubmit" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-sm flex-shrink-0">
-                <i class="fas fa-sparkles"></i>
+            <button type="submit" id="btnAiReminderSubmit" class="px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition flex items-center gap-1.5 shadow-2xs flex-shrink-0">
+                <i class="fas fa-sparkles text-amber-400"></i>
                 <span>Add with AI</span>
             </button>
         </form>

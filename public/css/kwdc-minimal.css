@@ -305,3 +305,218 @@ html {
     color: #78350f;
     line-height: 1.5;
 }
+
+/* ==========================================================================
+   Premier Global Polish & Design Tokens (ui-ux-design)
+   ========================================================================== */
+
+/* Antialiasing & Global Feel */
+html, body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Ultra-Sleek Scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.55);
+}
+
+/* Tabular Numerics for Financials & Metrics */
+.tabular-nums,
+.kwdc-kpi-card p,
+table td,
+table th {
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Refined Form Controls */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+input[type="datetime-local"],
+select,
+textarea {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    padding: 9px 13px !important;
+    font-size: 13px !important;
+    color: #0f172a !important;
+    background-color: #ffffff !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none !important;
+    border-color: #f97316 !important;
+    box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16) !important;
+    background-color: #ffffff !important;
+}
+
+/* Micro-Interactions on Interactive Elements */
+button:active,
+.btn:active,
+.kwdc-action-pill:active,
+.kwdc-topbar-search:active {
+    transform: scale(0.98) !important;
+}
+
+/* Modern Card Surfaces */
+.kwdc-kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 18px !important;
+    padding: 22px !important;
+    box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.04) !important;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease !important;
+}
+
+.kwdc-kpi-card:hover {
+    transform: translateY(-2px) !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.08) !important;
+}
+
+.kwdc-dashboard-hero {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 20px !important;
+    padding: 24px 28px !important;
+    box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* Modern Action Pills */
+.kwdc-action-pill {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 9999px !important;
+    padding: 8px 16px !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #334155 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.kwdc-action-pill:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Live Operational Beacon */
+.kwdc-beacon-container {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 7px !important;
+    padding: 5px 12px !important;
+    background: #ecfdf5 !important;
+    border: 1px solid rgba(16, 185, 129, 0.28) !important;
+    border-radius: 9999px !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: #065f46 !important;
+}
+
+.kwdc-beacon-dot {
+    width: 7px !important;
+    height: 7px !important;
+    border-radius: 50% !important;
+    background: #10b981 !important;
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35) !important;
+    animation: kwdcBeaconPulse 2s infinite ease-in-out !important;
+}
+
+@keyframes kwdcBeaconPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.2); }
+}
+
+/* Data Tables Polish */
+table.table,
+table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+}
+
+table th {
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #64748b !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 12px 16px !important;
+}
+
+table td {
+    padding: 14px 16px !important;
+    font-size: 13px !important;
+    color: #1e293b !important;
+    border-bottom: 1px solid #f1f5f9 !important;
+    vertical-align: middle !important;
+}
+
+table tr:hover td {
+    background-color: #f8fafc !important;
+}
+
+/* Semantic Status Badges */
+.kwdc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 9999px;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+.kwdc-badge-success {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.kwdc-badge-warning {
+    background: #fffbeb;
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.kwdc-badge-info {
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+.kwdc-badge-danger {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+.kwdc-badge-neutral {
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}

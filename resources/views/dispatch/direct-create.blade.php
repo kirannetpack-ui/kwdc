@@ -370,6 +370,65 @@
                     <input type="hidden" id="selected_driver_id" name="driver_id" value="">
                 </div>
 
+                <!-- AI Route & Fleet Advisor Card -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-slate-200/80">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center text-sm font-bold">
+                                <i class="fas fa-wand-magic-sparkles"></i>
+                            </span>
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-900 mb-0">AI Route Advisor</h3>
+                                <span class="text-[10px] text-slate-400 font-semibold">Gemini 3.5 Logistics</span>
+                            </div>
+                        </div>
+                        <button type="button" id="btnAiDispatchAdvisor" onclick="runAiDispatchAdvisor()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 text-xs font-bold transition border border-orange-200">
+                            <i class="fas fa-bolt"></i> Consult AI
+                        </button>
+                    </div>
+
+                    <div id="aiDispatchLoading" class="hidden py-4 text-center text-xs text-slate-500">
+                        <div class="spinner-border spinner-border-sm text-orange-500 mb-2" role="status"></div>
+                        <p class="font-medium">Analyzing terrain, traffic corridors & pricing...</p>
+                    </div>
+
+                    <div id="aiDispatchOutput" class="hidden space-y-3 pt-2 text-xs">
+                        <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Vehicle</span>
+                                <span id="aiSuggestedVehicle" class="font-bold text-slate-800">Standard</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Est. Transit</span>
+                                <span id="aiEstimatedTransit" class="font-bold text-slate-800">2-3 hrs</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Est. Distance</span>
+                                <span id="aiSuggestedDistance" class="font-bold text-slate-800">--</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold uppercase block">Suggested Rate</span>
+                                <span id="aiSuggestedPrice" class="font-bold text-emerald-600">रू --</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-amber-50/70 border border-amber-200/70 rounded-xl p-2.5 text-slate-700 space-y-1.5">
+                            <div>
+                                <span class="font-bold text-amber-900 block mb-0.5"><i class="fas fa-route text-amber-500 mr-1"></i> Advisory:</span>
+                                <span id="aiRouteAdvisory" class="leading-relaxed">Standard transit routes.</span>
+                            </div>
+                            <div class="pt-1 border-t border-amber-200/50">
+                                <span class="font-bold text-amber-900 block mb-0.5"><i class="fas fa-shield-alt text-amber-500 mr-1"></i> Precautions:</span>
+                                <span id="aiHandlingPrecautions" class="leading-relaxed">Standard cargo handling.</span>
+                            </div>
+                        </div>
+
+                        <button type="button" onclick="applyAiDispatchAdvice()" class="w-full py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-2xs">
+                            <i class="fas fa-check"></i> Apply Recommendations
+                        </button>
+                    </div>
+                </div>
+
                 <!-- Price Summary -->
                 <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white">
                     <div class="flex justify-between items-center mb-4">
@@ -986,8 +1045,8 @@ async function runAiDispatchAdvisor() {
             document.getElementById('aiEstimatedTransit').textContent = res.advice.estimated_hours || 'N/A';
             document.getElementById('aiSuggestedPrice').textContent = 'रू ' + Number(res.advice.suggested_price_npr || 0).toLocaleString();
             document.getElementById('aiSuggestedDistance').textContent = (res.advice.estimated_distance_km || 0) + ' km';
-            document.getElementById('aiRouteAdvisory').textContent = res.advice.route_advisory || 'Standard transit protocols apply.';
-            document.getElementById('aiHandlingPrecautions').textContent = res.advice.handling_precautions || 'Standard packaging.';
+            const precEl = document.getElementById('aiHandlingPrecautions');
+            if (precEl) precEl.textContent = res.advice.handling_precautions || 'Standard cargo handling protocols apply.';
 
             output.classList.remove('hidden');
             showToast('AI route analysis complete', 'success');
