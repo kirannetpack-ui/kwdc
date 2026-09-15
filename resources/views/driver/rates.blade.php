@@ -206,35 +206,37 @@
         </h3>
         
         @if(isset($rates) && $rates->count() > 0)
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-100">
+        <div class="w-full overflow-hidden pt-1">
+            <table class="kwdc-table-fixed">
+                <thead>
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">0-5 km</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">6-10 km</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">11-15 km</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">16-20 km</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">21+ km</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Valid Until</th>
+                        <th class="w-[100px]">0-5 km</th>
+                        <th class="w-[100px]">6-10 km</th>
+                        <th class="w-[100px]">11-15 km</th>
+                        <th class="w-[100px]">16-20 km</th>
+                        <th class="w-[110px]">21+ km</th>
+                        <th class="w-[100px] text-center">Status</th>
+                        <th class="w-[120px] text-right">Valid Until</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-slate-100/90 text-xs">
                     @foreach($rates as $rate)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-sm">रु {{ number_format($rate->rate_0_5, 2) }}</td>
-                        <td class="px-4 py-3 text-sm">रु {{ number_format($rate->rate_6_10, 2) }}</td>
-                        <td class="px-4 py-3 text-sm">रु {{ number_format($rate->rate_11_15, 2) }}</td>
-                        <td class="px-4 py-3 text-sm">रु {{ number_format($rate->rate_16_20, 2) }}</td>
-                        <td class="px-4 py-3 text-sm">रु {{ number_format($rate->rate_per_km, 2) }}/km</td>
-                        <td class="px-4 py-3 text-center">
-                            @if($rate->is_active && (!$rate->valid_until || \Carbon\Carbon::parse($rate->valid_until)->isFuture()))
-                                <span class="status-badge status-approved">Active</span>
-                            @else
-                                <span class="status-badge status-rejected">Expired</span>
-                            @endif
+                    @php
+                        $isActive = $rate->is_active && (!$rate->valid_until || \Carbon\Carbon::parse($rate->valid_until)->isFuture());
+                    @endphp
+                    <tr class="hover:bg-slate-50/70 transition">
+                        <td class="font-bold text-slate-800">रु {{ number_format($rate->rate_0_5, 2) }}</td>
+                        <td class="font-bold text-slate-800">रु {{ number_format($rate->rate_6_10, 2) }}</td>
+                        <td class="font-bold text-slate-800">रु {{ number_format($rate->rate_11_15, 2) }}</td>
+                        <td class="font-bold text-slate-800">रु {{ number_format($rate->rate_16_20, 2) }}</td>
+                        <td class="font-bold text-orange-600">रु {{ number_format($rate->rate_per_km, 2) }}/km</td>
+                        <td class="text-center">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $isActive ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200' }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $isActive ? 'bg-emerald-500' : 'bg-slate-400' }}"></span>
+                                {{ $isActive ? 'Active' : 'Expired' }}
+                            </span>
                         </td>
-                        <td class="px-4 py-3 text-sm text-gray-500">
+                        <td class="text-slate-500 text-[11px] text-right">
                             @if($rate->valid_until)
                                 {{ \Carbon\Carbon::parse($rate->valid_until)->format('M d, Y') }}
                             @else
@@ -247,7 +249,7 @@
             </table>
         </div>
         
-        <div class="mt-4">
+        <div class="mt-3">
             {{ $rates->links() }}
         </div>
         @else

@@ -396,48 +396,64 @@
                 </div>
 
                 <!-- Cold Storage -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-snowflake text-blue-500 me-2"></i>
-                        Cold Storage
-                    </div>
-                    <div class="card-body">
-                        <div class="form-check mb-3">
-                            <input type="checkbox" name="cold_storage" id="cold_storage" 
-                                   class="form-check-input"
-                                   onchange="toggleColdStorage(this.checked)" 
-                                   {{ old('cold_storage') ? 'checked' : '' }}>
-                            <label for="cold_storage" class="form-check-label fw-bold">
-                                This warehouse has cold storage facility
-                            </label>
+                <div class="card mb-4 border-0 shadow-sm rounded-xl overflow-hidden">
+                    <div class="card-header bg-white border-bottom border-slate-100 py-3 px-4 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-sky-50 text-sky-600" style="width: 38px; height: 38px; font-size: 16px;">
+                                <i class="fas fa-snowflake"></i>
+                            </span>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-slate-800" style="font-size: 15px;">Cold Storage Facility</h6>
+                                <p class="mb-0 text-muted small" style="font-size: 12px;">Temperature-controlled environment for food, produce, or pharmaceuticals</p>
+                            </div>
                         </div>
                         
+                        <!-- Modern Switch Toggle -->
+                        <label class="kwdc-switch-toggle" for="cold_storage" title="Toggle Cold Storage">
+                            <input type="checkbox" name="cold_storage" id="cold_storage" value="1"
+                                   onchange="toggleColdStorage(this.checked)" 
+                                   {{ old('cold_storage') ? 'checked' : '' }}>
+                            <span class="kwdc-switch-slider"></span>
+                        </label>
+                    </div>
+                    <div class="card-body p-4 bg-white">
                         <div id="coldStorageFields" class="{{ old('cold_storage') ? '' : 'd-none' }}">
-                            <div class="cold-storage-fields">
-                                <div class="row">
-                                    <div class="col-md-5 mb-3">
-                                        <label class="form-label fw-bold">Min Temperature (°C)</label>
-                                        <input type="number" name="temperature_min" 
-                                               class="form-control"
-                                               placeholder="e.g., -20" 
-                                               value="{{ old('temperature_min') }}" step="0.1">
-                                    </div>
-                                    <div class="col-md-5 mb-3">
-                                        <label class="form-label fw-bold">Max Temperature (°C)</label>
-                                        <input type="number" name="temperature_max" 
-                                               class="form-control"
-                                               placeholder="e.g., 10" 
-                                               value="{{ old('temperature_max') }}" step="0.1">
-                                    </div>
-                                    <div class="col-md-2 mb-3 d-flex align-items-end">
-                                        <div class="form-check">
-                                            <input type="checkbox" name="humidity_control" id="humidity_control" 
-                                                   class="form-check-input"
-                                                   {{ old('humidity_control') ? 'checked' : '' }}>
-                                            <label for="humidity_control" class="form-check-label small">
-                                                Humidity Control
-                                            </label>
+                            <div class="p-3.5 rounded-xl border border-sky-200 bg-sky-50/60 mb-1">
+                                <div class="row g-3">
+                                    <div class="col-md-5">
+                                        <label class="form-label small fw-bold text-slate-700 mb-1.5 d-flex align-items-center gap-1.5">
+                                            <i class="fas fa-temperature-low text-sky-600"></i>
+                                            Min Temperature (°C)
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" name="temperature_min" 
+                                                   class="form-control rounded-start"
+                                                   placeholder="e.g., -20" 
+                                                   value="{{ old('temperature_min') }}" step="0.1">
+                                            <span class="input-group-text bg-white text-muted">°C</span>
                                         </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label class="form-label small fw-bold text-slate-700 mb-1.5 d-flex align-items-center gap-1.5">
+                                            <i class="fas fa-temperature-high text-amber-600"></i>
+                                            Max Temperature (°C)
+                                        </label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" name="temperature_max" 
+                                                   class="form-control rounded-start"
+                                                   placeholder="e.g., 10" 
+                                                   value="{{ old('temperature_max') }}" step="0.1">
+                                            <span class="input-group-text bg-white text-muted">°C</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <label class="kwdc-checkbox-pill w-100 mb-0 d-flex align-items-center justify-content-center gap-2 p-2 rounded-lg {{ old('humidity_control') ? 'active' : '' }}" for="humidity_control">
+                                            <input type="checkbox" name="humidity_control" id="humidity_control" value="1" class="d-none"
+                                                   onchange="this.parentElement.classList.toggle('active', this.checked)"
+                                                   {{ old('humidity_control') ? 'checked' : '' }}>
+                                            <i class="fas fa-droplet text-sky-500"></i>
+                                            <span class="small fw-semibold">Humidity</span>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -446,12 +462,26 @@
                 </div>
 
                 <!-- Facilities -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <i class="fas fa-list-check text-green-500 me-2"></i>
-                        Facilities
+                <div class="card mb-4 border-0 shadow-sm rounded-xl overflow-hidden">
+                    <div class="card-header bg-white border-bottom border-slate-100 py-3 px-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-emerald-50 text-emerald-600" style="width: 38px; height: 38px; font-size: 16px;">
+                                <i class="fas fa-layer-group"></i>
+                            </span>
+                            <div>
+                                <h6 class="mb-0 fw-bold text-slate-800" style="font-size: 15px;">Facilities & Amenities</h6>
+                                <p class="mb-0 text-muted small" style="font-size: 12px;">Click chips to toggle available infrastructure features</p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge rounded-pill bg-slate-100 text-slate-700 px-3 py-1.5 fw-semibold border border-slate-200">
+                                <span id="facilityCount">{{ count($oldFacilities ?? []) }}</span> Selected
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2.5 rounded-lg text-xs" onclick="selectAllFacilities(true)">Select All</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2.5 rounded-lg text-xs" onclick="selectAllFacilities(false)">Clear</button>
+                        </div>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4 bg-white">
                         @php
                             $facilities = [
                                 '24/7 Security', 'CCTV Surveillance', 'Loading Dock', 'Forklift',
@@ -459,29 +489,64 @@
                                 'Generator Backup', 'High Speed Internet', 'Office Space', 'Staff Room',
                                 'Restroom Facilities', 'Parking Area', 'Fenced Premises', 'Lighting System',
                                 'Climate Control', 'Washroom', 'Canteen', 'Security Guard',
-                                'Emergency Exit', 'First Aid Kit', 'Fire Alarm', 'Smoke Detector'
+                                'Emergency Exit', 'First Aid Kit', 'Fire Alarm', 'Smoke Detector',
+                                'Water Supply', 'Electricity Backup', 'Weight Bridge', 'Security Fence'
                             ];
                             $oldFacilities = old('facilities', []);
                             if (is_string($oldFacilities)) {
                                 $oldFacilities = json_decode($oldFacilities, true) ?? [];
                             }
                         @endphp
+
+                        <div class="mb-3 position-relative">
+                            <i class="fas fa-search position-absolute top-50 translate-middle-y text-slate-400 ms-3" style="font-size: 13px;"></i>
+                            <input type="text" id="facilitySearch" class="form-control form-control-sm ps-5 rounded-lg bg-slate-50 border-slate-200" 
+                                   placeholder="Filter facilities by keyword (e.g. CCTV, Security, Loading)..." 
+                                   oninput="filterFacilities(this.value)">
+                        </div>
                         
-                        <div id="facilitiesContainer" class="d-flex flex-wrap">
+                        <div id="facilitiesContainer" class="d-flex flex-wrap gap-2">
                             @foreach($facilities as $facility)
-                            <div class="facility-tag {{ in_array($facility, $oldFacilities) ? 'selected' : '' }}"
-                                 onclick="toggleFacility(this, '{{ $facility }}')">
-                                <i class="fas fa-check-circle me-1 {{ in_array($facility, $oldFacilities) ? 'text-white' : 'text-gray-300' }}"></i>
-                                {{ $facility }}
-                            </div>
+                                @php
+                                    $isSelected = in_array($facility, $oldFacilities);
+                                    $icon = match(true) {
+                                        str_contains($facility, 'Security') || str_contains($facility, 'Guard') => 'fa-shield-halved',
+                                        str_contains($facility, 'CCTV') => 'fa-video',
+                                        str_contains($facility, 'Dock') => 'fa-truck-ramp-box',
+                                        str_contains($facility, 'Forklift') => 'fa-dolly',
+                                        str_contains($facility, 'Pallet') || str_contains($facility, 'Racking') => 'fa-boxes-stacked',
+                                        str_contains($facility, 'Fire') || str_contains($facility, 'Smoke') => 'fa-fire-extinguisher',
+                                        str_contains($facility, 'Sprinkler') => 'fa-faucet-drip',
+                                        str_contains($facility, 'Generator') || str_contains($facility, 'Electricity') => 'fa-bolt',
+                                        str_contains($facility, 'Internet') => 'fa-wifi',
+                                        str_contains($facility, 'Office') => 'fa-briefcase',
+                                        str_contains($facility, 'Staff') || str_contains($facility, 'Restroom') || str_contains($facility, 'Washroom') => 'fa-restroom',
+                                        str_contains($facility, 'Parking') => 'fa-square-parking',
+                                        str_contains($facility, 'Fence') || str_contains($facility, 'Premises') => 'fa-border-all',
+                                        str_contains($facility, 'Lighting') => 'fa-lightbulb',
+                                        str_contains($facility, 'Climate') => 'fa-temperature-half',
+                                        str_contains($facility, 'Canteen') => 'fa-utensils',
+                                        str_contains($facility, 'Exit') => 'fa-door-open',
+                                        str_contains($facility, 'First Aid') => 'fa-kit-medical',
+                                        str_contains($facility, 'Water') => 'fa-water',
+                                        str_contains($facility, 'Weight') => 'fa-scale-balanced',
+                                        default => 'fa-circle-check'
+                                    };
+                                @endphp
+                                <button type="button" 
+                                        class="kwdc-facility-pill {{ $isSelected ? 'selected' : '' }}"
+                                        data-name="{{ $facility }}"
+                                        onclick="toggleFacility(this, '{{ addslashes($facility) }}')">
+                                    <span class="pill-check-indicator">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    <i class="fas {{ $icon }} pill-type-icon"></i>
+                                    <span class="pill-label">{{ $facility }}</span>
+                                </button>
                             @endforeach
                         </div>
                         
                         <input type="hidden" name="facilities" id="facilities" value='{{ json_encode($oldFacilities) }}'>
-                        <small class="text-muted d-block mt-2">
-                            <i class="fas fa-info-circle me-1"></i>
-                            Click on facilities to select/deselect them
-                        </small>
                     </div>
                 </div>
 
@@ -649,21 +714,46 @@ let selectedFacilities = [];
 function toggleFacility(element, facility) {
     element.classList.toggle('selected');
     
-    // Toggle icon color
-    const icon = element.querySelector('i');
     if (element.classList.contains('selected')) {
-        icon.classList.remove('text-gray-300');
-        icon.classList.add('text-white');
         if (!selectedFacilities.includes(facility)) {
             selectedFacilities.push(facility);
         }
     } else {
-        icon.classList.add('text-gray-300');
-        icon.classList.remove('text-white');
         selectedFacilities = selectedFacilities.filter(f => f !== facility);
     }
     
     document.getElementById('facilities').value = JSON.stringify(selectedFacilities);
+    const countEl = document.getElementById('facilityCount');
+    if (countEl) countEl.textContent = selectedFacilities.length;
+}
+
+function selectAllFacilities(selectAll) {
+    const pills = document.querySelectorAll('.kwdc-facility-pill');
+    selectedFacilities = [];
+    pills.forEach(pill => {
+        const name = pill.dataset.name;
+        if (selectAll) {
+            pill.classList.add('selected');
+            selectedFacilities.push(name);
+        } else {
+            pill.classList.remove('selected');
+        }
+    });
+    document.getElementById('facilities').value = JSON.stringify(selectedFacilities);
+    const countEl = document.getElementById('facilityCount');
+    if (countEl) countEl.textContent = selectedFacilities.length;
+}
+
+function filterFacilities(query) {
+    const q = (query || '').toLowerCase().trim();
+    document.querySelectorAll('.kwdc-facility-pill').forEach(pill => {
+        const name = (pill.dataset.name || '').toLowerCase();
+        if (!q || name.includes(q)) {
+            pill.style.display = 'inline-flex';
+        } else {
+            pill.style.display = 'none';
+        }
+    });
 }
 
 // ============================================================
@@ -907,17 +997,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const facilities = JSON.parse(facilitiesInput.value);
             selectedFacilities = facilities;
             
-            document.querySelectorAll('.facility-tag').forEach(tag => {
-                const facilityName = tag.textContent.trim();
+            document.querySelectorAll('.kwdc-facility-pill').forEach(tag => {
+                const facilityName = tag.dataset.name || tag.querySelector('.pill-label')?.textContent.trim();
                 if (facilities.includes(facilityName)) {
                     tag.classList.add('selected');
-                    const icon = tag.querySelector('i');
-                    if (icon) {
-                        icon.classList.remove('text-gray-300');
-                        icon.classList.add('text-white');
-                    }
                 }
             });
+            const countEl = document.getElementById('facilityCount');
+            if (countEl) countEl.textContent = facilities.length;
         } catch(e) {
             console.error('Error parsing facilities:', e);
         }

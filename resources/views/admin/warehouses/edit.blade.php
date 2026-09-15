@@ -155,13 +155,25 @@
                 </div>
 
                 <!-- Cold Storage -->
-                <div class="mb-6">
-                    <h4 class="font-bold text-gray-700 border-b pb-2 mb-4">Cold Storage</h4>
-                    <div class="mb-4 flex items-center">
-                        <input type="checkbox" name="cold_storage" id="cold_storage" value="1" {{ old('cold_storage', $warehouse->cold_storage) ? 'checked' : '' }} class="mr-2">
-                        <label for="cold_storage" class="font-medium text-gray-700">Enable Cold Storage</label>
+                <div class="mb-6 p-4 rounded-xl border border-gray-200 bg-white shadow-sm">
+                    <div class="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-sky-50 text-sky-600 text-base">
+                                <i class="fas fa-snowflake"></i>
+                            </span>
+                            <div>
+                                <h4 class="font-bold text-gray-800 text-sm mb-0">Cold Storage Facility</h4>
+                                <p class="text-xs text-gray-500 mb-0">Temperature-controlled storage specifications</p>
+                            </div>
+                        </div>
+                        <label class="kwdc-switch-toggle" for="cold_storage" title="Toggle Cold Storage">
+                            <input type="checkbox" name="cold_storage" id="cold_storage" value="1" 
+                                   onchange="document.getElementById('cold-storage-fields').style.display = this.checked ? 'grid' : 'none'"
+                                   {{ old('cold_storage', $warehouse->cold_storage) ? 'checked' : '' }}>
+                            <span class="kwdc-switch-slider"></span>
+                        </label>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="cold-storage-fields">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="cold-storage-fields" style="{{ old('cold_storage', $warehouse->cold_storage) ? '' : 'display: none;' }}">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Min Temperature (°C)</label>
                             <input type="number" step="0.1" name="temperature_min" value="{{ old('temperature_min', $warehouse->temperature_min) }}" 
@@ -173,8 +185,13 @@
                                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-500">
                         </div>
                         <div class="flex items-center mt-6">
-                            <input type="checkbox" name="humidity_control" id="humidity_control" value="1" {{ old('humidity_control', $warehouse->humidity_control) ? 'checked' : '' }} class="mr-2">
-                            <label for="humidity_control" class="font-medium text-gray-700">Humidity Control</label>
+                            <label class="kwdc-checkbox-pill w-full flex items-center justify-center gap-2 p-2 rounded-lg {{ old('humidity_control', $warehouse->humidity_control) ? 'active' : '' }}" for="humidity_control">
+                                <input type="checkbox" name="humidity_control" id="humidity_control" value="1" class="hidden"
+                                       onchange="this.parentElement.classList.toggle('active', this.checked)"
+                                       {{ old('humidity_control', $warehouse->humidity_control) ? 'checked' : '' }}>
+                                <i class="fas fa-droplet text-sky-500"></i>
+                                <span class="text-sm font-semibold">Humidity Control</span>
+                            </label>
                         </div>
                     </div>
                 </div>

@@ -71,6 +71,14 @@ class Equipment extends Model
     }
 
     /**
+     * Alias for equipment jobs (for admin queries and views)
+     */
+    public function equipmentJobs()
+    {
+        return $this->hasMany(EquipmentJob::class, 'equipment_id');
+    }
+
+    /**
      * Scope for active/available equipment
      */
     public function scopeAvailable($query)

@@ -1968,3 +1968,152 @@ tr[data-record-url]:focus-visible,
     transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
     box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
 }
+
+/* ============================================================
+   KWDC MODERN TOGGLE SWITCH & FACILITY CHIPS
+   ============================================================ */
+.kwdc-switch-toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+}
+.kwdc-switch-toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+    margin: 0;
+    pointer-events: none;
+}
+.kwdc-switch-slider {
+    position: absolute;
+    inset: 0;
+    background-color: #cbd5e1;
+    border-radius: 9999px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+.kwdc-switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+}
+.kwdc-switch-toggle input:checked + .kwdc-switch-slider {
+    background-color: #0284c7;
+}
+.kwdc-switch-toggle input:checked + .kwdc-switch-slider:before {
+    transform: translateX(22px);
+}
+.kwdc-switch-toggle:hover .kwdc-switch-slider {
+    filter: brightness(0.96);
+}
+
+/* Facility Chips */
+.kwdc-facility-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 9999px;
+    background-color: #f8fafc;
+    border: 1.5px solid #e2e8f0;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    text-align: left;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+.kwdc-facility-pill:hover {
+    border-color: #cbd5e1;
+    background-color: #f1f5f9;
+    color: #0f172a;
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.06);
+}
+.kwdc-facility-pill .pill-type-icon {
+    font-size: 13px;
+    color: #64748b;
+    transition: color 0.16s ease;
+}
+.kwdc-facility-pill .pill-check-indicator {
+    display: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: white;
+}
+.kwdc-facility-pill.selected {
+    background-color: #0f766e !important; /* Rich emerald teal */
+    border-color: #0f766e !important;
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(15, 118, 110, 0.28);
+}
+.kwdc-facility-pill.selected .pill-type-icon {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+.kwdc-facility-pill.selected .pill-check-indicator {
+    display: inline-flex;
+}
+
+/* Humidity Pill */
+.kwdc-checkbox-pill {
+    background-color: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.kwdc-checkbox-pill:hover {
+    border-color: #38bdf8;
+    background-color: #f0f9ff;
+}
+.kwdc-checkbox-pill.active {
+    background-color: #e0f2fe !important;
+    border-color: #0284c7 !important;
+    color: #0369a1 !important;
+    font-weight: 600;
+}
+
+/* Global Status Filter Pills */
+.status-pill {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    user-select: none;
+}
+.status-pill:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+    color: #0f172a;
+    transform: translateY(-0.5px);
+}
+.status-pill.active {
+    background-color: #0f172a !important;
+    border-color: #0f172a !important;
+    color: #ffffff !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.14);
+}

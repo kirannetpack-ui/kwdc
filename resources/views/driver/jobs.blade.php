@@ -77,35 +77,35 @@
 
     <!-- Available Jobs -->
     @if(isset($availableJobs) && $availableJobs->count() > 0)
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-clock text-warning me-2"></i>Available Jobs</h5>
+    <div class="card mb-3 border-0 shadow-2xs rounded-xl overflow-hidden">
+        <div class="card-header bg-slate-50 border-bottom border-slate-100 py-2.5 px-3.5">
+            <h5 class="mb-0 text-xs font-bold text-slate-900"><i class="fas fa-clock text-amber-500 me-1.5"></i>Available Jobs</h5>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
+            <div class="overflow-hidden">
+                <table class="kwdc-table-fixed text-left mb-0">
+                    <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th>Job ID</th>
-                            <th>Client</th>
-                            <th>Pickup Location</th>
-                            <th>Distance</th>
-                            <th>Amount</th>
-                            <th>Action</th>
+                            <th class="w-[12%]">Job ID</th>
+                            <th class="w-[24%]">Client</th>
+                            <th class="w-[32%]">Pickup Location</th>
+                            <th class="w-[12%]">Distance</th>
+                            <th class="w-[10%]">Amount</th>
+                            <th class="w-[10%] text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($availableJobs as $job)
-                        <tr>
-                            <td>#{{ $job->id }}</td>
-                            <td>{{ $job->client->name ?? 'N/A' }}</td>
-                            <td>{{ $job->pickup_address ?? 'N/A' }}</td>
-                            <td>{{ number_format($job->total_distance ?? 0, 2) }} km</td>
-                            <td>रु {{ number_format($job->base_price ?? 0, 2) }}</td>
-                            <td>
-                                <form action="{{ route('driver.jobs.accept', $job->id) }}" method="POST">
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="font-bold text-slate-900 font-mono truncate">#{{ $job->id }}</td>
+                            <td class="font-semibold text-slate-800 truncate" title="{{ $job->client->name ?? 'N/A' }}">{{ $job->client->name ?? 'N/A' }}</td>
+                            <td class="text-slate-600 truncate" title="{{ $job->pickup_address ?? 'N/A' }}">{{ $job->pickup_address ?? 'N/A' }}</td>
+                            <td class="text-slate-600 truncate">{{ number_format($job->total_distance ?? 0, 1) }} km</td>
+                            <td class="font-extrabold text-slate-900 truncate">रु {{ number_format($job->base_price ?? 0) }}</td>
+                            <td class="text-right">
+                                <form action="{{ route('driver.jobs.accept', $job->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-primary">Accept</button>
+                                    <button type="submit" class="px-2 py-0.5 rounded-md bg-orange-500 hover:bg-orange-600 text-white font-semibold text-[10.5px] transition shadow-2xs">Accept</button>
                                 </form>
                             </td>
                         </tr>
@@ -115,7 +115,7 @@
             </div>
         </div>
         @if(method_exists($availableJobs, 'links'))
-            <div class="card-footer">
+            <div class="card-footer bg-white border-top border-slate-100 py-2 px-3">
                 {{ $availableJobs->links() }}
             </div>
         @endif
@@ -124,53 +124,53 @@
 
     <!-- Active Jobs -->
     @if(isset($activeJobs) && $activeJobs->count() > 0)
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-tasks text-primary me-2"></i>Active Jobs</h5>
+    <div class="card mb-3 border-0 shadow-2xs rounded-xl overflow-hidden">
+        <div class="card-header bg-slate-50 border-bottom border-slate-100 py-2.5 px-3.5">
+            <h5 class="mb-0 text-xs font-bold text-slate-900"><i class="fas fa-tasks text-blue-600 me-1.5"></i>Active Jobs</h5>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
+            <div class="overflow-hidden">
+                <table class="kwdc-table-fixed text-left mb-0">
+                    <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th>Job ID</th>
-                            <th>Client</th>
-                            <th>Pickup Location</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                            <th>Action</th>
+                            <th class="w-[12%]">Job ID</th>
+                            <th class="w-[24%]">Client</th>
+                            <th class="w-[30%]">Pickup Location</th>
+                            <th class="w-[12%]">Status</th>
+                            <th class="w-[10%]">Amount</th>
+                            <th class="w-[12%] text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($activeJobs as $job)
-                        <tr>
-                            <td>#{{ $job->id }}</td>
-                            <td>{{ $job->client->name ?? 'N/A' }}</td>
-                            <td>{{ $job->pickup_address ?? 'N/A' }}</td>
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="font-bold text-slate-900 font-mono truncate">#{{ $job->id }}</td>
+                            <td class="font-semibold text-slate-800 truncate" title="{{ $job->client->name ?? 'N/A' }}">{{ $job->client->name ?? 'N/A' }}</td>
+                            <td class="text-slate-600 truncate" title="{{ $job->pickup_address ?? 'N/A' }}">{{ $job->pickup_address ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge bg-{{ $job->status === 'assigned' ? 'info' : ($job->status === 'picked_up' ? 'warning' : 'primary') }}">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $job->status === 'assigned' ? 'bg-sky-50 text-sky-700 border-sky-200' : 'bg-amber-50 text-amber-700 border-amber-200' }}">
                                     {{ ucfirst(str_replace('_', ' ', $job->status)) }}
                                 </span>
                             </td>
-                            <td>रु {{ number_format($job->driver_earning ?? 0, 2) }}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
+                            <td class="font-extrabold text-slate-900 truncate">रु {{ number_format($job->driver_earning ?? 0) }}</td>
+                            <td class="text-right">
+                                <div class="inline-flex items-center justify-end gap-1">
                                     @if($job->status == 'assigned')
-                                        <form action="{{ route('driver.jobs.start', $job->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('driver.jobs.start', $job->id) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-success">Start</button>
+                                            <button type="submit" class="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10.5px] transition shadow-2xs">Start</button>
                                         </form>
                                     @endif
                                     @if($job->status == 'picked_up' || $job->status == 'on_the_way')
-                                        <form action="{{ route('driver.jobs.deliver', $job->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('driver.jobs.deliver', $job->id) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-success">Deliver</button>
+                                            <button type="submit" class="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10.5px] transition shadow-2xs">Deliver</button>
                                         </form>
                                     @endif
                                     @if(in_array($job->status, ['assigned', 'picked_up']))
-                                        <form action="{{ route('driver.jobs.cancel', $job->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('driver.jobs.cancel', $job->id) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel this job?')">Cancel</button>
+                                            <button type="submit" class="px-2 py-0.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-[10.5px] transition border border-rose-200" onclick="return confirm('Cancel this job?')">Cancel</button>
                                         </form>
                                     @endif
                                 </div>
@@ -182,49 +182,49 @@
             </div>
         </div>
         @if(method_exists($activeJobs, 'links'))
-            <div class="card-footer">
+            <div class="card-footer bg-white border-top border-slate-100 py-2 px-3">
                 {{ $activeJobs->links() }}
             </div>
         @endif
     </div>
     @else
-    <div class="card mb-4">
-        <div class="card-body text-center py-4">
-            <i class="fas fa-check-circle text-success" style="font-size: 48px;"></i>
-            <h5 class="mt-2">No Active Jobs</h5>
-            <p class="text-muted">You don't have any active jobs right now.</p>
+    <div class="card mb-3 border-0 shadow-2xs rounded-xl overflow-hidden">
+        <div class="card-body text-center py-4 text-slate-400 text-xs">
+            <i class="fas fa-check-circle text-emerald-500 text-2xl mb-1 block"></i>
+            <h5 class="text-xs font-bold text-slate-700 mb-0.5">No Active Jobs</h5>
+            <p class="text-[11px] text-slate-400 mb-0">You don't have any active jobs right now.</p>
         </div>
     </div>
     @endif
 
     <!-- Completed Jobs -->
     @if(isset($completedJobs) && $completedJobs->count() > 0)
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-check-circle text-success me-2"></i>Completed Jobs</h5>
+    <div class="card border-0 shadow-2xs rounded-xl overflow-hidden">
+        <div class="card-header bg-slate-50 border-bottom border-slate-100 py-2.5 px-3.5">
+            <h5 class="mb-0 text-xs font-bold text-slate-900"><i class="fas fa-check-circle text-emerald-600 me-1.5"></i>Completed Jobs</h5>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
+            <div class="overflow-hidden">
+                <table class="kwdc-table-fixed text-left mb-0">
+                    <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th>Job ID</th>
-                            <th>Client</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                            <th>Completed</th>
+                            <th class="w-[14%]">Job ID</th>
+                            <th class="w-[26%]">Client</th>
+                            <th class="w-[16%]">Status</th>
+                            <th class="w-[18%]">Amount</th>
+                            <th class="w-[26%] text-right">Completed</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($completedJobs as $job)
-                        <tr>
-                            <td>#{{ $job->id }}</td>
-                            <td>{{ $job->client->name ?? 'N/A' }}</td>
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="font-bold text-slate-900 font-mono truncate">#{{ $job->id }}</td>
+                            <td class="font-semibold text-slate-800 truncate" title="{{ $job->client->name ?? 'N/A' }}">{{ $job->client->name ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge bg-success">Delivered</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">Delivered</span>
                             </td>
-                            <td>रु {{ number_format($job->driver_earning ?? 0, 2) }}</td>
-                            <td>{{ $job->delivered_at ? $job->delivered_at->format('M d, Y H:i') : 'N/A' }}</td>
+                            <td class="font-extrabold text-slate-900 truncate">रु {{ number_format($job->driver_earning ?? 0) }}</td>
+                            <td class="text-slate-500 text-xs text-right truncate">{{ $job->delivered_at ? $job->delivered_at->format('M d, Y H:i') : '-' }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -232,7 +232,7 @@
             </div>
         </div>
         @if(method_exists($completedJobs, 'links'))
-            <div class="card-footer">
+            <div class="card-footer bg-white border-top border-slate-100 py-2 px-3">
                 {{ $completedJobs->links() }}
             </div>
         @endif

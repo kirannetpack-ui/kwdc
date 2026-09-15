@@ -77,37 +77,37 @@
 
     <!-- Available Pickups -->
     @if(isset($availablePickups) && $availablePickups->count() > 0)
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-clock text-warning me-2"></i>Available Pickups</h5>
+    <div class="card mb-3 border-0 shadow-2xs rounded-xl overflow-hidden">
+        <div class="card-header bg-slate-50 border-bottom border-slate-100 py-2.5 px-3.5">
+            <h5 class="mb-0 text-xs font-bold text-slate-900"><i class="fas fa-clock text-amber-500 me-1.5"></i>Available Pickups</h5>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
+            <div class="overflow-hidden">
+                <table class="kwdc-table-fixed text-left mb-0">
+                    <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th>Pickup ID</th>
-                            <th>Client</th>
-                            <th>Location</th>
-                            <th>Items</th>
-                            <th>Distance</th>
-                            <th>Price</th>
-                            <th>Action</th>
+                            <th class="w-[12%]">Pickup ID</th>
+                            <th class="w-[20%]">Client</th>
+                            <th class="w-[26%]">Location</th>
+                            <th class="w-[16%]">Items</th>
+                            <th class="w-[10%]">Distance</th>
+                            <th class="w-[8%]">Price</th>
+                            <th class="w-[8%] text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($availablePickups as $pickup)
-                        <tr>
-                            <td>#{{ $pickup->id }}</td>
-                            <td>{{ $pickup->client->name ?? 'N/A' }}</td>
-                            <td>{{ $pickup->pickup_address ?? 'N/A' }}</td>
-                            <td>{{ $pickup->items_description ?? 'N/A' }}</td>
-                            <td>{{ number_format($pickup->total_distance, 2) }} km</td>
-                            <td>रु {{ number_format($pickup->total_price, 2) }}</td>
-                            <td>
-                                <form action="{{ route('driver.accept-pickup', $pickup->id) }}" method="POST">
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="font-bold text-slate-900 font-mono truncate">#{{ $pickup->id }}</td>
+                            <td class="font-semibold text-slate-800 truncate" title="{{ $pickup->client->name ?? 'N/A' }}">{{ $pickup->client->name ?? 'N/A' }}</td>
+                            <td class="text-slate-600 truncate" title="{{ $pickup->pickup_address ?? 'N/A' }}">{{ $pickup->pickup_address ?? 'N/A' }}</td>
+                            <td class="text-slate-600 truncate" title="{{ $pickup->items_description ?? 'Standard cargo' }}">{{ $pickup->items_description ?? 'Standard cargo' }}</td>
+                            <td class="text-slate-600 truncate">{{ number_format($pickup->total_distance, 1) }} km</td>
+                            <td class="font-extrabold text-slate-900 truncate">रु {{ number_format($pickup->total_price) }}</td>
+                            <td class="text-right">
+                                <form action="{{ route('driver.accept-pickup', $pickup->id) }}" method="POST" class="inline">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-primary">Accept</button>
+                                    <button type="submit" class="px-2 py-0.5 rounded-md bg-orange-500 hover:bg-orange-600 text-white font-semibold text-[10.5px] transition shadow-2xs">Accept</button>
                                 </form>
                             </td>
                         </tr>
@@ -121,55 +121,53 @@
 
     <!-- My Active Pickups -->
     @if(isset($pickups) && $pickups->count() > 0)
-    <div class="card">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-tasks text-primary me-2"></i>My Pickups</h5>
+    <div class="card border-0 shadow-2xs rounded-xl overflow-hidden">
+        <div class="card-header bg-slate-50 border-bottom border-slate-100 py-2.5 px-3.5">
+            <h5 class="mb-0 text-xs font-bold text-slate-900"><i class="fas fa-tasks text-blue-600 me-1.5"></i>My Pickups</h5>
         </div>
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0">
-                    <thead>
+            <div class="overflow-hidden">
+                <table class="kwdc-table-fixed text-left mb-0">
+                    <thead class="bg-slate-50 border-b border-slate-100">
                         <tr>
-                            <th>Pickup ID</th>
-                            <th>Client</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                            <th>Distance</th>
-                            <th>Price</th>
-                            <th>Action</th>
+                            <th class="w-[12%]">Pickup ID</th>
+                            <th class="w-[22%]">Client</th>
+                            <th class="w-[28%]">Location</th>
+                            <th class="w-[14%]">Status</th>
+                            <th class="w-[12%]">Distance</th>
+                            <th class="w-[12%] text-right">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         @foreach($pickups as $pickup)
-                        <tr>
-                            <td>#{{ $pickup->id }}</td>
-                            <td>{{ $pickup->client->name ?? 'N/A' }}</td>
-                            <td>{{ $pickup->pickup_address ?? 'N/A' }}</td>
+                        <tr class="hover:bg-slate-50/70 transition">
+                            <td class="font-bold text-slate-900 font-mono truncate">#{{ $pickup->id }}</td>
+                            <td class="font-semibold text-slate-800 truncate" title="{{ $pickup->client->name ?? 'N/A' }}">{{ $pickup->client->name ?? 'N/A' }}</td>
+                            <td class="text-slate-600 truncate" title="{{ $pickup->pickup_address ?? 'N/A' }}">{{ $pickup->pickup_address ?? 'N/A' }}</td>
                             <td>
-                                <span class="badge bg-{{ $pickup->status_badge }}">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-sky-50 text-sky-700 border-sky-200">
                                     {{ $pickup->status_text }}
                                 </span>
                             </td>
-                            <td>{{ number_format($pickup->total_distance, 2) }} km</td>
-                            <td>रु {{ number_format($pickup->total_price, 2) }}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm">
+                            <td class="text-slate-600 truncate">{{ number_format($pickup->total_distance, 1) }} km</td>
+                            <td class="text-right">
+                                <div class="inline-flex items-center justify-end gap-1">
                                     @if($pickup->status == 'assigned')
-                                        <form action="{{ route('driver.start-pickup', $pickup->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('driver.start-pickup', $pickup->id) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-success">Start</button>
+                                            <button type="submit" class="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10.5px] transition shadow-2xs">Start</button>
                                         </form>
                                     @endif
                                     @if($pickup->status == 'in_progress')
-                                        <form action="{{ route('driver.complete-pickup', $pickup->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('driver.complete-pickup', $pickup->id) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-success">Complete</button>
+                                            <button type="submit" class="px-2 py-0.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[10.5px] transition shadow-2xs">Complete</button>
                                         </form>
                                     @endif
                                     @if(in_array($pickup->status, ['assigned', 'in_progress']))
-                                        <form action="{{ route('driver.cancel-pickup', $pickup->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('driver.cancel-pickup', $pickup->id) }}" method="POST" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-danger" onclick="return confirm('Cancel this pickup?')">Cancel</button>
+                                            <button type="submit" class="px-2 py-0.5 rounded-md bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-[10.5px] transition border border-rose-200" onclick="return confirm('Cancel this pickup?')">Cancel</button>
                                         </form>
                                     @endif
                                 </div>
@@ -181,7 +179,7 @@
             </div>
         </div>
         @if(method_exists($pickups, 'links'))
-            <div class="card-footer">
+            <div class="card-footer bg-white border-top border-slate-100 py-2 px-3">
                 {{ $pickups->links() }}
             </div>
         @endif

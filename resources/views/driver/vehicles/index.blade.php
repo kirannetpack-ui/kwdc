@@ -29,93 +29,76 @@
     </div>
 
     @if(isset($vehicles) && $vehicles->count() > 0)
-    <div class="overflow-x-auto">
-        <table class="w-full">
-            <thead class="bg-gray-50">
+    <div class="overflow-hidden rounded-xl border border-slate-200/80 mt-2.5">
+        <table class="kwdc-table-fixed text-left">
+            <thead class="bg-slate-50 border-b border-slate-200/80">
                 <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vehicle Number</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Capacity</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Registration</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verification</th>
-                    <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th class="w-[20%]">Vehicle Number</th>
+                    <th class="w-[22%]">Type & Model</th>
+                    <th class="w-[14%]">Capacity</th>
+                    <th class="w-[18%]">Registration & Docs</th>
+                    <th class="w-[14%]">Status</th>
+                    <th class="w-[12%] text-right">Actions</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="divide-y divide-slate-100">
                 @foreach($vehicles as $vehicle)
-                <tr class="hover:bg-gray-50 transition">
-                    <td class="px-4 py-3 text-sm font-medium">
-                        {{ $vehicle->vehicle_number }}
-                        <p class="text-xs text-gray-400">ID: {{ $vehicle->registration_number ?? 'N/A' }}</p>
+                <tr class="hover:bg-slate-50/80 transition">
+                    <td class="font-bold text-slate-900 truncate" title="{{ $vehicle->vehicle_number }}">
+                        <span class="font-mono text-xs">{{ $vehicle->vehicle_number }}</span>
+                        <p class="text-[10.5px] text-slate-400 font-normal m-0">ID: {{ $vehicle->registration_number ?? 'N/A' }}</p>
                     </td>
-                    <td class="px-4 py-3 text-sm">
-                        {{ $vehicle->full_vehicle_type ?? $vehicle->vehicle_type }}
+                    <td class="text-xs text-slate-700 truncate" title="{{ $vehicle->full_vehicle_type ?? $vehicle->vehicle_type }}">
+                        <span class="font-semibold text-slate-800">{{ $vehicle->full_vehicle_type ?? $vehicle->vehicle_type }}</span>
                         @if($vehicle->manufacturer || $vehicle->model)
-                            <p class="text-xs text-gray-500">{{ $vehicle->manufacturer }} {{ $vehicle->model }}</p>
+                            <p class="text-[10.5px] text-slate-400 m-0">{{ $vehicle->manufacturer }} {{ $vehicle->model }}</p>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-sm">
-                        {{ number_format($vehicle->capacity) }} {{ $vehicle->capacity_unit }}
+                    <td class="text-xs text-slate-700 truncate">
+                        <span class="font-medium">{{ number_format($vehicle->capacity) }} {{ $vehicle->capacity_unit }}</span>
                     </td>
-                    <td class="px-4 py-3 text-sm">
-                        <div class="text-xs">
-                            <div>Reg: {{ $vehicle->registration_date ? date('M d, Y', strtotime($vehicle->registration_date)) : 'N/A' }}</div>
-                            @if($vehicle->insurance_valid_until)
-                                <div class="text-{{ \Carbon\Carbon::parse($vehicle->insurance_valid_until)->isPast() ? 'red' : 'green' }}-600">
-                                    Ins: {{ date('M d, Y', strtotime($vehicle->insurance_valid_until)) }}
-                                </div>
-                            @endif
-                        </div>
+                    <td class="text-xs text-slate-600 truncate">
+                        <div>Reg: {{ $vehicle->registration_date ? date('M d, Y', strtotime($vehicle->registration_date)) : '-' }}</div>
+                        @if($vehicle->insurance_valid_until)
+                            <div class="text-[10.5px] text-{{ \Carbon\Carbon::parse($vehicle->insurance_valid_until)->isPast() ? 'rose' : 'emerald' }}-600">
+                                Ins: {{ date('M d, Y', strtotime($vehicle->insurance_valid_until)) }}
+                            </div>
+                        @endif
                     </td>
-                    <td class="px-4 py-3 text-sm">
+                    <td>
                         @if($vehicle->status == 'active')
-                            <span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">
-                                <i class="fas fa-check-circle mr-1"></i>Active
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-50 text-emerald-700 border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span> Active
                             </span>
                         @elseif($vehicle->status == 'pending')
-                            <span class="px-2 py-1 rounded-full text-xs bg-yellow-100 text-yellow-600">
-                                <i class="fas fa-clock mr-1"></i>Pending
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-50 text-amber-700 border-amber-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span> Pending
                             </span>
                         @else
-                            <span class="px-2 py-1 rounded-full text-xs bg-red-100 text-red-600">
-                                <i class="fas fa-times-circle mr-1"></i>Inactive
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-slate-100 text-slate-700 border-slate-200">
+                                Inactive
                             </span>
                         @endif
                     </td>
-                    <td class="px-4 py-3 text-sm">
-                        @if($vehicle->is_verified)
-                            <span class="text-green-600 text-sm">
-                                <i class="fas fa-check-circle"></i> Verified
-                            </span>
-                        @else
-                            <span class="text-yellow-600 text-sm">
-                                <i class="fas fa-clock"></i> Pending
-                            </span>
-                        @endif
-                        @if($vehicle->rejection_reason)
-                            <p class="text-xs text-red-500 mt-1">{{ $vehicle->rejection_reason }}</p>
-                        @endif
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                        <div class="flex justify-center space-x-2">
-                            <a href="{{ route('driver.vehicles.edit', $vehicle->id) }}" 
-                               class="text-blue-500 hover:text-blue-700 transition" 
-                               title="Edit Vehicle">
-                                <i class="fas fa-edit"></i>
-                            </a>
+                    <td class="text-right">
+                        <div class="inline-flex items-center justify-end gap-1">
                             <a href="{{ route('driver.vehicles.show', $vehicle->id) }}" 
-                               class="text-green-500 hover:text-green-700 transition" 
+                               class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-white hover:bg-slate-900 hover:text-white text-slate-600 transition border border-slate-200 shadow-2xs" 
                                title="View Details">
-                                <i class="fas fa-eye"></i>
+                                <i class="fas fa-eye text-[9px]"></i>
+                            </a>
+                            <a href="{{ route('driver.vehicles.edit', $vehicle->id) }}" 
+                               class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-white hover:bg-slate-900 hover:text-white text-slate-600 transition border border-slate-200 shadow-2xs" 
+                               title="Edit Vehicle">
+                                <i class="fas fa-pen text-[9px]"></i>
                             </a>
                             <form method="POST" action="{{ route('driver.vehicles.destroy', $vehicle->id) }}" 
                                   class="inline" 
-                                  onsubmit="return confirm('Are you sure you want to delete this vehicle?')">
+                                  onsubmit="return confirm('Delete this vehicle?')">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="text-red-500 hover:text-red-700 transition" title="Delete Vehicle">
-                                    <i class="fas fa-trash"></i>
+                                <button type="submit" class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-white hover:bg-rose-600 hover:text-white text-rose-500 transition border border-slate-200 shadow-2xs" title="Delete Vehicle">
+                                    <i class="fas fa-trash text-[9px]"></i>
                                 </button>
                             </form>
                         </div>

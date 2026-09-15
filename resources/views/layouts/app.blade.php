@@ -25,6 +25,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     @vite('resources/css/app.css')
     <link rel="stylesheet" href="{{ asset('css/kwdc-ui.css') }}">
+    @stack('styles')
     
     <style>
         * { font-family: 'Inter', sans-serif; }

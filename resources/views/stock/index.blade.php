@@ -1,310 +1,505 @@
 @extends('layouts.app')
 
 @section('title', 'Manage Stocks')
-
 @section('header', 'Manage Stocks')
 
 @section('content')
-<div class="bg-white rounded-lg shadow-md p-6">
-    <!-- Header with Add Button -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h3 class="text-lg font-semibold text-gray-800">My Stock Batches</h3>
-            <p class="text-sm text-gray-500 mt-1">Manage all your stock batches with QR codes</p>
+@php
+    $totalCount = $stocks instanceof \Illuminate\Pagination\AbstractPaginator ? $stocks->total() : count($stocks ?? []);
+    $items = $stocks instanceof \Illuminate\Pagination\AbstractPaginator ? $stocks->items() : ($stocks ?? []);
+    $inStockCount = collect($items)->where('status', 'in_stock')->count();
+    $partialCount = collect($items)->whereIn('status', ['partial', 'dispatched'])->count();
+    $expiredCount = collect($items)->where('status', 'expired')->count();
+    $totalRemainingQty = collect($items)->sum('remaining_quantity');
+@endphp
+
+<div class="max-w-7xl mx-auto space-y-2.5">
+    <!-- Compact Executive Header -->
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+            <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Stock Inventory</h2>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
+                <i class="fas fa-boxes text-[9px]"></i>
+                {{ $totalCount }} Batches
+            </span>
         </div>
-        <a href="{{ route('stock.create') }}" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition flex items-center">
-            <i class="fas fa-plus mr-2"></i> Add New Stock
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('stock.create') }}" 
+               class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold shadow-xs transition">
+                <i class="fas fa-plus text-[10px]"></i>
+                <span>Add Stock</span>
+            </a>
+        </div>
     </div>
 
-    <!-- Success/Error Messages -->
+    <!-- Feedback Alerts -->
     @if(session('success'))
-        <div class="mb-4 p-4 bg-green-100 border-l-4 border-green-500 text-green-700 rounded">
-            <i class="fas fa-check-circle mr-2"></i> {{ session('success') }}
+    <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs px-3.5 py-2 rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-circle-check text-emerald-600"></i>
+            <span>{{ session('success') }}</span>
         </div>
+    </div>
     @endif
 
     @if(session('error'))
-        <div class="mb-4 p-4 bg-red-100 border-l-4 border-red-500 text-red-700 rounded">
-            <i class="fas fa-exclamation-circle mr-2"></i> {{ session('error') }}
+    <div class="bg-rose-50 border border-rose-200 text-rose-800 text-xs px-3.5 py-2 rounded-xl flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <i class="fas fa-circle-exclamation text-rose-600"></i>
+            <span>{{ session('error') }}</span>
         </div>
+    </div>
     @endif
 
-    <!-- Stock Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-4 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Total Batches</p>
-                    <p class="text-2xl font-bold">{{ $stocks->total() }}</p>
-                </div>
-                <i class="fas fa-boxes text-3xl opacity-50"></i>
-            </div>
+    <!-- Sleek KPI Strip -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div class="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Batches</div>
+            <div class="text-lg font-black text-slate-900 mt-0.5">{{ $totalCount }}</div>
         </div>
-        <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-4 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">In Stock</p>
-                    <p class="text-2xl font-bold">{{ $stocks->where('status', 'in_stock')->count() }}</p>
-                </div>
-                <i class="fas fa-check-circle text-3xl opacity-50"></i>
-            </div>
+        <div class="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">In Stock</div>
+            <div class="text-lg font-black text-emerald-700 mt-0.5">{{ $inStockCount }}</div>
         </div>
-        <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-lg p-4 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Partial/Dispatched</p>
-                    <p class="text-2xl font-bold">{{ $stocks->whereIn('status', ['partial', 'dispatched'])->count() }}</p>
-                </div>
-                <i class="fas fa-truck text-3xl opacity-50"></i>
-            </div>
+        <div class="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-amber-600 uppercase tracking-wider">Partial / Transit</div>
+            <div class="text-lg font-black text-amber-700 mt-0.5">{{ $partialCount }}</div>
         </div>
-        <div class="bg-gradient-to-r from-red-500 to-red-600 rounded-lg p-4 text-white">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm opacity-90">Total Quantity</p>
-                    <p class="text-2xl font-bold">{{ $stocks->sum('remaining_quantity') }}</p>
-                </div>
-                <i class="fas fa-cubes text-3xl opacity-50"></i>
-            </div>
+        <div class="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-2xs">
+            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Remaining Qty</div>
+            <div class="text-lg font-black text-slate-900 mt-0.5">{{ number_format($totalRemainingQty) }}</div>
         </div>
     </div>
 
-    <!-- Search and Filter -->
-    <div class="mb-4 flex flex-wrap gap-3">
-        <div class="flex-1 min-w-[200px]">
-            <input type="text" id="searchInput" placeholder="Search by product, batch ID, or SKU..." 
-                   class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-500">
-        </div>
-        <select id="statusFilter" class="px-4 py-2 border rounded-lg focus:outline-none focus:border-orange-500">
-            <option value="">All Status</option>
-            <option value="in_stock">In Stock</option>
-            <option value="partial">Partial</option>
-            <option value="dispatched">Dispatched</option>
-            <option value="expired">Expired</option>
-        </select>
-        <button onclick="clearFilters()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
-            <i class="fas fa-eraser mr-1"></i> Clear
-        </button>
-    </div>
+    <!-- Main Data Shell -->
+    <div class="bg-white border border-slate-200/80 rounded-xl p-3 sm:p-3.5 shadow-2xs">
+        
+        <!-- Filter & Search Toolbar -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
+            <!-- Status Tabs -->
+            <div class="inline-flex items-center p-1 rounded-xl bg-slate-100/90 border border-slate-200/60 overflow-x-auto no-scrollbar gap-1" id="stockStatusTabs">
+                <button type="button" 
+                        onclick="setStockFilter('all')" 
+                        data-sfilter="all"
+                        class="kwdc-tab-pill active">
+                    <span>All</span>
+                    <span class="tab-count-badge">{{ count($items) }}</span>
+                </button>
+                <button type="button" 
+                        onclick="setStockFilter('in_stock')" 
+                        data-sfilter="in_stock"
+                        class="kwdc-tab-pill">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                    <span>In Stock</span>
+                    <span class="tab-count-badge">{{ $inStockCount }}</span>
+                </button>
+                @if($partialCount > 0)
+                <button type="button" 
+                        onclick="setStockFilter('partial')" 
+                        data-sfilter="partial"
+                        class="kwdc-tab-pill">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0"></span>
+                    <span>Partial / Out</span>
+                    <span class="tab-count-badge">{{ $partialCount }}</span>
+                </button>
+                @endif
+                @if($expiredCount > 0)
+                <button type="button" 
+                        onclick="setStockFilter('expired')" 
+                        data-sfilter="expired"
+                        class="kwdc-tab-pill">
+                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
+                    <span>Expired</span>
+                    <span class="tab-count-badge">{{ $expiredCount }}</span>
+                </button>
+                @endif
+            </div>
 
-    <!-- Stock Table -->
-    @if($stocks->isEmpty())
-        <div class="text-center py-12">
-            <i class="fas fa-box-open text-gray-400 text-6xl mb-4"></i>
-            <p class="text-gray-500 text-lg">No stock batches found</p>
-            <p class="text-gray-400 text-sm mt-2">Click "Add New Stock" to create your first batch</p>
+            <!-- Instant Search Input -->
+            <div class="relative w-full lg:w-72">
+                <span class="kwdc-search-icon-slot">
+                    <i class="fas fa-magnifying-glass"></i>
+                </span>
+                <input type="text" 
+                       id="stockSearchInput" 
+                       placeholder="Search product, batch, SKU..." 
+                       oninput="applyStockFilters()"
+                       autocomplete="off"
+                       class="kwdc-clean-search-input">
+                <button type="button" 
+                        id="stockSearchClear" 
+                        onclick="clearStockSearch()"
+                        class="kwdc-search-clear-btn"
+                        title="Clear search">
+                    <i class="fas fa-times text-[10px]"></i>
+                </button>
+            </div>
         </div>
-    @else
-        <div class="overflow-x-auto">
-            <table class="w-full" id="stockTable">
-                <thead class="bg-gray-50">
+
+        <!-- Zero Horizontal Scroll Table Frame -->
+        <div class="w-full overflow-hidden pt-1">
+            <table class="kwdc-table-fixed" id="stocksTable">
+                <thead>
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Batch Info</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Boxes</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">QR Code</th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th class="w-[125px]">Batch / SKU</th>
+                        <th class="w-[190px]">Product</th>
+                        <th class="w-[100px]">Boxes</th>
+                        <th class="w-[110px]">Stock Qty</th>
+                        <th class="w-[105px]">Status</th>
+                        <th class="w-[65px] text-center">QR</th>
+                        <th class="w-[95px] text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @foreach($stocks as $stock)
-                    <tr class="hover:bg-gray-50 transition stock-row" 
-                        data-product="{{ strtolower($stock->product_name) }}"
-                        data-batch="{{ strtolower($stock->batch_id) }}"
-                        data-sku="{{ strtolower($stock->sku) }}"
-                        data-status="{{ $stock->status }}">
-                        <td class="px-4 py-3">
-                            <div class="text-sm font-mono font-medium text-gray-900">{{ $stock->batch_id }}</div>
-                            <div class="text-xs text-gray-500">{{ $stock->sku }}</div>
+                <tbody class="divide-y divide-slate-100/90 text-xs" id="stocksTableBody">
+                    @forelse($items as $stock)
+                    <tr class="hover:bg-slate-50/70 transition stock-row-item"
+                        data-product="{{ strtolower($stock->product_name ?? '') }}"
+                        data-batch="{{ strtolower($stock->batch_id ?? '') }}"
+                        data-sku="{{ strtolower($stock->sku ?? '') }}"
+                        data-status="{{ strtolower($stock->status ?? 'in_stock') }}"
+                        data-search="{{ strtolower(($stock->product_name ?? '') . ' ' . ($stock->batch_id ?? '') . ' ' . ($stock->sku ?? '') . ' ' . ($stock->status ?? '')) }}">
+                        
+                        <!-- Batch / SKU -->
+                        <td>
+                            <div class="font-mono font-bold text-slate-800 truncate" title="{{ $stock->batch_id }}">
+                                {{ $stock->batch_id }}
+                            </div>
+                            <div class="text-[10px] text-slate-500 font-mono truncate">
+                                {{ $stock->sku ?: 'No SKU' }}
+                            </div>
                         </td>
-                        <td class="px-4 py-3">
-                            <div class="text-sm font-medium text-gray-900">{{ $stock->product_name }}</div>
-                            <div class="text-xs text-gray-500">{{ $stock->unit }}</div>
+
+                        <!-- Product -->
+                        <td>
+                            <div class="font-semibold text-slate-900 truncate" title="{{ $stock->product_name }}">
+                                {{ $stock->product_name }}
+                            </div>
+                            <div class="text-[10px] text-slate-500">
+                                Unit: {{ $stock->unit ?: 'Piece' }}
+                            </div>
                         </td>
-                        <td class="px-4 py-3 text-center text-sm text-gray-600">
+
+                        <!-- Boxes -->
+                        <td class="text-slate-600">
                             {{ $stock->number_of_boxes }} × {{ $stock->quantity_per_box }}
                         </td>
-                        <td class="px-4 py-3 text-center text-sm text-gray-600">
-                            {{ number_format($stock->total_quantity) }}
+
+                        <!-- Stock Qty -->
+                        <td>
+                            <div class="font-bold text-slate-800">
+                                {{ number_format($stock->remaining_quantity) }} <span class="text-[10px] font-normal text-slate-500">rem</span>
+                            </div>
+                            <div class="text-[10px] text-slate-400">
+                                of {{ number_format($stock->total_quantity) }}
+                            </div>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <span class="text-sm font-semibold {{ $stock->remaining_quantity < $stock->total_quantity * 0.2 ? 'text-red-600' : 'text-green-600' }}">
-                                {{ number_format($stock->remaining_quantity) }}
+
+                        <!-- Status Badge -->
+                        <td>
+                            @php
+                                $status = strtolower($stock->status ?? 'in_stock');
+                                $badgeCls = match($status) {
+                                    'in_stock' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                    'partial' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                    'dispatched' => 'bg-blue-50 text-blue-700 border-blue-200',
+                                    'expired' => 'bg-rose-50 text-rose-700 border-rose-200',
+                                    default => 'bg-slate-100 text-slate-700 border-slate-200',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $badgeCls }}">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $status === 'in_stock' ? 'bg-emerald-500' : ($status === 'expired' ? 'bg-rose-500' : 'bg-amber-500') }}"></span>
+                                {{ ucfirst(str_replace('_', ' ', $status)) }}
                             </span>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            @if($stock->status == 'in_stock')
-                                <span class="status-badge status-approved">In Stock</span>
-                            @elseif($stock->status == 'partial')
-                                <span class="status-badge status-on_the_way">Partial</span>
-                            @elseif($stock->status == 'dispatched')
-                                <span class="status-badge status-assigned">Dispatched</span>
-                            @else
-                                <span class="status-badge status-rejected">Expired</span>
-                            @endif
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="showQRModal('{{ $stock->id }}', '{{ $stock->batch_id }}')" 
-                                    class="text-orange-500 hover:text-orange-600 transition" title="View QR Code">
-                                <i class="fas fa-qrcode text-xl"></i>
+
+                        <!-- QR Code -->
+                        <td class="text-center">
+                            <button type="button" 
+                                    onclick="showQRModal('{{ $stock->id }}', '{{ $stock->batch_id }}')" 
+                                    class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 transition" 
+                                    title="View QR Code">
+                                <i class="fas fa-qrcode text-[12px]"></i>
                             </button>
                         </td>
-                        <td class="px-4 py-3 text-center">
-                            <div class="flex justify-center space-x-2">
+
+                        <!-- Actions -->
+                        <td class="text-right">
+                            <div class="inline-flex items-center justify-end gap-1">
                                 <a href="{{ route('stock.show', $stock->id) }}" 
-                                   class="text-blue-500 hover:text-blue-700" title="View Details">
-                                    <i class="fas fa-eye"></i>
+                                   class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-600 transition" 
+                                   title="View Details">
+                                    <i class="fas fa-eye text-[10px]"></i>
                                 </a>
                                 <a href="{{ route('stock.download-qr', $stock->id) }}" 
-                                   class="text-green-500 hover:text-green-700" title="Download QR Code">
-                                    <i class="fas fa-download"></i>
+                                   class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 hover:bg-emerald-600 hover:text-white text-slate-600 transition" 
+                                   title="Download QR">
+                                    <i class="fas fa-download text-[10px]"></i>
                                 </a>
-                                <button onclick="copyBatchInfo('{{ $stock->batch_id }}', '{{ $stock->product_name }}', '{{ $stock->remaining_quantity }}')" 
-                                        class="text-gray-500 hover:text-gray-700" title="Copy Batch Info">
-                                    <i class="fas fa-copy"></i>
+                                <button type="button" 
+                                        onclick="copyBatchInfo('{{ $stock->batch_id }}', '{{ $stock->product_name }}', '{{ $stock->remaining_quantity }}')" 
+                                        class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-900 hover:text-white text-slate-600 transition" 
+                                        title="Copy Details">
+                                    <i class="fas fa-copy text-[10px]"></i>
                                 </button>
                             </div>
                         </td>
                     </tr>
-                    @endforeach
+                    @empty
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-slate-400">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-box-open text-2xl text-slate-300 mb-1.5"></i>
+                                <span class="text-xs font-semibold text-slate-700">No stock batches found</span>
+                                <a href="{{ route('stock.create') }}" class="mt-2 text-xs text-orange-600 font-bold hover:underline">
+                                    Add your first stock batch &rarr;
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+
+                    <tr id="emptyStockClient" class="hidden">
+                        <td colspan="7" class="text-center py-8 text-slate-400">
+                            <div class="flex flex-col items-center justify-center">
+                                <i class="fas fa-filter text-2xl text-slate-300 mb-1.5"></i>
+                                <span class="text-xs font-semibold">No stock batches match your filters</span>
+                                <button type="button" onclick="clearStockSearch()" class="mt-1.5 text-xs text-orange-600 font-bold hover:underline">
+                                    Reset filters
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- Pagination -->
-        <div class="mt-4">
-            {{ $stocks->links() }}
-        </div>
-    @endif
-</div>
-
-<!-- QR Code Modal -->
-<div id="qrModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-    <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-        <div class="flex justify-between items-center p-4 border-b">
-            <h3 class="text-lg font-semibold text-gray-800">QR Code</h3>
-            <button onclick="closeQRModal()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times text-xl"></i>
-            </button>
-        </div>
-        <div class="p-6 text-center">
-            <div id="qrCodeImage" class="mb-4 flex justify-center">
-                <!-- QR code will load here -->
+        <!-- 5-Row Pagination Bar -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-2.5 mt-2 border-t border-slate-100 text-xs text-slate-500">
+            <div>
+                Showing <span id="stockRange" class="font-bold text-slate-800">1 - {{ min(5, count($items)) }}</span> of <span id="stockTotalVisible" class="font-bold text-slate-800">{{ count($items) }}</span> batches
             </div>
-            <p id="qrBatchId" class="text-sm font-mono text-gray-600 mb-2"></p>
-            <div class="flex justify-center space-x-3 mt-4">
-                <a id="downloadQrBtn" href="#" class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600">
-                    <i class="fas fa-download mr-2"></i> Download QR
-                </a>
-                <button onclick="closeQRModal()" class="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
-                    Close
+            
+            <div class="flex items-center gap-1 self-end sm:self-auto" id="stockPaginationControls">
+                <button type="button" 
+                        id="stockPrevBtn" 
+                        onclick="prevStockPage()" 
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium">
+                    <i class="fas fa-chevron-left text-[9px]"></i>
+                    <span>Prev</span>
+                </button>
+                <div id="stockPageNumbers" class="flex items-center gap-1"></div>
+                <button type="button" 
+                        id="stockNextBtn" 
+                        onclick="nextStockPage()" 
+                        class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition font-medium">
+                    <span>Next</span>
+                    <i class="fas fa-chevron-right text-[9px]"></i>
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<script>
-    // Search and Filter functionality
-    const searchInput = document.getElementById('searchInput');
-    const statusFilter = document.getElementById('statusFilter');
-    
-    function filterTable() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const statusValue = statusFilter.value;
-        const rows = document.querySelectorAll('.stock-row');
-        
-        rows.forEach(row => {
-            const product = row.dataset.product || '';
-            const batch = row.dataset.batch || '';
-            const sku = row.dataset.sku || '';
-            const status = row.dataset.status || '';
-            
-            const matchesSearch = searchTerm === '' || 
-                                 product.includes(searchTerm) || 
-                                 batch.includes(searchTerm) || 
-                                 sku.includes(searchTerm);
-            const matchesStatus = statusValue === '' || status === statusValue;
-            
-            row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
-        });
-    }
-    
-    searchInput.addEventListener('input', filterTable);
-    statusFilter.addEventListener('change', filterTable);
-    
-    function clearFilters() {
-        searchInput.value = '';
-        statusFilter.value = '';
-        filterTable();
-    }
-    
-    // QR Code Modal
-    function showQRModal(stockId, batchId) {
-        const modal = document.getElementById('qrModal');
-        const qrImage = document.getElementById('qrCodeImage');
-        const qrBatchId = document.getElementById('qrBatchId');
-        const downloadBtn = document.getElementById('downloadQrBtn');
-        
-        // Set QR code URL
-        const qrUrl = `/stock/${stockId}/qr-code`;
-        qrImage.innerHTML = `<img src="${qrUrl}" alt="QR Code" class="w-48 h-48 mx-auto border p-2 rounded">`;
-        qrBatchId.textContent = batchId;
-        downloadBtn.href = `/stock/${stockId}/download-qr`;
-        
-        modal.classList.remove('hidden');
-    }
-    
-    function closeQRModal() {
-        document.getElementById('qrModal').classList.add('hidden');
-    }
-    
-    // Copy batch info to clipboard
-    function copyBatchInfo(batchId, productName, quantity) {
-        const text = `Batch ID: ${batchId}\nProduct: ${productName}\nRemaining Quantity: ${quantity}`;
-        navigator.clipboard.writeText(text);
-        
-        // Show temporary notification
-        const notification = document.createElement('div');
-        notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50';
-        notification.innerHTML = '<i class="fas fa-check mr-2"></i> Batch info copied!';
-        document.body.appendChild(notification);
-        
-        setTimeout(() => {
-            notification.remove();
-        }, 2000);
-    }
-    
-    // Close modal on escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeQRModal();
-        }
-    });
-    
-    // Close modal when clicking outside
-    document.getElementById('qrModal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeQRModal();
-        }
-    });
-</script>
+<!-- QR Code Modal -->
+<div id="qrModal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl max-w-sm w-full p-5 text-center">
+        <div class="flex justify-between items-center mb-3">
+            <h3 class="text-sm font-bold text-slate-900">Batch QR Code</h3>
+            <button onclick="closeQRModal()" class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        </div>
+        <div id="qrCodeImage" class="mb-3 flex justify-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+            <!-- QR image -->
+        </div>
+        <p id="qrBatchId" class="text-xs font-mono font-bold text-slate-700 mb-4"></p>
+        <div class="flex items-center justify-center gap-2">
+            <a id="downloadQrBtn" href="#" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold transition">
+                <i class="fas fa-download text-[10px]"></i>
+                <span>Download</span>
+            </a>
+            <button onclick="closeQRModal()" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
 
-<style>
-    .status-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        display: inline-block;
+@push('scripts')
+<script>
+let currentStockFilter = 'all';
+let currentStockPage = 1;
+const STOCK_PER_PAGE = 5;
+
+function setStockFilter(status) {
+    currentStockFilter = status;
+    currentStockPage = 1;
+
+    document.querySelectorAll('#stockStatusTabs button').forEach(btn => {
+        if (btn.getAttribute('data-sfilter') === status) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    applyStockFilters();
+}
+
+function clearStockSearch() {
+    const input = document.getElementById('stockSearchInput');
+    if (input) input.value = '';
+    currentStockFilter = 'all';
+    document.querySelectorAll('#stockStatusTabs button').forEach(btn => {
+        if (btn.getAttribute('data-sfilter') === 'all') {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    applyStockFilters();
+}
+
+function applyStockFilters() {
+    const searchVal = (document.getElementById('stockSearchInput')?.value || '').trim().toLowerCase();
+    const clearBtn = document.getElementById('stockSearchClear');
+    if (clearBtn) clearBtn.classList.toggle('visible', searchVal.length > 0);
+
+    const rows = Array.from(document.querySelectorAll('.stock-row-item'));
+    const matched = [];
+
+    rows.forEach(row => {
+        const rowStatus = row.getAttribute('data-status') || '';
+        const searchData = row.getAttribute('data-search') || '';
+
+        let matchesStatus = (currentStockFilter === 'all');
+        if (currentStockFilter === 'in_stock') {
+            matchesStatus = (rowStatus === 'in_stock');
+        } else if (currentStockFilter === 'partial') {
+            matchesStatus = (rowStatus === 'partial' || rowStatus === 'dispatched');
+        } else if (currentStockFilter === 'expired') {
+            matchesStatus = (rowStatus === 'expired');
+        }
+
+        const matchesSearch = !searchVal || searchData.includes(searchVal);
+
+        if (matchesStatus && matchesSearch) {
+            matched.push(row);
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    const emptyClient = document.getElementById('emptyStockClient');
+    if (emptyClient) {
+        emptyClient.classList.toggle('hidden', matched.length > 0 || rows.length === 0);
     }
-    .status-approved { background: #d1fae5; color: #059669; }
-    .status-on_the_way { background: #fed7aa; color: #ea580c; }
-    .status-assigned { background: #dbeafe; color: #2563eb; }
-    .status-rejected { background: #fee2e2; color: #dc2626; }
-</style>
+
+    paginateStock(matched);
+}
+
+function paginateStock(matched) {
+    const total = matched.length;
+    const totalPages = Math.max(1, Math.ceil(total / STOCK_PER_PAGE));
+
+    if (currentStockPage > totalPages) currentStockPage = totalPages;
+    if (currentStockPage < 1) currentStockPage = 1;
+
+    matched.forEach((row, idx) => {
+        const start = (currentStockPage - 1) * STOCK_PER_PAGE;
+        const end = start + STOCK_PER_PAGE;
+        row.style.display = (idx >= start && idx < end) ? '' : 'none';
+    });
+
+    const startNum = total === 0 ? 0 : (currentStockPage - 1) * STOCK_PER_PAGE + 1;
+    const endNum = Math.min(total, currentStockPage * STOCK_PER_PAGE);
+
+    const rangeEl = document.getElementById('stockRange');
+    const totalEl = document.getElementById('stockTotalVisible');
+    if (rangeEl) rangeEl.textContent = `${startNum} - ${endNum}`;
+    if (totalEl) totalEl.textContent = total;
+
+    const prevBtn = document.getElementById('stockPrevBtn');
+    const nextBtn = document.getElementById('stockNextBtn');
+    if (prevBtn) prevBtn.disabled = currentStockPage <= 1;
+    if (nextBtn) nextBtn.disabled = currentStockPage >= totalPages;
+
+    renderStockPageNumbers(totalPages);
+}
+
+function renderStockPageNumbers(totalPages) {
+    const container = document.getElementById('stockPageNumbers');
+    if (!container) return;
+    container.innerHTML = '';
+
+    if (totalPages <= 1) return;
+
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = i;
+        btn.className = `w-6 h-6 rounded-md text-xs font-semibold transition ${
+            i === currentStockPage
+                ? 'bg-orange-500 text-white shadow-xs'
+                : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+        }`;
+        btn.onclick = () => {
+            currentStockPage = i;
+            applyStockFilters();
+        };
+        container.appendChild(btn);
+    }
+}
+
+function prevStockPage() {
+    if (currentStockPage > 1) {
+        currentStockPage--;
+        applyStockFilters();
+    }
+}
+
+function nextStockPage() {
+    currentStockPage++;
+    applyStockFilters();
+}
+
+// QR Code Modal
+function showQRModal(stockId, batchId) {
+    const modal = document.getElementById('qrModal');
+    const qrImage = document.getElementById('qrCodeImage');
+    const qrBatchId = document.getElementById('qrBatchId');
+    const downloadBtn = document.getElementById('downloadQrBtn');
+    
+    const qrUrl = `/stock/${stockId}/qr-code`;
+    qrImage.innerHTML = `<img src="${qrUrl}" alt="QR Code" class="w-36 h-36 mx-auto rounded-lg">`;
+    qrBatchId.textContent = batchId;
+    downloadBtn.href = `/stock/${stockId}/download-qr`;
+    
+    modal.classList.remove('hidden');
+}
+
+function closeQRModal() {
+    document.getElementById('qrModal').classList.add('hidden');
+}
+
+function copyBatchInfo(batchId, productName, quantity) {
+    const text = `Batch ID: ${batchId}\nProduct: ${productName}\nRemaining: ${quantity}`;
+    navigator.clipboard.writeText(text);
+    
+    const notification = document.createElement('div');
+    notification.className = 'fixed bottom-4 right-4 bg-slate-900 text-white text-xs px-3.5 py-2 rounded-xl shadow-lg z-50 flex items-center gap-2';
+    notification.innerHTML = '<i class="fas fa-check text-emerald-400"></i> Batch info copied!';
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 2000);
+}
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeQRModal();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    applyStockFilters();
+});
+</script>
+@endpush
 @endsection

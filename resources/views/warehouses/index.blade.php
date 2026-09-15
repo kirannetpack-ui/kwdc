@@ -27,7 +27,7 @@
 
 <!-- Container to display warehouses -->
 <div id="warehouse-results">
-    @include('warehouses.partials.list', ['warehouses' => $warehouses])
+    @includeIf('warehouses.partials.list', ['warehouses' => $warehouses])
 </div>
 
 <script>
