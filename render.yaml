@@ -1,10 +1,11 @@
+version: "1"
+
 services:
   - type: web
     name: kwdc-web
     runtime: docker
     plan: free
-    repo: https://github.com/kirannetpack-ui/kwdc
-    branch: production-readiness-reminders-notifications
+    region: oregon
     dockerfilePath: ./dockerfile
     dockerContext: .
     dockerCommand: bash scripts/deploy/start-production.sh
@@ -58,6 +59,11 @@ services:
 
 databases:
   - name: kwdc-db
-    plan: free
     databaseName: kwdc
     user: kwdc_user
+    plan: free
+    region: oregon
+    ipAllowList:
+      - source: 0.0.0.0/0
+        description: everywhere
+    postgresMajorVersion: "18"
