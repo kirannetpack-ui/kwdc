@@ -127,7 +127,7 @@
 
 <!-- Mobile Menu Toggle -->
 <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"><i class="fas fa-bars" aria-hidden="true"></i></button>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleMobileMenu()"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
 <!-- ============================================================ -->
 <!-- SIDEBAR -->
@@ -530,19 +530,43 @@
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="{{ asset('js/kwdc-flow.js') }}" defer></script>
 <script>
+    function openMobileMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.querySelector('.menu-toggle');
+        sidebar.classList.add('mobile-open');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-label', 'Close navigation');
+        sidebar.querySelector('a')?.focus();
+    }
+    function closeMobileMenu() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.querySelector('.menu-toggle');
+        sidebar.classList.remove('mobile-open');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open navigation');
+        toggle.focus();
+    }
     function toggleMobileMenu() {
         const sidebar = document.getElementById('sidebar');
-        const open = sidebar.classList.toggle('mobile-open');
-        document.getElementById('sidebarOverlay').classList.toggle('active', open);
-        const toggle = document.querySelector('.menu-toggle');
-        toggle.setAttribute('aria-expanded', String(open));
-        toggle.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation');
-        if (open) sidebar.querySelector('a')?.focus();
-        else toggle.focus();
+        if (sidebar.classList.contains('mobile-open')) {
+            closeMobileMenu();
+        } else {
+            openMobileMenu();
+        }
     }
     document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && document.getElementById('sidebar').classList.contains('mobile-open')) toggleMobileMenu();
+        if (event.key === 'Escape' && document.getElementById('sidebar').classList.contains('mobile-open')) {
+            closeMobileMenu();
+        }
     });
+    // Overlay click always closes (never re-opens)
+    document.getElementById('sidebarOverlay').addEventListener('click', closeMobileMenu);
     document.addEventListener('DOMContentLoaded', function() {
         const alerts = document.querySelectorAll('.alert-success');
         alerts.forEach(function(alert) { 
@@ -552,10 +576,11 @@
                 setTimeout(function() { alert.style.display = 'none'; }, 500); 
             }, 5000); 
         });
+        // Sidebar links close the menu on mobile
         const links = document.querySelectorAll('.sidebar-link');
         links.forEach(function(link) { 
             link.addEventListener('click', function() { 
-                if (window.innerWidth <= 768) { toggleMobileMenu(); } 
+                if (window.innerWidth <= 768) { closeMobileMenu(); } 
             }); 
         });
 
