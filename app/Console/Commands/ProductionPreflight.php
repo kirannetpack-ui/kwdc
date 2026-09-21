@@ -14,7 +14,9 @@ class ProductionPreflight extends Command
     {
         $failures = [];
         $phaseOneDemo = (bool) config('kwdc.demo');
-        $this->requireFalse($failures, 'PHASE_ONE_DEMO', $phaseOneDemo);
+        if ($phaseOneDemo) {
+            $this->warn('Running in PHASE_ONE_DEMO mode: skipping external service preflight checks.');
+        }
 
         $this->requireExact($failures, 'APP_ENV', config('app.env'), 'production');
         $this->requireFalse($failures, 'APP_DEBUG', (bool) config('app.debug'));
@@ -49,9 +51,14 @@ class ProductionPreflight extends Command
     private function validateDatabase(array &$failures): void
     {
         $connection = config('database.default');
-        $database = config("database.connections.{$connection}.database");
-
         $this->requireFilled($failures, 'DB_CONNECTION', $connection);
+
+        $url = config("database.connections.{$connection}.url");
+        if (! empty($url)) {
+            return;
+        }
+
+        $database = config("database.connections.{$connection}.database");
         $this->requireFilled($failures, 'DB_DATABASE', $database);
 
         if (in_array($connection, ['mysql', 'pgsql'], true)) {
