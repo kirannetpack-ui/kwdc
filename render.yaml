@@ -32,7 +32,7 @@ services:
         value: pgsql
       - key: DATABASE_URL
         fromDatabase:
-          name: kwdc-db
+          name: kwdc-database
           property: connectionString
       - key: SESSION_DRIVER
         value: database
@@ -58,12 +58,12 @@ services:
         sync: false
 
 databases:
-  - name: kwdc-db
-    databaseName: kwdc
-    user: kwdc_user
+  - name: kwdc-database
+    databaseName: kwdc_database
+    user: kwdc_database_user
     plan: free
     region: oregon
     ipAllowList:
       - source: 0.0.0.0/0
         description: everywhere
-    postgresMajorVersion: "18"
+    postgresMajorVersion: "16"
