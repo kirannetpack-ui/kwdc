@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/kwdc-public.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/kwdc-public.css') }}?v=4.2">
     <style>
 
         .footer-grid {
@@ -80,14 +80,16 @@
     <main id="main">
         <section class="hero">
             <img class="hero-image" src="{{ asset('images/logistics-campus.png') }}" alt="Illustrated warehouse campus with delivery vehicles" fetchpriority="high" width="1536" height="1024">
-            <div class="hero-content shell">
-                <span class="eyebrow"><i class="fas fa-wand-magic-sparkles text-xs" style="color: #D96B43;"></i> Warehouse &amp; Distribution Connect</span>
-                <h1>KTM-WDC</h1>
-                <p class="hero-title">Space to grow.<br>Room to move.</p>
-                <p class="hero-copy">Commercial warehousing, live freight dispatch and trusted fleet operations across Nepal.</p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px;">
-                    <a class="button button-dark" href="{{ route('register') }}">Find your workspace <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                    <a class="button button-outline" href="{{ route('login') }}">Partner Portal <i class="fas fa-sign-in-alt" aria-hidden="true"></i></a>
+            <div class="shell hero-shell">
+                <div class="hero-content">
+                    <span class="eyebrow"><i class="fas fa-wand-magic-sparkles text-xs" style="color: #D96B43;"></i> Warehouse &amp; Distribution Connect</span>
+                    <h1>KTM-WDC</h1>
+                    <p class="hero-title">Space to grow.<br>Room to move.</p>
+                    <p class="hero-copy">Commercial warehousing, live freight dispatch and trusted fleet operations across Nepal.</p>
+                    <div class="hero-actions">
+                        <a class="button button-dark" href="{{ route('register') }}">Find your workspace <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="button button-outline" href="{{ route('login') }}">Partner Portal <i class="fas fa-sign-in-alt" aria-hidden="true"></i></a>
+                    </div>
                 </div>
             </div>
             <span class="illustration-credit">Commercial Logistics Network</span>
