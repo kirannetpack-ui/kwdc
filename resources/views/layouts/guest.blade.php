@@ -5,18 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KTM-WDC | Secure Access</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #101724;
-            --muted: #64748b;
-            --line: #dbe4ef;
-            --gold: #f5a524;
-            --green: #0f766e;
-            --blue: #2563eb;
-            --paper: #ffffff;
-            --soft: #f6f8fb;
-            --radius: 30px;
+            --ink: #24201D;
+            --muted: #57524C;
+            --line: #E8E2D8;
+            --terracotta: #D96B43;
+            --terracotta-hover: #C35832;
+            --paper: #FFFFFF;
+            --soft: #FAF8F5;
+            --radius: 24px;
         }
 
         * { box-sizing: border-box; }
@@ -25,11 +26,11 @@
             min-height: 100vh;
             margin: 0;
             color: var(--ink);
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
             background:
-                radial-gradient(circle at 12% 12%, rgba(245, 165, 36, .18), transparent 340px),
-                radial-gradient(circle at 88% 16%, rgba(37, 99, 235, .14), transparent 420px),
-                linear-gradient(135deg, #0f172a 0%, #152033 48%, #f5f7fb 48%, #fbfcfe 100%);
+                radial-gradient(circle at 12% 12%, rgba(217, 107, 67, .05), transparent 340px),
+                radial-gradient(circle at 88% 16%, rgba(184, 115, 42, .04), transparent 420px),
+                linear-gradient(135deg, #FAF8F5 0%, #F5F0E8 100%);
         }
 
         a { color: inherit; }
@@ -45,28 +46,29 @@
             padding: 48px 0;
         }
 
-        .brand-panel { color: white; }
+        .brand-panel { color: var(--ink); }
 
         .brand {
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            margin-bottom: 42px;
-            color: white;
+            margin-bottom: 36px;
+            color: var(--ink);
             text-decoration: none;
-            font-weight: 900;
-            font-size: 22px;
+            font-family: 'Newsreader', Georgia, serif;
+            font-weight: 600;
+            font-size: 24px;
         }
 
         .brand-icon {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             display: grid;
             place-items: center;
-            border-radius: 18px;
-            color: #111827;
-            background: var(--gold);
-            box-shadow: 0 18px 36px rgba(245, 165, 36, .24);
+            border-radius: 14px;
+            color: #ffffff;
+            background: var(--terracotta);
+            box-shadow: 0 4px 14px rgba(217, 107, 67, .28);
         }
 
         .brand-panel h1 {
@@ -163,31 +165,31 @@
         .guest-card select:focus,
         .guest-card textarea:focus {
             outline: none;
-            border-color: var(--gold);
-            box-shadow: 0 0 0 4px rgba(245, 165, 36, .16);
+            border-color: var(--terracotta);
+            box-shadow: 0 0 0 3.5px rgba(217, 107, 67, .16);
         }
 
         .guest-card button,
         .guest-card .inline-flex {
-            min-height: 46px;
-            border-radius: 18px !important;
+            min-height: 48px;
+            border-radius: 9999px !important;
             font: inherit;
-            font-weight: 900 !important;
+            font-weight: 600 !important;
         }
 
         .guest-card button[type="submit"],
         .guest-card .bg-gray-800,
         .guest-card .bg-orange-500 {
-            color: #111827 !important;
+            color: #ffffff !important;
             border: 0 !important;
-            background: var(--gold) !important;
-            box-shadow: 0 14px 28px rgba(245, 165, 36, .22);
+            background: var(--terracotta) !important;
+            box-shadow: 0 4px 14px rgba(217, 107, 67, .28);
         }
 
         .guest-card .text-orange-600,
         .guest-card a {
-            color: var(--green) !important;
-            font-weight: 900;
+            color: var(--terracotta) !important;
+            font-weight: 600;
         }
 
         @media (max-width: 920px) {

@@ -140,10 +140,8 @@
                                     <i class="fas fa-eye text-[11px]"></i>
                                 </a>
                                 @if($job->status == 'accepted')
-                                <form action="{{ route('equipment.jobs.update-status', $job->id) }}" method="POST" class="inline-block">
+                                <form action="{{ route('equipment.jobs.start', $job->id) }}" method="POST" class="inline-block">
                                     @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="status" value="in_progress">
                                     <button type="submit" 
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 transition" 
                                             title="Mark In Progress"
@@ -153,10 +151,8 @@
                                 </form>
                                 @endif
                                 @if($job->status == 'in_progress')
-                                <form action="{{ route('equipment.jobs.update-status', $job->id) }}" method="POST" class="inline-block">
+                                <form action="{{ route('equipment.jobs.complete', $job->id) }}" method="POST" class="inline-block">
                                     @csrf
-                                    @method('PUT')
-                                    <input type="hidden" name="status" value="completed">
                                     <button type="submit" 
                                             class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-600 transition" 
                                             title="Mark Completed"

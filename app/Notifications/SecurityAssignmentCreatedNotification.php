@@ -30,7 +30,7 @@ class SecurityAssignmentCreatedNotification extends Notification implements Shou
             ->subject('🛡️ New Security Assignment')
             ->greeting('Hello ' . $notifiable->name)
             ->line('A new security assignment has been created.')
-            ->line('Warehouse: ' . $this->assignment->warehouse->name ?? 'N/A')
+            ->line('Warehouse: ' . ($this->assignment->warehouse->name ?? 'N/A'))
             ->line('Start Date: ' . $this->assignment->start_date->format('F j, Y'))
             ->line('Shift: ' . $this->assignment->shift)
             ->action('View Assignment', url('/security/assignments/' . $this->assignment->id))

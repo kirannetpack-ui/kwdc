@@ -1,6 +1,6 @@
 @php
     $user = auth()->user();
-    $role = $user->role;
+    $role = $user->role ?? 'client';
 @endphp
 
 <!-- Sidebar -->
@@ -29,7 +29,7 @@
             Dashboard
         </a>
         
-        <a href="{{ route('profile') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+        <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
             </svg>
@@ -59,21 +59,21 @@
                 All Warehouses
             </a>
             
-            <a href="{{ route('admin.clients.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('admin.clients') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                 </svg>
                 Clients
             </a>
             
-            <a href="{{ route('admin.drivers.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('admin.drivers') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                 </svg>
                 Drivers
             </a>
             
-            <a href="{{ route('admin.vehicles.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('admin.vehicles') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                 </svg>
@@ -87,14 +87,14 @@
                 Dispatches
             </a>
             
-            <a href="{{ route('admin.invoices.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('admin.invoices') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 Invoices
             </a>
             
-            <a href="{{ route('admin.reports.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('admin.reports') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
@@ -108,14 +108,14 @@
                 <p class="text-xs text-gray-400 uppercase tracking-wider">Warehouse</p>
             </div>
             
-            <a href="{{ route('client.warehouses.search') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('warehouses.search') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                 </svg>
                 Find Warehouses
             </a>
             
-            <a href="{{ route('client.requests.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('my-requests.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -126,7 +126,7 @@
                 <p class="text-xs text-gray-400 uppercase tracking-wider">Inventory</p>
             </div>
             
-            <a href="{{ route('client.stocks.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('stock.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                 </svg>
@@ -137,28 +137,28 @@
                 <p class="text-xs text-gray-400 uppercase tracking-wider">Transport</p>
             </div>
             
-            <a href="{{ route('client.dispatches.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('dispatch.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 18H6a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v1M8 18h8m-8 0v2m0-2h8a2 2 0 002-2v-2m0 0h-4m4 0v-2m0 0h-4m4 0V8m0 0h-4m4 0V5a2 2 0 00-2-2h-2"></path>
                 </svg>
                 New Dispatch
             </a>
             
-            <a href="{{ route('client.dispatches.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('dispatch.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                 </svg>
                 My Dispatches
             </a>
             
-            <a href="{{ route('client.pickups.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('pickup.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"></path>
                 </svg>
                 New Pickup
             </a>
             
-            <a href="{{ route('client.invoices.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('invoices.client-index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
@@ -172,7 +172,7 @@
                 <p class="text-xs text-gray-400 uppercase tracking-wider">Jobs</p>
             </div>
             
-            <a href="{{ route('driver.jobs.available') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('driver.available-jobs') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
@@ -182,32 +182,25 @@
                 </span>
             </a>
             
-            <a href="{{ route('driver.jobs.active') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('driver.jobs') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 My Active Jobs
             </a>
             
-            <a href="{{ route('driver.jobs.history') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
-                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Job History
-            </a>
-            
             <div class="px-4 mt-4 mb-2">
                 <p class="text-xs text-gray-400 uppercase tracking-wider">Vehicle</p>
             </div>
             
-            <a href="{{ route('driver.vehicle.register') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('driver.vehicles.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
                 </svg>
                 Register Vehicle
             </a>
             
-            <a href="{{ route('driver.rates.set') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('driver.rates') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -256,7 +249,7 @@
                 Active Jobs
             </a>
             
-            <a href="{{ route('equipment.earnings') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('equipment.jobs.earnings') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
@@ -270,14 +263,14 @@
                 <p class="text-xs text-gray-400 uppercase tracking-wider">Properties</p>
             </div>
             
-            <a href="{{ route('property.warehouses.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('warehouses.create') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 Register Warehouse
             </a>
             
-            <a href="{{ route('property.warehouses.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+            <a href="{{ route('warehouses.index') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                 </svg>
@@ -297,7 +290,7 @@
             <p class="text-xs text-gray-400 uppercase tracking-wider">Account</p>
         </div>
         
-        <a href="{{ route('profile.settings') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
+        <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 hover:bg-gray-800 transition">
             <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>

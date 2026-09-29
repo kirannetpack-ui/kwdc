@@ -63,9 +63,11 @@
     </x-dropdown-link>
 @endif
 
-<x-dropdown-link :href="route('admin.pending.stocks')">
+@if(Auth::user()->role === 'admin')
+<x-dropdown-link :href="route('admin.pending-stocks')">
     {{ __('Verify Stock') }}
 </x-dropdown-link>
+@endif
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
@@ -137,9 +139,11 @@
     </x-responsive-nav-link>
 @endif
 
-<x-dropdown-link :href="route('admin.pending.stocks')">
+@if(Auth::user()->role === 'admin')
+<x-responsive-nav-link :href="route('admin.pending-stocks')">
     {{ __('Verify Stock') }}
-</x-dropdown-link>
+</x-responsive-nav-link>
+@endif
                 <x-responsive-nav-link :href="route('profile.edit')">
                     {{ __('Profile') }}
                 </x-responsive-nav-link>

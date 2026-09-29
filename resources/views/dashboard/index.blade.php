@@ -365,47 +365,47 @@
             <div>
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-orange-50 text-orange-600 border border-orange-200/80">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FBF2ED] text-[#D96B43] border border-[#F3D5C7]">
                             <i class="fas fa-layer-group"></i> {{ $roleTitle }}
                         </span>
-                        <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Executive Overview</span>
+                        <span class="text-[11px] font-semibold text-[#8A8379] uppercase tracking-wider">Executive Overview</span>
                     </div>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#EFF6F1] text-[#3D7357] border border-[#D4E7DC]">
+                        <span class="w-2 h-2 rounded-full bg-[#3D7357] animate-pulse"></span>
                         <span>Active Session</span>
                     </span>
                 </div>
-                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+                <h1 class="text-2xl sm:text-3xl font-serif text-[#24201D] tracking-tight leading-tight">
                     Namaste, {{ $user->name }}
                 </h1>
-                <p class="text-xs text-slate-400 font-medium mt-0.5">
-                    {{ now()->format('l, F j, Y') }} &bull; {{ now()->format('h:i A') }}
+                <p class="text-xs text-[#8A8379] font-medium mt-1">
+                    {{ now()->format('l, F j, Y') }} &bull; {{ now()->format('h:i A') }} &bull; Everything is humming along nicely
                 </p>
             </div>
 
             <!-- Visual Capacity Ring & Utilization Gauge -->
-            <div class="bg-gradient-to-br from-slate-50 to-slate-100/70 border border-slate-200/80 rounded-2xl p-3.5">
+            <div class="bg-gradient-to-br from-[#FFFDF9] to-[#F7F3EE] border border-[#E8E2D8] rounded-2xl p-3.5 shadow-2xs">
                 <div class="flex items-center gap-3.5">
                     <div class="relative w-14 h-14 flex-shrink-0">
                         <svg class="w-14 h-14 transform -rotate-90" viewBox="0 0 36 36">
-                            <path class="text-slate-200" stroke-width="3.5" stroke="currentColor" fill="none"
+                            <path class="text-[#EAE3D9]" stroke-width="3.5" stroke="currentColor" fill="none"
                                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                            <path class="text-orange-500 transition-all duration-1000 ease-out" stroke-dasharray="{{ $stats['occupancyRate'] ?? 70 }}, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
+                            <path class="text-[#D96B43] transition-all duration-1000 ease-out" stroke-dasharray="{{ $stats['occupancyRate'] ?? 70 }}, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
                                   d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                            <span class="text-xs font-extrabold text-slate-900 leading-none">{{ $stats['occupancyRate'] ?? 70 }}%</span>
-                            <span class="text-[7px] font-bold text-slate-400 uppercase tracking-tighter mt-0.5">Used</span>
+                            <span class="text-xs font-serif font-bold text-[#24201D] leading-none">{{ $stats['occupancyRate'] ?? 70 }}%</span>
+                            <span class="text-[7px] font-bold text-[#8A8379] uppercase tracking-tighter mt-0.5">Used</span>
                         </div>
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-xs font-bold text-slate-900 truncate">Hub Storage Occupancy</span>
-                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 flex-shrink-0">
+                            <span class="text-xs font-bold text-[#24201D] truncate">Hub Storage Occupancy</span>
+                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#EFF6F1] text-[#3D7357] border border-[#D4E7DC] flex-shrink-0">
                                 +3.2% ↑
                             </span>
                         </div>
-                        <p class="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        <p class="text-[11px] text-[#57524C] mt-0.5 leading-snug">
                             {{ $stats['approved_warehouses'] ?? 4 }} primary facility hubs active across Kathmandu corridors.
                         </p>
                     </div>
@@ -414,25 +414,25 @@
 
             <!-- Live Telemetry Row: 3 High-Density Tiles -->
             <div class="grid grid-cols-3 gap-2.5 pt-1">
-                <div class="bg-white border border-slate-200/90 rounded-xl p-2.5 shadow-2xs hover:border-slate-300 transition text-left">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">Dispatches</span>
+                <div class="bg-white border border-[#E8E2D8] rounded-xl p-2.5 shadow-2xs hover:border-[#D6CCC0] transition text-left">
+                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">Dispatches</span>
                     <div class="flex items-baseline gap-1 mt-1">
-                        <span class="text-base font-extrabold text-slate-900 kwdc-kpi-val">{{ $stats['total_dispatches'] ?? 18 }}</span>
-                        <span class="text-[10px] font-bold text-orange-600 truncate">{{ $stats['pending_dispatches'] ?? 6 }} queue</span>
+                        <span class="text-base font-serif font-bold text-[#24201D] kwdc-kpi-val">{{ $stats['total_dispatches'] ?? 18 }}</span>
+                        <span class="text-[10px] font-bold text-[#D96B43] truncate">{{ $stats['pending_dispatches'] ?? 6 }} queue</span>
                     </div>
                 </div>
-                <div class="bg-white border border-slate-200/90 rounded-xl p-2.5 shadow-2xs hover:border-slate-300 transition text-left">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">Fleet Units</span>
+                <div class="bg-white border border-[#E8E2D8] rounded-xl p-2.5 shadow-2xs hover:border-[#D6CCC0] transition text-left">
+                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">Fleet Units</span>
                     <div class="flex items-baseline gap-1 mt-1">
-                        <span class="text-base font-extrabold text-slate-900 kwdc-kpi-val">{{ $stats['active_drivers'] ?? ($stats['drivers'] ?? 6) }}</span>
-                        <span class="text-[10px] font-bold text-slate-400 truncate">/ {{ $stats['vehicles'] ?? 10 }}</span>
+                        <span class="text-base font-serif font-bold text-[#24201D] kwdc-kpi-val">{{ $stats['active_drivers'] ?? ($stats['drivers'] ?? 6) }}</span>
+                        <span class="text-[10px] font-bold text-[#8A8379] truncate">/ {{ $stats['vehicles'] ?? 10 }}</span>
                     </div>
                 </div>
-                <div class="bg-white border border-slate-200/90 rounded-xl p-2.5 shadow-2xs hover:border-slate-300 transition text-left">
-                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block truncate">Network</span>
+                <div class="bg-white border border-[#E8E2D8] rounded-xl p-2.5 shadow-2xs hover:border-[#D6CCC0] transition text-left">
+                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">Network</span>
                     <div class="flex items-center gap-1.5 mt-1">
-                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="text-xs font-extrabold text-slate-800">Optimal</span>
+                        <span class="w-2 h-2 rounded-full bg-[#3D7357] animate-pulse"></span>
+                        <span class="text-xs font-bold text-[#24201D]">Optimal</span>
                     </div>
                 </div>
             </div>
@@ -441,18 +441,18 @@
         <!-- RIGHT: AI Logistics Brief Card (7 cols) -->
         <div class="lg:col-span-7 kwdc-brief-card flex flex-col justify-between" id="aiDashboardBriefWidget">
             <div>
-                <div class="flex items-center justify-between gap-4 pb-3 border-b border-slate-100">
+                <div class="flex items-center justify-between gap-4 pb-3 border-b border-[#F0EAE1]">
                     <div class="flex items-center gap-2.5">
-                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center text-xs shadow-xs flex-shrink-0">
+                        <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#D96B43] to-[#B85832] text-white flex items-center justify-center text-xs shadow-xs flex-shrink-0">
                             <i class="fas fa-wand-magic-sparkles"></i>
                         </div>
                         <div>
-                            <h2 class="text-sm font-extrabold text-slate-900 tracking-tight mb-0">AI Logistics Brief</h2>
-                            <span class="text-[11px] text-slate-400 font-medium">Powered by Gemini 3.5 &bull; Real-time Operations</span>
+                            <h2 class="text-sm font-serif font-bold text-[#24201D] tracking-tight mb-0">AI Logistics Brief</h2>
+                            <span class="text-[11px] text-[#8A8379] font-medium">Powered by Gemini &bull; Real-time Operations</span>
                         </div>
                     </div>
-                    <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-600 font-semibold transition border border-slate-200 shadow-2xs">
-                        <i class="fas fa-rotate text-[10px]" id="aiBriefRefreshIcon"></i>
+                    <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-[#FAF8F5] hover:bg-[#F3EFEA] text-[#57524C] font-semibold transition border border-[#E8E2D8] shadow-2xs">
+                        <i class="fas fa-rotate text-[10px] text-[#D96B43]" id="aiBriefRefreshIcon"></i>
                         <span>Refresh</span>
                     </button>
                 </div>
@@ -501,7 +501,7 @@
                             <span id="aiBriefAction">Immediately allocate available driver and vehicle resources to clear the 6 pending dispatches and review the 2 pending warehouse applications.</span>
                         </div>
                     </div>
-                    <a href="{{ $role === 'admin' ? route('admin.dispatch') : ($role === 'driver' ? route('driver.jobs') : route('dispatch.direct-create')) }}" class="px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center gap-1.5 flex-shrink-0 shadow-2xs self-end sm:self-auto">
+                    <a href="{{ $role === 'admin' ? route('admin.dispatch') : ($role === 'driver' ? route('driver.jobs') : route('dispatch.direct-create')) }}" class="px-3.5 py-1.5 rounded-full bg-[#D96B43] hover:bg-[#C35832] text-white text-xs font-semibold transition flex items-center gap-1.5 flex-shrink-0 shadow-2xs self-end sm:self-auto">
                         <span>Take Action</span>
                         <i class="fas fa-arrow-right text-[10px]"></i>
                     </a>
@@ -521,7 +521,7 @@
             </a>
             @else
             <a href="{{ $action['route'] }}" class="kwdc-action-btn">
-                <i class="fas fa-{{ $action['icon'] }}" style="color: #f97316;"></i>
+                <i class="fas fa-{{ $action['icon'] }}" style="color: #D96B43;"></i>
                 <span>{{ $action['label'] }}</span>
                 @if(!empty($action['badge']) && $action['badge'] > 0)
                     <span class="kwdc-action-badge">
@@ -1006,8 +1006,8 @@
 
             const ctx = primaryCanvas.getContext('2d');
             const gradient = ctx.createLinearGradient(0, 0, 0, 220);
-            gradient.addColorStop(0, 'rgba(249, 115, 22, 0.20)');
-            gradient.addColorStop(1, 'rgba(249, 115, 22, 0.00)');
+            gradient.addColorStop(0, 'rgba(217, 107, 67, 0.22)');
+            gradient.addColorStop(1, 'rgba(217, 107, 67, 0.00)');
 
             primaryChartInstance = new Chart(primaryCanvas, {
                 type: 'line',
@@ -1017,10 +1017,10 @@
                         label: 'Revenue',
                         data: chartDatasets['7d'].values,
                         backgroundColor: gradient,
-                        borderColor: '#f97316',
+                        borderColor: '#D96B43',
                         borderWidth: 2.5,
                         pointBackgroundColor: '#ffffff',
-                        pointBorderColor: '#f97316',
+                        pointBorderColor: '#D96B43',
                         pointBorderWidth: 2,
                         pointRadius: 3.5,
                         pointHoverRadius: 5.5,
@@ -1034,7 +1034,7 @@
                     plugins: {
                         legend: { display: false },
                         tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.90)',
+                            backgroundColor: 'rgba(36, 32, 29, 0.94)',
                             padding: 10,
                             cornerRadius: 10,
                             titleFont: { weight: 'bold', size: 11 },
@@ -1048,12 +1048,12 @@
                     scales: {
                         x: {
                             grid: { display: false },
-                            ticks: { color: '#94a3b8', font: { size: 11, weight: '600' } }
+                            ticks: { color: '#8A8379', font: { size: 11, weight: '600' } }
                         },
                         y: {
                             beginAtZero: true,
-                            grid: { color: '#f8fafc' },
-                            ticks: { color: '#94a3b8', font: { size: 11 } }
+                            grid: { color: '#F2ECE4' },
+                            ticks: { color: '#8A8379', font: { size: 11 } }
                         }
                     }
                 }
@@ -1072,7 +1072,7 @@
                     labels: ['Leased (78%)', 'Free (22%)'],
                     datasets: [{
                         data: [78, 22],
-                        backgroundColor: ['#f97316', '#e2e8f0'],
+                        backgroundColor: ['#D96B43', '#E8E2D8'],
                         borderWidth: 2,
                         borderColor: '#ffffff',
                         hoverOffset: 3

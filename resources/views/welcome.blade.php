@@ -6,6 +6,9 @@
     <meta name="description" content="KTM-WDC connects commercial warehouse space, freight deliveries, heavy equipment, and trusted teams across Nepal.">
     <title>KTM-WDC | Warehouse & Distribution Connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/kwdc-public.css') }}">
     <style>
 
@@ -78,13 +81,13 @@
         <section class="hero">
             <img class="hero-image" src="{{ asset('images/logistics-campus.png') }}" alt="Illustrated warehouse campus with delivery vehicles" fetchpriority="high" width="1536" height="1024">
             <div class="hero-content shell">
-                <span class="eyebrow">Warehouse &amp; Distribution Connect</span>
+                <span class="eyebrow"><i class="fas fa-wand-magic-sparkles text-xs" style="color: #D96B43;"></i> Warehouse &amp; Distribution Connect</span>
                 <h1>KTM-WDC</h1>
                 <p class="hero-title">Space to grow.<br>Room to move.</p>
                 <p class="hero-copy">Commercial warehousing, live freight dispatch and trusted fleet operations across Nepal.</p>
                 <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px;">
                     <a class="button button-dark" href="{{ route('register') }}">Find your workspace <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                    <a class="button" style="background:#ffffff; color:#0f172a; border:1px solid #cbd5e1;" href="{{ route('login') }}">Partner Portal <i class="fas fa-sign-in-alt" aria-hidden="true"></i></a>
+                    <a class="button button-outline" href="{{ route('login') }}">Partner Portal <i class="fas fa-sign-in-alt" aria-hidden="true"></i></a>
                 </div>
             </div>
             <span class="illustration-credit">Commercial Logistics Network</span>
@@ -146,14 +149,14 @@
         </section>
     </main>
 
-    <footer class="shell">
+    <footer class="shell" style="border-top: 1px solid var(--claude-border); margin-top: 40px;">
         <div class="footer-grid">
             <div class="footer-col">
-                <a class="wordmark" href="{{ route('landing') }}"><i class="fas fa-warehouse text-orange-500"></i> KTM-WDC</a>
-                <p style="color: #64748b; font-size: 13px; line-height: 1.6; margin-top: 12px;">
+                <a class="wordmark" href="{{ route('landing') }}"><i class="fas fa-warehouse text-[#D96B43]"></i> KTM-WDC</a>
+                <p style="color: var(--claude-text-body); font-size: 13px; line-height: 1.6; margin-top: 12px;">
                     Nepal's premier integrated logistics platform connecting warehousing capacity, highway freight dispatch, certified equipment, and facility security.
                 </p>
-                <p style="color: #64748b; font-size: 12px; margin-top: 8px;">
+                <p style="color: var(--claude-text-muted); font-size: 12px; margin-top: 8px;">
                     <strong>Central Office:</strong> Tinkune &amp; Baluwatar Freight Corridors, Kathmandu, Nepal<br>
                     <strong>Helpline:</strong> +977-1-5912400 &bull; support@kwdc.test
                 </p>
@@ -185,7 +188,7 @@
             </div>
         </div>
 
-        <div class="footer-bottom">
+        <div class="footer-bottom" style="border-top: 1px solid var(--claude-border-subtle); color: var(--claude-text-muted);">
             <span>&copy; {{ date('Y') }} KTM-WDC (Warehouse &amp; Distribution Connect). All rights reserved.</span>
             <div style="display: flex; gap: 16px;">
                 <a href="{{ route('privacy-policy') }}" style="color: inherit; text-decoration: none;">Privacy</a>

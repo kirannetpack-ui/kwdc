@@ -1,85 +1,56 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Invoice #{{ $invoice->invoice_number }}</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
-            color: #333;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .header {
-            background: #e53e3e;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        .content {
-            padding: 20px;
-            background: #f9f9f9;
-        }
-        .invoice-details {
-            background: white;
-            padding: 15px;
-            margin: 15px 0;
-            border-left: 4px solid #e53e3e;
-        }
-        .button {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #e53e3e;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 10px 0;
-        }
-        .footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>KTM Warehouse & Distribution Center</h2>
-            <p>Invoice #{{ $invoice->invoice_number }}</p>
+@extends('emails.layout')
+
+@section('content')
+@php
+    $clientName = $invoice->client->name ?? $invoice->user->name ?? 'Valued Client';
+    $created = isset($invoice->created_at) && is_object($invoice->created_at) ? $invoice->created_at->format('M d, Y') : date('M d, Y');
+    $dueDate = isset($invoice->payment_due_date) && is_object($invoice->payment_due_date) 
+        ? $invoice->payment_due_date->format('M d, Y') 
+        : (isset($invoice->due_date) && !empty($invoice->due_date) ? date('M d, Y', strtotime($invoice->due_date)) : 'Upon Receipt');
+    $total = $invoice->grand_total ?? $invoice->total_amount ?? $invoice->amount ?? 0;
+    $status = $invoice->payment_status ?? $invoice->status ?? 'Unpaid';
+    $viewUrl = url('/client/invoices/' . ($invoice->id ?? '1'));
+@endphp
+<div class="animate-fade">
+    <div style="margin-bottom: 24px; text-align: center;">
+        <div style="display: inline-block; background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 50%; width: 56px; height: 56px; line-height: 56px; font-size: 28px; margin-bottom: 12px;">
+            📄
         </div>
-        
-        <div class="content">
-            <p>Dear <strong>{{ $invoice->client->name }}</strong>,</p>
-            
-            <p>Thank you for using KTM-WDC services. Please find attached your invoice.</p>
-            
-            <div class="invoice-details">
-                <p><strong>Invoice Number:</strong> {{ $invoice->invoice_number }}</p>
-                <p><strong>Invoice Date:</strong> {{ $invoice->created_at->format('F d, Y') }}</p>
-                <p><strong>Due Date:</strong> {{ $invoice->payment_due_date->format('F d, Y') }}</p>
-                <p><strong>Total Amount:</strong> रू {{ number_format($invoice->grand_total, 2) }}</p>
-                <p><strong>Status:</strong> {{ ucfirst($invoice->payment_status) }}</p>
-            </div>
-            
-            <p>You can view and pay your invoice by clicking the button below:</p>
-            
-            <p style="text-align: center;">
-                <a href="{{ route('invoices.show', $invoice) }}" class="button">View Invoice</a>
-            </p>
-            
-            <p>If you have any questions, please contact our accounts department.</p>
-        </div>
-        
-        <div class="footer">
-            <p>KTM Warehouse & Distribution Center | Kathmandu, Nepal</p>
-            <p>Email: accounts@ktm-wdc.com | Phone: +977-1-5551234</p>
-        </div>
+        <h2 style="color: #1f2937; margin: 0 0 6px; font-size: 22px;">Invoice Notification</h2>
+        <p style="color: #6b7280; font-size: 14px; margin: 0;">Namaste {{ $clientName }}, thank you for partnering with KTM-WDC Logistics.</p>
     </div>
-</body>
-</html>
+
+    <div style="background: #fdfbf7; border: 1px solid #f1e9dc; border-radius: 10px; padding: 20px; margin-bottom: 24px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+            <tr>
+                <td style="padding: 7px 0; color: #6b7280;">Invoice Number:</td>
+                <td style="padding: 7px 0; color: #1f2937; font-weight: 700; text-align: right; font-family: monospace;">{{ $invoice->invoice_number ?? 'INV-NEW' }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 7px 0; color: #6b7280;">Billing Date:</td>
+                <td style="padding: 7px 0; color: #1f2937; text-align: right;">{{ $created }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 7px 0; color: #6b7280;">Payment Due Date:</td>
+                <td style="padding: 7px 0; color: #1f2937; text-align: right;">{{ $dueDate }}</td>
+            </tr>
+            <tr>
+                <td style="padding: 7px 0; color: #6b7280;">Payment Status:</td>
+                <td style="padding: 7px 0; text-align: right;">
+                    <span style="display: inline-block; background: #fef3c7; color: #d97706; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+                        {{ ucfirst($status) }}
+                    </span>
+                </td>
+            </tr>
+            <tr style="border-top: 1px dashed #d1c7b7;">
+                <td style="padding: 10px 0 4px; font-size: 15px; font-weight: 700; color: #1f2937;">Total Amount Due:</td>
+                <td style="padding: 10px 0 4px; font-size: 16px; font-weight: 700; color: #d96b43; text-align: right;">NPR {{ number_format((float)$total, 2) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div style="text-align: center; margin-top: 24px;">
+        <a href="{{ $viewUrl }}" style="display: inline-block; background: #d96b43; color: white; text-decoration: none; padding: 11px 26px; border-radius: 8px; font-weight: 600; font-size: 14px;">View & Pay Invoice Online →</a>
+    </div>
+</div>
+@endsection

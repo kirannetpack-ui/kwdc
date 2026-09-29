@@ -255,7 +255,10 @@ class DriverController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return view('driver.available-jobs', compact('jobs'));
+        return view('driver.available-jobs', [
+            'jobs' => $jobs,
+            'availableJobs' => $jobs,
+        ]);
     }
 
 /**

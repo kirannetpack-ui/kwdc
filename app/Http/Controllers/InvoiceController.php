@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Invoice;
+use App\Models\User;
+use App\Notifications\InvoiceGeneratedNotification;
 use App\Services\InvoiceService;
 use App\Services\AIService;
 use App\Services\AdminEmailService;
@@ -10,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 
 class InvoiceController extends Controller
 {
@@ -80,19 +83,7 @@ class InvoiceController extends Controller
 
     public function clientIndex()
     {
-        $user = auth()->user();
-        $userId = $user->id;
-        
-        $invoiceIds = DB::table('invoices')
-            ->join('warehouse_requests', 'invoices.warehouse_request_id', '=', 'warehouse_requests.id')
-            ->where('warehouse_requests.client_id', $userId)
-            ->pluck('invoices.id');
-        
-        $invoices = Invoice::whereIn('id', $invoiceIds)
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-        
-        return view('invoices.client-index', compact('invoices'));
+        return $this->index();
     }
 
     public function adminIndex(Request $request)
@@ -110,6 +101,9 @@ class InvoiceController extends Controller
 
     public function markAsPaid(Invoice $invoice, Request $request)
     {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403, 'Only administrators can mark invoices as paid.');
+
         $invoice->status = 'paid';
         $invoice->save();
         
@@ -118,35 +112,57 @@ class InvoiceController extends Controller
 
     public function resendEmail(Invoice $invoice)
     {
+        $this->authorizeInvoice($invoice);
         $this->invoiceService->sendInvoiceEmail($invoice);
         return redirect()->back()->with('success', 'Invoice email resent successfully');
     }
 
     /**
      * Store a newly created invoice.
-     * (The floating code from lines 105+ is now safely inside this method.)
      */
     public function store(Request $request)
     {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403, 'Unauthorized to create invoices.');
+
         // Validation
         $validated = $request->validate([
             'warehouse_request_id' => 'required|exists:warehouse_requests,id',
             'amount'              => 'required|numeric',
         ]);
 
+        $warehouseRequest = \App\Models\WarehouseRequest::findOrFail($validated['warehouse_request_id']);
+        $clientId = $warehouseRequest->client_id;
+
         $invoice = Invoice::create([
-            'warehouse_request_id' => $validated['warehouse_request_id'],
+            'warehouse_request_id' => $warehouseRequest->id,
+            'client_id'            => $clientId,
+            'user_id'              => $clientId,
             'amount'               => $validated['amount'],
-            'invoice_number'       => 'INV-' . strtoupper(uniqid()),
+            'subtotal'             => $validated['amount'],
+            'grand_total'          => $validated['amount'],
+            'invoice_number'       => Invoice::generateInvoiceNumber(),
             'status'               => 'pending',
+            'payment_status'       => 'unpaid',
+            'due_date'             => now()->addDays(14)->toDateString(),
+            'payment_due_date'     => now()->addDays(14)->toDateString(),
         ]);
 
-// 🔔 Notify client
-    $client = User::find($invoice->client_id);
-    if ($client) {
-        $this->notificationService->send($client, new InvoiceGeneratedNotification($invoice));
-    }
-    $this->notificationService->sendToAdmins(new InvoiceGeneratedNotification($invoice));
+        // 🔔 Notify client and admins safely
+        try {
+            if (!empty($invoice->client_id)) {
+                $client = User::find($invoice->client_id);
+                if ($client) {
+                    $client->notify(new InvoiceGeneratedNotification($invoice));
+                }
+            }
+            $admins = User::where('role', 'admin')->orWhere('is_admin', true)->get();
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, new InvoiceGeneratedNotification($invoice));
+            }
+        } catch (\Throwable $e) {
+            Log::warning('Invoice notification failed: ' . $e->getMessage(), ['invoice_id' => $invoice->id]);
+        }
 
         // AI Fraud Check
         $aiService = app(AIService::class);

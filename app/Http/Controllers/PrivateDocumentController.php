@@ -18,7 +18,7 @@ class PrivateDocumentController extends Controller
 {
     public function show(Request $request, string $path)
     {
-        abort_if(str_contains($path, '..') || str_starts_with($path, '/'), Response::HTTP_BAD_REQUEST);
+        abort_if(str_contains($path, '..') || str_starts_with($path, '/') || str_starts_with($path, '\\') || str_contains($path, '\\'), Response::HTTP_BAD_REQUEST);
 
         $user = $request->user();
         abort_unless($user && $this->canAccess($user, $path), Response::HTTP_FORBIDDEN);

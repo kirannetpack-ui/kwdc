@@ -6,18 +6,20 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>KTM-WDC | Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #101724;
-            --muted: #62728a;
-            --line: #dbe4ef;
-            --gold: #f5a524;
-            --gold-dark: #c77700;
-            --green: #0f766e;
-            --blue: #2563eb;
+            --ink: #24201D;
+            --muted: #57524C;
+            --line: #E8E2D8;
+            --gold: #D96B43;
+            --gold-dark: #C35832;
+            --green: #D96B43;
+            --blue: #4F6B94;
             --paper: #ffffff;
-            --radius: 28px;
+            --radius: 24px;
         }
 
         * { box-sizing: border-box; }
@@ -142,10 +144,10 @@
 
         .input-wrap input {
             width: 100%;
-            min-height: 46px;
-            padding: 12px 14px 12px 40px;
-            border: 1px solid #cfd9e6;
-            border-radius: 18px;
+            min-height: 48px;
+            padding: 12px 14px 12px 44px !important;
+            border: 1px solid var(--line);
+            border-radius: 12px;
             color: var(--ink);
             font: inherit;
             background: #ffffff;
@@ -155,7 +157,7 @@
         .input-wrap input:focus {
             outline: none;
             border-color: var(--gold);
-            box-shadow: 0 0 0 4px rgba(245, 165, 36, .16);
+            box-shadow: 0 0 0 3.5px rgba(217, 107, 67, .16);
         }
 
         .form-options {
@@ -165,13 +167,14 @@
             gap: 14px;
             margin: 2px 0 22px;
             color: var(--muted);
-            font-size: 14px;
-            font-weight: 700;
+            font-size: 13.5px;
+            font-weight: 500;
         }
 
         .form-options label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
         input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--gold); }
-        .form-options a, .switch-link a { color: var(--green); font-weight: 900; text-decoration: none; }
+        .form-options a, .switch-link a { color: var(--gold) !important; font-weight: 600; text-decoration: none; }
+        .form-options a:hover, .switch-link a:hover { color: var(--gold-dark) !important; text-decoration: underline; }
 
         .btn-auth {
             width: 100%;
@@ -181,13 +184,13 @@
             justify-content: center;
             gap: 10px;
             border: 0;
-            border-radius: 18px;
-            color: #111827;
+            border-radius: 9999px;
+            color: #ffffff;
             background: var(--gold);
             font: inherit;
-            font-weight: 900;
+            font-weight: 600;
             cursor: pointer;
-            box-shadow: 0 16px 30px rgba(245, 165, 36, .24);
+            box-shadow: 0 4px 14px rgba(217, 107, 67, .28);
             transition: transform .16s ease, background-color .16s ease;
         }
 

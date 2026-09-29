@@ -13,13 +13,6 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <!-- TEST: If you see this text, the new file is loading! -->
-                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>
-                        <strong>New Warehouse Form Loaded!</strong> If you see this, the correct file is being displayed.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-
                     <form action="{{ route('warehouses.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 

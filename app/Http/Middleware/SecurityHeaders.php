@@ -14,7 +14,7 @@ class SecurityHeaders
         $response->headers->set('X-Content-Type-Options', 'nosniff');
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), geolocation=(self), microphone=(self), payment=(self)');
-        $response->headers->set('Content-Security-Policy', implode('; ', [
+        $cspDirectives = [
             "default-src 'self'",
             "base-uri 'self'",
             "frame-ancestors 'none'",
@@ -25,12 +25,14 @@ class SecurityHeaders
             "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com",
             "connect-src 'self' ws: wss: https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.googleapis.com https://a.khalti.com https://*.khalti.com",
             "object-src 'none'",
-            "upgrade-insecure-requests",
-        ]));
+        ];
 
-        if ($request->isSecure()) {
+        if ($request->isSecure() || app()->isProduction()) {
+            $cspDirectives[] = "upgrade-insecure-requests";
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
         }
+
+        $response->headers->set('Content-Security-Policy', implode('; ', $cspDirectives));
         
         return $response;
     }

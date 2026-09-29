@@ -64,7 +64,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save me-2"></i>Submit Proposal
                     </button>
-                    <a href="{{ route('client.proposals') }}" class="btn btn-secondary">Cancel</a>
+                    <a href="{{ route('client.proposals.index') }}" class="btn btn-secondary">Cancel</a>
                 </div>
             </form>
         </div>

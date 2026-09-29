@@ -14,8 +14,10 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Newsreader (Editorial Serif) & Plus Jakarta Sans (Crisp Modern Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,500;1,6..72,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Leaflet CSS & JS for Maps -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
@@ -28,7 +30,8 @@
     @stack('styles')
     
     <style>
-        * { font-family: 'Inter', sans-serif; }
+        * { font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+        h1, h2, h3, .font-serif, .kwdc-serif { font-family: 'Newsreader', Georgia, serif; }
 
         .sidebar {
             position: fixed;
@@ -135,12 +138,12 @@
 <div class="sidebar" id="sidebar">
     <div class="kwdc-sidebar-brand p-6">
         <div class="flex items-center space-x-3">
-            <div class="kwdc-brand-icon w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center shadow-lg shadow-orange-500/25 flex-shrink-0">
+            <div class="kwdc-brand-icon w-10 h-10 rounded-xl bg-gradient-to-br from-[#D96B43] to-[#B85832] flex items-center justify-center shadow-lg shadow-[#D96B43]/25 flex-shrink-0">
                 <i class="fas fa-warehouse text-white text-lg"></i>
             </div>
             <div>
-                <h1 class="text-lg font-extrabold text-white tracking-tight leading-tight">KTM-WDC</h1>
-                <p class="text-[11px] text-slate-400 font-medium">Logistics & Distribution</p>
+                <h1 class="text-lg font-serif font-bold text-white tracking-tight leading-tight">KTM-WDC</h1>
+                <p class="text-[11px] text-[#A39B92] font-medium">Logistics & Distribution</p>
             </div>
         </div>
     </div>
@@ -374,6 +377,13 @@
             @csrf
             <button type="submit" class="sidebar-link w-full"><i class="fas fa-sign-out-alt"></i> Logout</button>
         </form>
+        @else
+        <div class="px-5 py-4 text-xs text-[#A39B92] space-y-3">
+            <p class="text-[#CBD5E1]">Access your logistics account</p>
+            <a href="{{ route('login') }}" class="sidebar-link !text-white !bg-[#D96B43] hover:!bg-[#C35832] text-center justify-center rounded-xl shadow-sm">
+                <i class="fas fa-sign-in-alt"></i> Sign In
+            </a>
+        </div>
         @endauth
     </nav>
 </div>
@@ -385,17 +395,17 @@
     <div class="top-bar">
         <!-- LEFT: BREADCRUMB & LIVE INDICATOR -->
         <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-bold text-sm shadow-xs shadow-orange-500/20">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#D96B43] to-[#B85832] text-white flex items-center justify-center font-bold text-sm shadow-xs shadow-[#D96B43]/20">
                 <i class="fas fa-layer-group"></i>
             </div>
             <div class="flex items-center gap-2.5">
                 <div class="flex items-center gap-1.5 text-xs font-semibold">
-                    <span class="text-slate-400 uppercase tracking-wider">Portal</span>
-                    <i class="fas fa-chevron-right text-[9px] text-slate-300"></i>
-                    <span class="text-slate-800 font-extrabold uppercase tracking-wider" id="kwdc-topbar-header">@yield('header', 'Dashboard')</span>
+                    <span class="text-[#8A8379] uppercase tracking-wider">Portal</span>
+                    <i class="fas fa-chevron-right text-[9px] text-[#C4BCB3]"></i>
+                    <span class="text-[#24201D] font-serif font-bold tracking-tight text-sm" id="kwdc-topbar-header">@yield('header', 'Dashboard')</span>
                 </div>
-                <div class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/70">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#EFF6F1] text-[#3D7357] border border-[#D4E7DC]">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#3D7357] animate-pulse"></span>
                     <span>Live Hub</span>
                 </div>
             </div>
@@ -404,7 +414,7 @@
         <!-- CENTER: QUICK SEARCH / COMMAND PILL -->
         <div class="hidden lg:flex items-center">
             <button type="button" onclick="event.stopPropagation(); if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" id="kwdcTopbarSearchBtn" class="kwdc-topbar-search" aria-label="Search or Ask AI">
-                <i class="fas fa-wand-magic-sparkles text-[11px] text-amber-500 flex-shrink-0"></i>
+                <i class="fas fa-wand-magic-sparkles text-[11px] text-[#D96B43] flex-shrink-0"></i>
                 <span class="truncate">Search or Ask AI...</span>
                 <span class="kwdc-kbd">Ctrl+K</span>
             </button>
@@ -413,19 +423,19 @@
         <!-- RIGHT: CALENDAR, NOTIFICATIONS & USER PROFILE MENU -->
         <div class="flex items-center gap-3">
             <!-- CALENDAR DATE PILL -->
-            <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/70 border border-slate-200/70 text-xs font-semibold text-slate-600">
-                <i class="far fa-calendar-alt text-orange-500"></i>
+            <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFFFFF] border border-[#E8E2D8] text-xs font-semibold text-[#57524C] shadow-2xs">
+                <i class="far fa-calendar-alt text-[#D96B43]"></i>
                 <span>{{ now()->format('D, M j, Y') }}</span>
             </div>
 
             <!-- NOTIFICATION BELL WITH DROPDOWN -->
             <div class="dropdown">
-                <a class="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-600 hover:text-slate-900 flex items-center justify-center transition border border-slate-200/70 text-decoration-none relative" href="#" id="notificationDropdownToggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <a class="w-9 h-9 rounded-full bg-[#FFFFFF] hover:bg-[#FAF8F5] text-[#57524C] hover:text-[#24201D] flex items-center justify-center transition border border-[#E8E2D8] text-decoration-none relative shadow-2xs" href="#" id="notificationDropdownToggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="fas fa-bell text-sm"></i>
                     @auth
                         @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
                         @if($unreadCount > 0)
-                            <span class="badge bg-red-500 text-white rounded-full" id="unreadCount" style="position: absolute; top: -3px; right: -3px; font-size: 9px; min-width: 17px; height: 17px; padding: 0 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff;">
+                            <span class="badge bg-[#D96B43] text-white rounded-full" id="unreadCount" style="position: absolute; top: -3px; right: -3px; font-size: 9px; min-width: 17px; height: 17px; padding: 0 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #fff;">
                                 {{ $unreadCount }}
                             </span>
                         @endif
@@ -497,6 +507,11 @@
                     </li>
                 </ul>
             </div>
+            @else
+            <a href="{{ route('login') }}" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#D96B43] hover:bg-[#C35832] text-white text-xs font-semibold shadow-2xs transition">
+                <i class="fas fa-sign-in-alt text-xs"></i>
+                <span>Sign In</span>
+            </a>
             @endauth
         </div>
     </div>

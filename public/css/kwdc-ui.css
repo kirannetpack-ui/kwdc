@@ -1,17 +1,17 @@
 :root {
-    --kwdc-ink: #14213d;
-    --kwdc-ink-soft: #24324a;
-    --kwdc-muted: #64748b;
-    --kwdc-line: #dfe5ee;
+    --kwdc-ink: #24201D;
+    --kwdc-ink-soft: #38322C;
+    --kwdc-muted: #8A8379;
+    --kwdc-line: #E8E2D8;
     --kwdc-surface: #ffffff;
-    --kwdc-canvas: #f5f7fb;
-    --kwdc-accent: #f59e0b;
-    --kwdc-accent-dark: #b86b00;
-    --kwdc-success: #0f766e;
-    --kwdc-danger: #dc2626;
-    --kwdc-radius: 8px;
-    --kwdc-shadow: 0 10px 28px rgba(15, 23, 42, 0.08);
-    --kwdc-shadow-soft: 0 1px 2px rgba(15, 23, 42, 0.05);
+    --kwdc-canvas: #FAF8F5;
+    --kwdc-accent: #D96B43;
+    --kwdc-accent-dark: #C35832;
+    --kwdc-success: #3D7357;
+    --kwdc-danger: #C24838;
+    --kwdc-radius: 12px;
+    --kwdc-shadow: 0 10px 28px rgba(60, 45, 30, 0.06);
+    --kwdc-shadow-soft: 0 1px 3px rgba(60, 45, 30, 0.03);
 }
 
 html {
@@ -39,13 +39,14 @@ body {
     transform: scaleX(0);
     transform-origin: left;
     opacity: 0;
-    background: linear-gradient(90deg, var(--kwdc-accent), #22c55e);
+    background: linear-gradient(90deg, var(--kwdc-accent), #B8732A);
     transition: transform 650ms ease, opacity 180ms ease;
 }
 
 .main-content {
     background:
-        linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(245, 247, 251, 0.72) 240px),
+        radial-gradient(circle at 10% 8%, rgba(217, 107, 67, 0.04) 0%, transparent 35%),
+        radial-gradient(circle at 90% 12%, rgba(184, 115, 42, 0.03) 0%, transparent 40%),
         var(--kwdc-canvas) !important;
 }
 

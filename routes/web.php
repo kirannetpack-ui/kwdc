@@ -191,6 +191,7 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
     // ==================== INVOICES ====================
     Route::prefix('invoices')->name('invoices.')->group(function () {
         Route::get('/', [InvoiceController::class, 'index'])->name('index');
+        Route::get('/client-index', [InvoiceController::class, 'clientIndex']);
         Route::get('/{invoice}', [InvoiceController::class, 'show'])->name('show');
         Route::get('/{invoice}/download', [InvoiceController::class, 'download'])->name('download');
     });

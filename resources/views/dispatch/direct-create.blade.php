@@ -43,19 +43,23 @@
     }
 </style>
 
-<!-- Leaflet Map CSS & JS -->
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
+<div class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-[#E8E2D8]">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">Create New Dispatch</h1>
-            <p class="text-gray-500 mt-1">Map, price, assign, send.</p>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider bg-[#D96B43]/10 text-[#D96B43] border border-[#D96B43]/20">
+                    Freight Dispatch
+                </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-serif font-bold text-[#24201D] tracking-tight" style="font-family: 'Newsreader', Georgia, serif;">Create New Dispatch</h1>
+            <p class="text-sm text-[#645D56] mt-0.5">Map multi-stop highway routes, estimate fair pricing with AI, and assign verified drivers.</p>
         </div>
-        <a href="{{ route('dispatch.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition">
-            <i class="fas fa-arrow-left mr-2"></i>Back to Dispatches
-        </a>
+        <div>
+            <a href="{{ route('dispatch.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-[#24201D] bg-[#FFFDF9] border border-[#E8E2D8] hover:bg-[#FAF8F5] transition shadow-2xs">
+                <i class="fas fa-arrow-left text-[#D96B43]"></i>
+                <span>Back to Dispatches</span>
+            </a>
+        </div>
     </div>
 
     {{-- Validation Errors --}}
@@ -430,43 +434,45 @@
                 </div>
 
                 <!-- Price Summary -->
-                <div class="bg-gradient-to-r from-orange-500 to-red-500 rounded-xl shadow-md p-6 text-white">
+                <div class="rounded-2xl p-6 text-white shadow-sm" style="background: linear-gradient(135deg, #D96B43 0%, #B85832 100%); border: 1px solid rgba(255,255,255,0.15);">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold">Price Summary</h3>
-                        <button type="button" id="calculateBtn" class="text-sm bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded-lg transition">
-                            <i class="fas fa-calculator mr-1"></i> AI Calculate
+                        <h3 class="text-base font-serif font-bold text-white" style="font-family: 'Newsreader', Georgia, serif;">Price & Rate Summary</h3>
+                        <button type="button" id="calculateBtn" class="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-xl font-semibold transition flex items-center gap-1.5 shadow-2xs">
+                            <i class="fas fa-calculator text-[11px]"></i>
+                            <span>AI Calculate</span>
                         </button>
                     </div>
-                    <div class="space-y-2">
-                        <div class="flex justify-between">
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between text-white/90">
                             <span>Total Distance:</span>
-                            <span id="total_distance_display">0 km</span>
+                            <span id="total_distance_display" class="font-mono font-semibold">0 km</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between text-white/90">
                             <span>Base Price:</span>
-                            <span id="base_price_display">रू 0</span>
+                            <span id="base_price_display" class="font-mono font-semibold">रू 0</span>
                         </div>
-                        <div class="flex justify-between">
+                        <div class="flex justify-between text-white/90">
                             <span>Admin Margin:</span>
-                            <span id="margin_display">रू 0</span>
+                            <span id="margin_display" class="font-mono font-semibold">रू 0</span>
                         </div>
-                        <div class="border-t border-white/30 my-2"></div>
+                        <div class="border-t border-white/20 my-2"></div>
                         <div class="flex justify-between font-bold text-lg">
                             <span>Total Amount:</span>
-                            <span id="total_price_display">रू 0</span>
+                            <span id="total_price_display" class="font-serif">रू 0</span>
                         </div>
                     </div>
                     <div id="ai-insight-tooltip" class="text-xs text-white/80 mt-2 hidden"></div>
                 </div>
 
                 <!-- Submit Button -->
-                <div class="bg-white rounded-xl shadow-md p-6">
-                    <button type="submit" id="submitBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed">
-                        <i class="fas fa-paper-plane mr-2"></i>Create Dispatch
+                <div class="bg-[#FFFDF9] border border-[#E8E2D8] rounded-2xl shadow-2xs p-6 space-y-3">
+                    <button type="submit" id="submitBtn" class="w-full bg-[#D96B43] hover:bg-[#C35832] text-white font-bold py-3.5 px-4 rounded-xl shadow-xs transition flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fas fa-paper-plane text-xs"></i>
+                        <span>Confirm & Dispatch Order</span>
                     </button>
-                    <p class="text-xs text-gray-500 text-center mt-3">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Dispatch stays editable after creation.
+                    <p class="text-xs text-[#645D56] text-center">
+                        <i class="fas fa-shield-halved text-[#D96B43] mr-1"></i>
+                        Dispatch stays editable and tracked via live GPS.
                     </p>
                 </div>
             </div>

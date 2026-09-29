@@ -14,12 +14,14 @@ class InvoiceDueReminder extends Mailable
 {
     use Queueable, SerializesModels;
 
+    public $invoice;
+
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(?\App\Models\Invoice $invoice = null)
     {
-        //
+        $this->invoice = $invoice ?? new \App\Models\Invoice(['invoice_number' => 'INV-DUE-001', 'total_amount' => 5000]);
     }
 
     /**
@@ -38,7 +40,7 @@ class InvoiceDueReminder extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'emails.invoice',
         );
     }
 

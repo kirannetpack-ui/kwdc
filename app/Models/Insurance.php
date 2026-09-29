@@ -15,4 +15,16 @@ class Insurance extends Model
     {
         return $this->belongsTo(WarehouseRequest::class);
     }
+
+    public function client()
+    {
+        return $this->hasOneThrough(
+            User::class,
+            WarehouseRequest::class,
+            'id',
+            'id',
+            'warehouse_request_id',
+            'client_id'
+        );
+    }
 }

@@ -9,9 +9,13 @@ use App\Http\Controllers\SecurityPersonnelController;
 use App\Http\Controllers\SecurityGoodController;
 use App\Http\Controllers\SecurityIncidentController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DashboardController;
 
 // ==================== ADMIN ROUTES (Admin middleware) ====================
 Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function () {
+    // Admin Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
     // Warehouse Management
     Route::get('/pending', [AdminController::class, 'pending'])->name('pending');
     Route::post('/approve/{warehouse}', [AdminController::class, 'approve'])->name('approve');
@@ -43,6 +47,7 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
     // Stock
     Route::get('/stocks', [AdminController::class, 'manageStock'])->name('stocks');
     Route::get('/pending-stocks', [AdminController::class, 'pendingStocks'])->name('pending-stocks');
+    Route::get('/pending/stocks', [AdminController::class, 'pendingStocks'])->name('pending.stocks');
     Route::post('/stocks/{stockId}/verify', [AdminController::class, 'verifyStock'])->name('verify.stock');
 
     // Vehicles
@@ -103,6 +108,11 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
 
     // Roles
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+    Route::post('/roles/{id}/toggle', [RoleController::class, 'toggle'])->name('roles.toggle');
+    Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+    Route::put('/roles/{id}', [RoleController::class, 'update'])->name('roles.update');
+    Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('roles.destroy');
+    Route::post('/users/{id}/toggle-role', [RoleController::class, 'toggle'])->name('users.toggleRole');
 
     // Predictive Analytics
     Route::get('/analytics/predictive', [AdminController::class, 'predictiveAnalytics'])->name('analytics.predictive');

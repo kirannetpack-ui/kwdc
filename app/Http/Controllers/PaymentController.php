@@ -26,11 +26,22 @@ class PaymentController extends Controller
      */
     public function index()
     {
-        $invoices = Invoice::where(function ($query) {
-                $query->where('user_id', auth()->id())
-                    ->orWhere('client_id', auth()->id());
+        $userId = auth()->id();
+        $invoices = Invoice::where(function ($query) use ($userId) {
+                $query->where('user_id', $userId)
+                    ->orWhere('client_id', $userId)
+                    ->orWhereHas('warehouseRequest', function ($wr) use ($userId) {
+                        $wr->where('client_id', $userId);
+                    });
             })
-            ->where('payment_status', 'unpaid')
+            ->where(function ($query) {
+                $query->where('payment_status', 'unpaid')
+                    ->orWhere(function ($q) {
+                        $q->whereNull('payment_status')
+                          ->where('status', '!=', 'paid');
+                    });
+            })
+            ->orderBy('created_at', 'desc')
             ->get();
         
         return view('payment.index', compact('invoices'));

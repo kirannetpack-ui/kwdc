@@ -115,10 +115,11 @@
                 <tbody class="divide-y divide-slate-100" id="myInvoicesTableBody">
                     @forelse($items as $invoice)
                     @php
+                        $amount = (float) ($invoice->grand_total ?? $invoice->amount ?? $invoice->total_amount ?? 0);
                         $invNum = $invoice->invoice_number ?? ('INV-' . str_pad($invoice->id, 5, '0', STR_PAD_LEFT));
                         $status = strtolower($invoice->status ?? 'pending');
-                        $amount = (float)($invoice->amount ?? 0);
-                        $dueDateStr = $invoice->due_date ?? ($invoice->created_at ? $invoice->created_at->format('Y-m-d') : '-');
+                        $dueDateCarbon = $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date) : ($invoice->created_at ?? null);
+                        $dueDateStr = $dueDateCarbon ? $dueDateCarbon->format('M d, Y') : '—';
                         $searchCorpus = strtolower(implode(' ', array_filter([
                             $invoice->id,
                             '#' . $invoice->id,

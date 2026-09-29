@@ -15,6 +15,7 @@ Route::prefix('property')->middleware('role:property_owner')->name('property.')-
         Route::post('/{id}/reject', [PropertyOwnerController::class, 'rejectRequest'])->name('reject');
     });
     Route::prefix('warehouses')->name('warehouses.')->group(function () {
+        Route::get('/', fn() => redirect()->route('warehouses.index'))->name('index');
         Route::get('/{id}', [PropertyOwnerController::class, 'showWarehouse'])->name('show');
         Route::get('/{id}/edit', [PropertyOwnerController::class, 'editWarehouse'])->name('edit');
         Route::put('/{id}', [PropertyOwnerController::class, 'updateWarehouse'])->name('update');

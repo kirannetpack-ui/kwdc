@@ -14,7 +14,8 @@ Route::prefix('equipment')->middleware('role:equipment_owner')->name('equipment.
     Route::put('/{id}', [EquipmentController::class, 'update'])->name('update');
     Route::delete('/{id}', [EquipmentController::class, 'destroy'])->name('destroy');
 
-    // Equipment Jobs
+    // Equipment Jobs & Earnings Aliases
+    Route::get('/earnings', [EquipmentJobController::class, 'earnings'])->name('earnings');
     Route::get('/jobs', [EquipmentJobController::class, 'index'])->name('jobs');
     Route::prefix('jobs')->name('jobs.')->group(function () {
         Route::get('/', [EquipmentJobController::class, 'index'])->name('index');

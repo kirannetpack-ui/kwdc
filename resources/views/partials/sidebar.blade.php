@@ -254,7 +254,7 @@
                 <span>Register Equipment</span>
             </a>
 
-            <a href="{{ route('equipment.jobs') }}" class="nav-link {{ request()->routeIs('equipment.jobs.*') ? 'active' : '' }}">
+            <a href="{{ route('equipment.jobs.index') }}" class="nav-link {{ request()->routeIs('equipment.jobs.*') ? 'active' : '' }}">
                 <i class="fas fa-briefcase"></i>
                 <span>Equipment Jobs</span>
                 @php

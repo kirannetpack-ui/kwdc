@@ -25,8 +25,9 @@
                 </div>
 
                 <!-- Update Profile Form -->
-                <form method="POST" action="{{ route('client.profile.update') }}" enctype="multipart/form-data" class="mb-6 border-b pb-6">
+                <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data" class="mb-6 border-b pb-6">
                     @csrf
+                    @method('PATCH')
                     <div class="mb-4">
                         <label class="block font-medium">Full Name</label>
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="w-full border-gray-300 rounded">
@@ -41,14 +42,15 @@
                     </div>
                     <div class="mb-4">
                         <label class="block font-medium">Profile Photo</label>
-                        <input type="file" name="photo" accept="image/*" class="w-full">
+                        <input type="file" name="profile_photo" accept="image/*" class="w-full">
                     </div>
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Update Profile</button>
+                    <button type="submit" class="bg-[#D96B43] hover:bg-[#C25A34] text-white px-4 py-2 rounded">Update Profile</button>
                 </form>
 
                 <!-- Change Password Form -->
-                <form method="POST" action="{{ route('client.profile.change-password') }}">
+                <form method="POST" action="{{ route('password.update') }}">
                     @csrf
+                    @method('PUT')
                     <div class="mb-4">
                         <label class="block font-medium">Current Password</label>
                         <input type="password" name="current_password" required class="w-full border-gray-300 rounded">

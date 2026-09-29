@@ -78,7 +78,7 @@
             @endif
 
             <div class="mt-4 d-flex gap-2">
-                <a href="{{ route('client.proposals') }}" class="btn btn-secondary">
+                <a href="{{ route('client.proposals.index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left me-2"></i>Back to Proposals
                 </a>
                 

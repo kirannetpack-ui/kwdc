@@ -32,6 +32,7 @@ Route::prefix('driver')->middleware('role:driver')->name('driver.')->group(funct
     Route::prefix('vehicles')->name('vehicles.')->group(function () {
         Route::get('/', [DriverVehicleController::class, 'index'])->name('index');
         Route::get('/register', [DriverVehicleController::class, 'create'])->name('create');
+        Route::get('/register-vehicle', [DriverVehicleController::class, 'create'])->name('register');
         Route::post('/', [DriverVehicleController::class, 'store'])->name('store');
         Route::get('/{id}', [DriverVehicleController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [DriverVehicleController::class, 'edit'])->name('edit');
