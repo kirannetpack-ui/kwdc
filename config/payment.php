@@ -26,4 +26,40 @@ return [
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET', ''),
         'currency' => env('STRIPE_CURRENCY', 'npr'),
     ],
+    'banking' => [
+        'company_name' => 'Kathmandu Warehousing & Distribution Center Pvt. Ltd.',
+        'company_pan' => '609823412',
+        'accounts' => [
+            [
+                'id' => 'nabil',
+                'bank_name' => 'Nabil Bank Ltd.',
+                'account_name' => 'Kathmandu Warehousing & Distribution Center Pvt. Ltd.',
+                'account_number' => '01100175023910',
+                'branch' => 'Kathmandu Main / Durbar Marg',
+                'swift_code' => 'NARBNPKA',
+            ],
+            [
+                'id' => 'global_ime',
+                'bank_name' => 'Global IME Bank Ltd.',
+                'account_name' => 'KTM-WDC Logistics & Cargo Hub',
+                'account_number' => '00101010045623',
+                'branch' => 'New Road / Birgunj Terminal',
+                'swift_code' => 'GLBLNPKA',
+            ],
+            [
+                'id' => 'nic_asia',
+                'bank_name' => 'NIC Asia Bank Ltd.',
+                'account_name' => 'KTM-WDC Logistics Nepal',
+                'account_number' => '109200548123901',
+                'branch' => 'Thamel Corporate Branch',
+                'swift_code' => 'NICAIPKA',
+            ],
+        ],
+        'qr' => [
+            'merchant_name' => 'KTM-WDC LOGISTICS PVT LTD',
+            'merchant_pan' => '609823412',
+            'terminal_id' => 'KTM-WDC-01',
+            'networks' => ['Fonepay', 'NepalPay', 'connectIPS', 'SmartQR'],
+        ],
+    ],
 ];

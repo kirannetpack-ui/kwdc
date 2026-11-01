@@ -94,6 +94,11 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
     Route::post('/invoices/{invoice}/ban-qr', [InvoiceController::class, 'banQR'])->name('invoices.ban-qr');
     Route::post('/invoices/{invoice}/unban-qr', [InvoiceController::class, 'unbanQR'])->name('invoices.unban-qr');
 
+    // Bank & QR Payments Reconciliation
+    Route::get('/payments/bank-transfers', [\App\Http\Controllers\PaymentController::class, 'adminBankTransfers'])->name('payments.bank-transfers');
+    Route::post('/payments/bank-transfers/{transaction}/approve', [\App\Http\Controllers\PaymentController::class, 'adminApproveBankTransfer'])->name('payments.bank-transfers.approve');
+    Route::post('/payments/bank-transfers/{transaction}/reject', [\App\Http\Controllers\PaymentController::class, 'adminRejectBankTransfer'])->name('payments.bank-transfers.reject');
+
     // Box QR Security Revocation
     Route::post('/boxes/{box}/ban-qr', [\App\Http\Controllers\BoxController::class, 'banQR'])->name('boxes.ban-qr');
     Route::post('/boxes/{box}/unban-qr', [\App\Http\Controllers\BoxController::class, 'unbanQR'])->name('boxes.unban-qr');

@@ -208,6 +208,8 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
         Route::post('/stripe/init', [PaymentController::class, 'stripeInit'])->name('stripe.init')->middleware('throttle:10,1');
         Route::get('/stripe/success', [PaymentController::class, 'stripeSuccess'])->name('stripe.success')->middleware('throttle:20,1');
         Route::get('/stripe/cancel', [PaymentController::class, 'stripeCancel'])->name('stripe.cancel');
+        Route::post('/bank/submit', [PaymentController::class, 'bankTransferSubmit'])->name('bank.submit')->middleware('throttle:10,1');
+        Route::post('/banking-qr/submit', [PaymentController::class, 'bankingQrSubmit'])->name('banking-qr.submit')->middleware('throttle:10,1');
         Route::get('/success', [PaymentController::class, 'success'])->name('success');
         Route::get('/failure', [PaymentController::class, 'failure'])->name('failure');
         Route::get('/history', [PaymentController::class, 'history'])->name('history');

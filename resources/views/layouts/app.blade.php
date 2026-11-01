@@ -220,6 +220,9 @@
         <a href="{{ route('admin.invoices') }}" class="sidebar-link {{ request()->routeIs('admin.invoices') ? 'active' : '' }}">
             <i class="fas fa-file-invoice"></i> Invoices
         </a>
+        <a href="{{ route('admin.payments.bank-transfers') }}" class="sidebar-link {{ request()->routeIs('admin.payments.bank-transfers*') ? 'active' : '' }}">
+            <i class="fas fa-building-columns"></i> Bank &amp; QR Transfers
+        </a>
         <a href="{{ route('admin.margins.index') }}" class="sidebar-link {{ request()->routeIs('admin.margins.*') ? 'active' : '' }}">
             <i class="fas fa-percent"></i> Margins & Tiers
         </a>

@@ -458,6 +458,171 @@ class PaymentController extends Controller
         return view('payment.history', compact('transactions'));
     }
 
+    /**
+     * Submit Direct Bank Transfer
+     */
+    public function bankTransferSubmit(Request $request)
+    {
+        $request->validate([
+            'invoice_id' => 'required|exists:invoices,id',
+            'bank_name' => 'required|string|max:100',
+            'depositor_name' => 'required|string|max:150',
+            'reference_number' => 'required|string|max:100',
+            'transfer_date' => 'nullable|date',
+            'notes' => 'nullable|string|max:500',
+            'voucher_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        $invoice = $this->payableInvoice((int) $request->invoice_id);
+        $amount = $this->invoicePayableAmount($invoice);
+
+        $voucherPath = null;
+        if ($request->hasFile('voucher_file')) {
+            $voucherPath = $request->file('voucher_file')->store('payment-vouchers', 'public');
+        }
+
+        $transactionId = 'BANK-' . strtoupper(substr(uniqid(), -6)) . '-' . preg_replace('/[^A-Za-z0-9_-]/', '', $request->reference_number);
+
+        $transaction = Transaction::create([
+            'invoice_id' => $invoice->id,
+            'user_id' => auth()->id(),
+            'amount' => $amount,
+            'tax' => 0,
+            'payment_method' => 'bank_transfer',
+            'transaction_id' => $transactionId,
+            'status' => 'pending',
+            'notes' => $request->notes ?: ('Direct bank transfer via ' . $request->bank_name),
+            'payment_details' => [
+                'bank_name' => $request->bank_name,
+                'depositor_name' => $request->depositor_name,
+                'reference_number' => $request->reference_number,
+                'transfer_date' => $request->transfer_date ?: now()->toDateString(),
+                'voucher_path' => $voucherPath,
+                'submitted_at' => now()->toIso8601String(),
+            ],
+        ]);
+
+        try {
+            $this->adminEmailService->notifyAdmin(
+                '🏛️ Direct Bank Deposit Submitted: Invoice #' . $invoice->invoice_number,
+                "A direct bank transfer of NPR " . number_format($amount, 2) . " via {$request->bank_name} (Ref: {$request->reference_number}) was submitted by " . auth()->user()->name . " and is awaiting finance reconciliation."
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('Bank transfer admin notification failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('payment.history')
+            ->with('success', "Direct bank transfer request submitted successfully (Ref: {$request->reference_number}). Our finance department will reconcile and confirm receipt.");
+    }
+
+    /**
+     * Submit Banking QR (Fonepay / NepalPay) Payment
+     */
+    public function bankingQrSubmit(Request $request)
+    {
+        $request->validate([
+            'invoice_id' => 'required|exists:invoices,id',
+            'rrn_code' => 'required|string|max:100',
+            'sender_bank' => 'nullable|string|max:100',
+            'voucher_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ]);
+
+        $invoice = $this->payableInvoice((int) $request->invoice_id);
+        $amount = $this->invoicePayableAmount($invoice);
+
+        $voucherPath = null;
+        if ($request->hasFile('voucher_file')) {
+            $voucherPath = $request->file('voucher_file')->store('payment-vouchers', 'public');
+        }
+
+        $transactionId = 'QR-' . strtoupper(substr(uniqid(), -6)) . '-' . preg_replace('/[^A-Za-z0-9_-]/', '', $request->rrn_code);
+
+        $transaction = Transaction::create([
+            'invoice_id' => $invoice->id,
+            'user_id' => auth()->id(),
+            'amount' => $amount,
+            'tax' => 0,
+            'payment_method' => 'banking_qr',
+            'transaction_id' => $transactionId,
+            'status' => 'pending',
+            'notes' => 'Banking QR payment via ' . ($request->sender_bank ?: 'Mobile Banking'),
+            'payment_details' => [
+                'rrn_code' => $request->rrn_code,
+                'sender_bank' => $request->sender_bank ?: 'Mobile Banking App',
+                'voucher_path' => $voucherPath,
+                'merchant' => config('payment.banking.qr.merchant_name'),
+                'submitted_at' => now()->toIso8601String(),
+            ],
+        ]);
+
+        try {
+            $this->adminEmailService->notifyAdmin(
+                '📱 Banking QR Payment Submitted: Invoice #' . $invoice->invoice_number,
+                "A Banking QR (Fonepay/NepalPay) payment of NPR " . number_format($amount, 2) . " (RRN: {$request->rrn_code}) was submitted by " . auth()->user()->name . "."
+            );
+        } catch (\Throwable $e) {
+            \Log::warning('QR transfer admin notification failed: ' . $e->getMessage());
+        }
+
+        return redirect()->route('payment.history')
+            ->with('success', "Banking QR payment recorded (RRN/Ref: {$request->rrn_code}). Reconciling against the interbank settlement ledger.");
+    }
+
+    /**
+     * Admin: View Bank & QR Transfers
+     */
+    public function adminBankTransfers(Request $request)
+    {
+        $user = auth()->user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403);
+
+        $query = Transaction::with(['invoice', 'user'])
+            ->whereIn('payment_method', ['bank_transfer', 'banking_qr']);
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $transactions = $query->orderBy('created_at', 'desc')->paginate(25);
+
+        return view('admin.payments.bank-transfers', compact('transactions'));
+    }
+
+    /**
+     * Admin: Approve Bank / QR Transfer
+     */
+    public function adminApproveBankTransfer(Transaction $transaction)
+    {
+        $user = auth()->user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403);
+
+        $invoice = Invoice::find($transaction->invoice_id);
+        if (!$invoice) {
+            return redirect()->back()->with('error', 'Associated invoice not found.');
+        }
+
+        $this->completeVerifiedTransaction($transaction, $invoice, $transaction->payment_method, $transaction->payment_details ?? []);
+
+        return redirect()->back()->with('success', "Transaction {$transaction->transaction_id} approved. Invoice #{$invoice->invoice_number} is now Paid!");
+    }
+
+    /**
+     * Admin: Reject Bank / QR Transfer
+     */
+    public function adminRejectBankTransfer(Request $request, Transaction $transaction)
+    {
+        $user = auth()->user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403);
+
+        $request->validate([
+            'rejection_reason' => 'required|string|max:500',
+        ]);
+
+        $transaction->markAsFailed($request->input('rejection_reason'));
+
+        return redirect()->back()->with('success', "Transaction {$transaction->transaction_id} marked as rejected.");
+    }
+
     private function payableInvoice(int $invoiceId): Invoice
     {
         return Invoice::where('id', $invoiceId)

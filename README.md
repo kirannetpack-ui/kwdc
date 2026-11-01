@@ -2,7 +2,7 @@
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
 [![Laravel Framework](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
-[![Tests Passing](https://img.shields.io/badge/Tests-209%20Passed%20(100%25)-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/Tests-215%20Passed%20(100%25)-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-Proprietary%20%2F%20Commercial-amber.svg)]()
 
 > **Production-Ready Enterprise Logistics & Commercial Warehousing Platform for Nepal.**  
@@ -133,17 +133,32 @@ All seeded accounts share the master development password:
 
 ## Payment Suite & Financial Workflows
 
-The portal supports both domestic Nepalese payment gateways and international card processing:
+The portal supports international cards, local digital wallets, direct commercial bank wire transfers, and universal interbank mobile banking QR codes:
 
-1. **Stripe Checkout (`payment.stripe.init`)**:
+1. **Direct Commercial Bank Transfer (`payment.bank.submit`)**:
+   - Pre-configured corporate depository accounts for Nepal's leading A-Class commercial banks:
+     - **Nabil Bank Ltd.** (`01100175023910` / Maitighar Corporate Branch)
+     - **Global IME Bank Ltd.** (`00101010045623` / Kamaladi Corporate Branch)
+     - **NIC Asia Bank Ltd.** (`109200548123901` / Thapathali Branch)
+   - Interactive Apple-style modal with 1-click clipboard copy for Account Numbers and Account Names.
+   - Bank voucher / deposit slip photo and PDF upload (`payment-vouchers` storage) with UTR / Reference tracking.
+2. **Interbank Banking QR Payment (`payment.banking-qr.submit`)**:
+   - Universal dynamic QR stand compatible with **Fonepay**, **NepalPay**, **connectIPS**, and all 20+ Nepal commercial and development mobile banking applications.
+   - Registered Merchant Name: `KTM-WDC LOGISTICS PVT LTD`, Inland Revenue Department PAN `609823412`.
+   - Fast RRN (Retrieval Reference Number) entry and instant admin reconciliation workflow.
+3. **Stripe Checkout (`payment.stripe.init`)**:
    - Supports Visa, MasterCard, American Express, Apple Pay, and Google Pay.
    - Handles multi-currency conversion, session validation, and webhook reconciliations.
-2. **eSewa EPAY v2 (`payment.esewa.init`)**:
+4. **eSewa EPAY v2 (`payment.esewa.init`)**:
    - Direct payment initiation and callback verification via eSewa's transaction API.
    - Pre-configured with official UAT Sandbox credentials (`EPAYTEST`).
-3. **Khalti v2 (`payment.khalti.init`)**:
+5. **Khalti v2 (`payment.khalti.init`)**:
    - Seamless checkout and lookup verification (`/epayment/lookup/`).
-4. **Tax Invoicing & Reconciliation**:
+6. **Admin Bank & QR Reconciliation Terminal (`admin.payments.bank-transfers`)**:
+   - Filter pending, approved, and rejected wire/QR transactions.
+   - Direct 1-click invoice approval with automated sequential receipt generation and email confirmation.
+   - 1-click rejection modal with mandatory statutory reason logging.
+7. **Tax Invoicing & Reconciliation**:
    - Automatically calculates 13% Nepal Value Added Tax (VAT) and itemizes line items on official invoices.
    - Public QR verification endpoint at `/invoice/verify/{invoiceNumber}`.
 
@@ -194,13 +209,14 @@ KTM-WDC incorporates military-grade security compliance controls to neutralize f
 
 ## Automated Testing Suite
 
-The repository includes a comprehensive 209-test feature and unit test harness:
+The repository includes a comprehensive 215-test feature and unit test harness:
 
 ```bash
 # Run the entire automated test suite
 php vendor/bin/phpunit
 
 # Run specific functional suites
+php vendor/bin/phpunit tests/Feature/BankingPaymentTest.php
 php vendor/bin/phpunit tests/Feature/AccountAndQrBanTest.php
 php vendor/bin/phpunit tests/Feature/PaymentSecurityTest.php
 php vendor/bin/phpunit tests/Feature/DispatchTest.php
@@ -208,7 +224,7 @@ php vendor/bin/phpunit tests/Feature/SecurityAgencyManagementTest.php
 php vendor/bin/phpunit tests/Feature/ProductionHardeningTest.php
 ```
 
-**Status**: 209 tests, 942 assertions, 0 failures (100% pass rate).
+**Status**: 215 tests, 975 assertions, 0 failures (100% pass rate).
 
 ---
 
