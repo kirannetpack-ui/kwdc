@@ -57,4 +57,29 @@ public function destroy($id)
     $user->delete();
     return redirect()->route('admin.roles.index')->with('success', 'User deleted.');
 }
+
+public function ban(Request $request, $id)
+{
+    $user = User::findOrFail($id);
+
+    if ($user->id === auth()->id()) {
+        return redirect()->route('admin.roles.index')->with('error', 'You cannot ban your own account.');
+    }
+
+    $request->validate([
+        'ban_reason' => 'required|string|max:500',
+    ]);
+
+    $user->ban($request->input('ban_reason'));
+
+    return redirect()->route('admin.roles.index')->with('success', "Account for {$user->name} ({$user->email}) has been banned.");
+}
+
+public function unban($id)
+{
+    $user = User::findOrFail($id);
+    $user->unban();
+
+    return redirect()->route('admin.roles.index')->with('success', "Account for {$user->name} has been restored and unbanned.");
+}
 }

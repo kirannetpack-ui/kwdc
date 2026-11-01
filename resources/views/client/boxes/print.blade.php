@@ -55,10 +55,15 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <div class="label">
+    <div class="label" style="{{ $box->isBanned() ? 'border: 3px solid #dc2626; background: #fff5f5;' : '' }}">
         <div class="header">
             <h2>KTM-WDC</h2>
             <p>Box Tracking Label</p>
+            @if($box->isBanned())
+            <div style="background: #dc2626; color: white; font-weight: bold; padding: 4px 8px; border-radius: 4px; margin-top: 6px; font-size: 11px;">
+                🚨 QR CODE BANNED & REVOKED
+            </div>
+            @endif
         </div>
         
         <div class="info">
@@ -68,23 +73,34 @@
             <p><strong>Shipper:</strong> {{ $box->shipper_name }}</p>
             <p><strong>Warehouse:</strong> {{ $box->warehouse->name ?? 'N/A' }}</p>
             <p><strong>Entry Date:</strong> {{ $box->entry_date->format('Y-m-d') }}</p>
-            <p><strong>Status:</strong> {{ ucfirst($box->status) }}</p>
+            <p><strong>Status:</strong> {{ $box->isBanned() ? 'BANNED / REVOKED' : ucfirst($box->status) }}</p>
+            @if($box->isBanned())
+            <p style="color: #dc2626; font-size: 11px;"><strong>Ban Reason:</strong> {{ $box->ban_reason ?: 'Cargo hold / security impound.' }}</p>
+            @endif
         </div>
         
-        <div class="qr-code" id="qrcode"></div>
+        <div class="qr-code" id="qrcode">
+            @if($box->isBanned())
+            <div style="border: 2px dashed #dc2626; padding: 20px 10px; color: #dc2626; font-weight: bold; font-size: 14px;">
+                VOID<br>CARGO RELEASE PROHIBITED
+            </div>
+            @endif
+        </div>
         
         <div class="footer">
-            <p>Scan QR code for tracking</p>
+            <p>{{ $box->isBanned() ? 'DO NOT SCAN - SECURITY REVOKED' : 'Scan QR code for tracking' }}</p>
             <p>www.ktm-wdc.com/track/{{ $box->id }}</p>
         </div>
     </div>
     
     <script>
+        @if(!$box->isBanned())
         new QRCode(document.getElementById("qrcode"), {
             text: {{ json_encode($qrData) }},
             width: 150,
             height: 150
         });
+        @endif
         
         window.onload = function() {
             window.print();

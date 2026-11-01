@@ -24,6 +24,8 @@
                                 <th>Equipment Owner</th>
                                 <th>Property Owner</th>
                                 <th>Client</th>
+                                <th class="border p-2">Status</th>
+                                <th class="border p-2">Security Action</th>
 				<th class="border p-2">Edit</th>
 				<th class="border p-2">Delete</th>
                             </tr>
@@ -70,6 +72,35 @@
                                         </button>
                                     </form>
                                 </td>
+                                <td class="border p-2 text-center">
+                                    @if($user->isBanned())
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700 border border-red-300" title="{{ $user->ban_reason }}">
+                                            🚨 Banned
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+                                            Active
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="border p-2 text-center">
+                                    @if($user->id !== auth()->id())
+                                        @if($user->isBanned())
+                                            <form method="POST" action="{{ route('admin.users.unban', $user->id) }}" style="display:inline;">
+                                                @csrf
+                                                <button type="submit" class="text-xs px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white font-semibold rounded shadow-xs" title="Unban Account">
+                                                    Unban
+                                                </button>
+                                            </form>
+                                        @else
+                                            <button type="button" onclick="promptBanUser({{ $user->id }}, '{{ addslashes($user->name) }}')" class="text-xs px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-semibold rounded shadow-xs" title="Ban Account">
+                                                Ban Account
+                                            </button>
+                                        @endif
+                                    @else
+                                        <span class="text-xs text-gray-400">Current Admin</span>
+                                    @endif
+                                </td>
 <td class="border p-2 text-center">
     <a href="{{ route('admin.roles.edit', $user->id) }}" class="text-blue-600 hover:underline">Edit</a>
 </td>
@@ -88,4 +119,30 @@
             </div>
         </div>
     </div>
+
+    <script>
+    function promptBanUser(userId, userName) {
+        const reason = prompt(`Enter mandatory security reason for banning user account "${userName}":`);
+        if (reason && reason.trim()) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/users/${userId}/ban`;
+
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+
+            const reasonInput = document.createElement('input');
+            reasonInput.type = 'hidden';
+            reasonInput.name = 'ban_reason';
+            reasonInput.value = reason.trim();
+            form.appendChild(reasonInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+    </script>
 </x-app-layout>

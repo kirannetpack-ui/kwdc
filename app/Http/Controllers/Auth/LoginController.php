@@ -49,6 +49,17 @@ class LoginController extends Controller
             return $this->sendLoginResponse($request);
         }
 
+        $attemptedUser = \App\Models\User::where($this->username(), $request->input($this->username()))->first();
+        if ($attemptedUser && $attemptedUser->isBanned() && \Illuminate\Support\Facades\Hash::check($request->input('password'), $attemptedUser->password)) {
+            $this->incrementLoginAttempts($request);
+            Log::warning('Login blocked: account banned', ['user_id' => $attemptedUser->id, 'ip' => $request->ip()]);
+            return redirect()->back()
+                ->withInput($request->only('email', 'remember'))
+                ->withErrors([
+                    'email' => 'This account has been suspended: ' . ($attemptedUser->ban_reason ?: 'Security compliance review.'),
+                ]);
+        }
+
         $this->incrementLoginAttempts($request);
         Log::warning('Login failed', ['ip' => $request->ip()]);
 
@@ -59,11 +70,21 @@ class LoginController extends Controller
     {
         return array_merge($request->only($this->username(), 'password'), [
             'is_active' => true,
+            'is_banned' => false,
         ]);
     }
 
     protected function authenticated(Request $request, $user)
     {
+        if ($user->isBanned()) {
+            $this->guard()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')
+                ->withErrors(['email' => 'This account has been suspended: ' . ($user->ban_reason ?: 'Security compliance violation.')]);
+        }
+
         if (!$user->hasVerifiedEmail()) {
             $this->guard()->logout();
             $request->session()->invalidate();

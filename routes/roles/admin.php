@@ -91,6 +91,12 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
     Route::get('/invoices/admin', [InvoiceController::class, 'adminIndex'])->name('invoices.admin');
     Route::post('/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/resend-email', [InvoiceController::class, 'resendEmail'])->name('invoices.resend-email');
+    Route::post('/invoices/{invoice}/ban-qr', [InvoiceController::class, 'banQR'])->name('invoices.ban-qr');
+    Route::post('/invoices/{invoice}/unban-qr', [InvoiceController::class, 'unbanQR'])->name('invoices.unban-qr');
+
+    // Box QR Security Revocation
+    Route::post('/boxes/{box}/ban-qr', [\App\Http\Controllers\BoxController::class, 'banQR'])->name('boxes.ban-qr');
+    Route::post('/boxes/{box}/unban-qr', [\App\Http\Controllers\BoxController::class, 'unbanQR'])->name('boxes.unban-qr');
 
     // Margins
     Route::get('/margin-tiers', [AdminController::class, 'marginTiers'])->name('margin-tiers');
@@ -106,13 +112,15 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
     Route::get('/partner-earnings', [AdminController::class, 'partnerEarnings'])->name('partner-earnings');
     Route::get('/insurance-list', [AdminController::class, 'insuranceList'])->name('insurance.list');
 
-    // Roles
+    // Roles & User Account Security
     Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
     Route::post('/roles/{id}/toggle', [RoleController::class, 'toggle'])->name('roles.toggle');
     Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])->name('roles.edit');
     Route::put('/roles/{id}', [RoleController::class, 'update'])->name('roles.update');
     Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('roles.destroy');
     Route::post('/users/{id}/toggle-role', [RoleController::class, 'toggle'])->name('users.toggleRole');
+    Route::post('/users/{id}/ban', [RoleController::class, 'ban'])->name('users.ban');
+    Route::post('/users/{id}/unban', [RoleController::class, 'unban'])->name('users.unban');
 
     // Predictive Analytics
     Route::get('/analytics/predictive', [AdminController::class, 'predictiveAnalytics'])->name('analytics.predictive');

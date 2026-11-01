@@ -120,6 +120,50 @@
             border: 1px solid rgba(200, 68, 56, 0.2);
         }
 
+        .status-pill.banned {
+            background-color: rgba(220, 38, 38, 0.12);
+            color: #b91c1c;
+            border: 1px solid rgba(220, 38, 38, 0.35);
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .ban-alert-card {
+            background: linear-gradient(135deg, rgba(254, 242, 242, 0.95), rgba(254, 226, 226, 0.9));
+            border: 2px solid #ef4444;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 16px rgba(239, 68, 68, 0.15);
+        }
+
+        .ban-alert-card .ban-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #991b1b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .ban-alert-card .ban-reason {
+            font-size: 13px;
+            color: #7f1d1d;
+            background: #ffffff;
+            border: 1px solid #fca5a5;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin: 8px 0;
+            font-family: inherit;
+        }
+
+        .ban-alert-card .ban-legal {
+            font-size: 11.5px;
+            color: #991b1b;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+
         .title {
             font-family: 'Newsreader', Georgia, serif;
             font-size: 28px;
@@ -318,7 +362,11 @@
             <span class="brand-text">KTM-WDC</span>
         </a>
         <div>
-            @if($status === 'flagged')
+            @if($invoice->isBanned())
+                <span class="status-pill banned">
+                    <i class="fas fa-ban"></i> 🚨 QR CODE BANNED & REVOKED
+                </span>
+            @elseif($status === 'flagged')
                 <span class="status-pill flagged">
                     <i class="fas fa-exclamation-triangle"></i> Verification Notice: Flagged
                 </span>
@@ -328,11 +376,44 @@
                 </span>
             @endif
         </div>
-        <h1 class="title">Invoice Authenticity Check</h1>
-        <p class="subtitle">This invoice record matches the authoritative cryptographic record on the KTM-WDC portal ledger.</p>
+        <h1 class="title">
+            @if($invoice->isBanned())
+                <span style="color: #991b1b;">Invoice QR Code Revoked</span>
+            @else
+                Invoice Authenticity Check
+            @endif
+        </h1>
+        <p class="subtitle">
+            @if($invoice->isBanned())
+                This invoice verification has been suspended and marked as REVOKED by security compliance.
+            @else
+                This invoice record matches the authoritative cryptographic record on the KTM-WDC portal ledger.
+            @endif
+        </p>
     </div>
 
     <div class="verify-body">
+        @if($invoice->isBanned())
+        <div class="ban-alert-card">
+            <div class="ban-title">
+                <i class="fas fa-triangle-exclamation"></i>
+                CARGO RELEASE & GATE CLEARANCE PROHIBITED
+            </div>
+            <p style="font-size: 12.5px; color: #7f1d1d; margin-bottom: 4px;">
+                This invoice QR verification has been officially <strong>banned and revoked</strong> by KTM-WDC Platform Compliance.
+            </p>
+            <div class="ban-reason">
+                <strong>Revocation Reason:</strong> {{ $invoice->ban_reason ?: 'Compliance violation / security flag / cargo impound.' }}
+                @if($invoice->banned_at)
+                    <div style="font-size: 11px; color: #991b1b; margin-top: 4px;">Revoked on: {{ $invoice->banned_at->format('M d, Y H:i:s T') }}</div>
+                @endif
+            </div>
+            <p class="ban-legal">
+                <strong>Legal Notice:</strong> Under Muluki Civil Code 2074 and National Logistics Safety Regulations, security personnel and warehouse operators are strictly instructed to withhold cargo dispatch and deny gate-pass validation for this document.
+            </p>
+        </div>
+        @endif
+
         <div class="amount-card">
             <div>
                 <div class="amount-label">Verified Total Amount</div>

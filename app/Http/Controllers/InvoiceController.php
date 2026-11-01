@@ -117,6 +117,30 @@ class InvoiceController extends Controller
         return redirect()->back()->with('success', 'Invoice email resent successfully');
     }
 
+    public function banQR(Request $request, Invoice $invoice)
+    {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403, 'Only administrators can ban invoice QR codes.');
+
+        $request->validate([
+            'ban_reason' => 'required|string|max:500',
+        ]);
+
+        $invoice->banQR($request->input('ban_reason'));
+
+        return redirect()->back()->with('success', "QR code for Invoice {$invoice->invoice_number} has been revoked and banned.");
+    }
+
+    public function unbanQR(Invoice $invoice)
+    {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403, 'Only administrators can unban invoice QR codes.');
+
+        $invoice->unbanQR();
+
+        return redirect()->back()->with('success', "QR code for Invoice {$invoice->invoice_number} has been restored and unbanned.");
+    }
+
     /**
      * Store a newly created invoice.
      */

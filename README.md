@@ -2,7 +2,7 @@
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
 [![Laravel Framework](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
-[![Tests Passing](https://img.shields.io/badge/Tests-198%20Passed%20(100%25)-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/Tests-209%20Passed%20(100%25)-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-Proprietary%20%2F%20Commercial-amber.svg)]()
 
 > **Production-Ready Enterprise Logistics & Commercial Warehousing Platform for Nepal.**  
@@ -167,22 +167,48 @@ The application is structured to provide full legal immunity and compliance unde
 
 ---
 
+## Account Banning & QR Code Revocation Framework
+
+KTM-WDC incorporates military-grade security compliance controls to neutralize fraudulent actors and impound contraband cargo in real time:
+
+### 1. Account Banning & Suspension
+- **Administrative Control**: Admins can suspend any user account with a mandatory security justification (`POST /admin/users/{user}/ban` & `POST /admin/users/{user}/unban`).
+- **Immediate Session Termination**: Authenticated sessions are immediately terminated upon banning via `EnsureAccountReady` middleware with an HTTP 403 suspension notice.
+- **Login Defense**: Attempted logins with credentials belonging to banned accounts are rejected with an explicit suspension reason and contact directive.
+- **Admin Immunity**: Self-banning safeguards prevent administrators from locking out administrative access.
+
+### 2. QR Code Revocation (Invoices & Gate Passes)
+- **Administrative Control**: Admins can revoke/ban invoice QR codes (`POST /admin/invoices/{invoice}/ban-qr` & `POST /admin/invoices/{invoice}/unban-qr`).
+- **Public Tamper-Proof Verification**: Scanning or navigating to `/invoice/verify/{invoiceNumber}` immediately displays a high-visibility Apple Cupertino crimson alert card:
+  - `🚨 QR CODE BANNED & REVOKED`
+  - Statutory warning: Under Muluki Civil Code 2074, gate pass validation and cargo release are strictly prohibited.
+  - Ban reason, audit timestamp, and security hotline.
+
+### 3. Cargo Box & Parcel QR Impoundment
+- **Box QR Revocation**: Admins can revoke box/parcel tracking QR codes (`POST /admin/boxes/{box}/ban-qr` & `POST /admin/boxes/{box}/unban-qr`).
+- **Scannable QR Suppression**: `/boxes/{id}/qr` API nullifies active QR payload and returns `is_banned: true`.
+- **Public Tracking Shield**: `/boxes/{id}/track` displays a bold red impoundment alert prohibiting cargo handoff.
+- **Label Protection**: `/boxes/{id}/print` suppresses scannable QR generation and prints a high-contrast watermark: `VOID — CARGO RELEASE PROHIBITED`.
+
+---
+
 ## Automated Testing Suite
 
-The repository includes a comprehensive 198-test feature and unit test harness:
+The repository includes a comprehensive 209-test feature and unit test harness:
 
 ```bash
 # Run the entire automated test suite
 php vendor/bin/phpunit
 
 # Run specific functional suites
+php vendor/bin/phpunit tests/Feature/AccountAndQrBanTest.php
 php vendor/bin/phpunit tests/Feature/PaymentSecurityTest.php
 php vendor/bin/phpunit tests/Feature/DispatchTest.php
 php vendor/bin/phpunit tests/Feature/SecurityAgencyManagementTest.php
 php vendor/bin/phpunit tests/Feature/ProductionHardeningTest.php
 ```
 
-**Status**: 198 tests, 895 assertions, 0 failures (100% pass rate).
+**Status**: 209 tests, 942 assertions, 0 failures (100% pass rate).
 
 ---
 

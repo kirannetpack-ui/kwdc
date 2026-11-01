@@ -167,9 +167,16 @@
                                     default => 'bg-slate-100 text-slate-700 border-slate-200'
                                 };
                             @endphp
-                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $badgeStyles }}">
-                                {{ ucfirst($status) }}
-                            </span>
+                            <div class="flex flex-col gap-1 items-start">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border {{ $badgeStyles }}">
+                                    {{ ucfirst($status) }}
+                                </span>
+                                @if($inv->isBanned())
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-red-100 text-red-700 border border-red-300" title="{{ $inv->ban_reason }}">
+                                    <i class="fas fa-ban text-[8px]"></i> QR Revoked
+                                </span>
+                                @endif
+                            </div>
                         </td>
 
                         <!-- Date -->
@@ -181,12 +188,32 @@
 
                         <!-- Actions -->
                         <td class="text-right">
-                            <a href="{{ $showRoute }}" 
-                               class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white hover:bg-slate-900 hover:text-white text-slate-700 text-[10.5px] font-semibold transition border border-slate-200 shadow-2xs group"
-                               title="View Invoice">
-                                <span>View</span>
-                                <i class="fas fa-arrow-right text-[8px] opacity-60 group-hover:translate-x-0.5 transition-transform"></i>
-                            </a>
+                            <div class="inline-flex items-center gap-1.5 justify-end">
+                                <a href="{{ $showRoute }}" 
+                                   class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white hover:bg-slate-900 hover:text-white text-slate-700 text-[10.5px] font-semibold transition border border-slate-200 shadow-2xs group"
+                                   title="View Invoice">
+                                    <span>View</span>
+                                    <i class="fas fa-arrow-right text-[8px] opacity-60 group-hover:translate-x-0.5 transition-transform"></i>
+                                </a>
+
+                                @if($inv->isBanned())
+                                <form method="POST" action="{{ route('admin.invoices.unban-qr', $inv->id) }}" class="inline">
+                                    @csrf
+                                    <button type="submit" 
+                                            class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 hover:bg-emerald-600 hover:text-white text-emerald-700 text-[10px] font-bold transition border border-emerald-300"
+                                            title="Restore QR Code">
+                                        <i class="fas fa-undo text-[8px]"></i> Restore QR
+                                    </button>
+                                </form>
+                                @else
+                                <button type="button" 
+                                        onclick="promptBanInvoice({{ $inv->id }}, '{{ $invNum }}')" 
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-rose-50 hover:bg-rose-600 hover:text-white text-rose-700 text-[10px] font-bold transition border border-rose-300"
+                                        title="Revoke and Ban QR Code">
+                                    <i class="fas fa-ban text-[8px]"></i> Revoke QR
+                                </button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                     @empty
@@ -416,6 +443,30 @@ function renderInvoicePagination() {
     `;
 
     paginationContainer.innerHTML = html;
+}
+
+function promptBanInvoice(invoiceId, invoiceNumber) {
+    const reason = prompt(`Enter mandatory compliance reason for revoking QR on Invoice #${invoiceNumber}:`);
+    if (reason && reason.trim()) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/admin/invoices/${invoiceId}/ban-qr`;
+
+        const csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = '_token';
+        csrf.value = '{{ csrf_token() }}';
+        form.appendChild(csrf);
+
+        const reasonInput = document.createElement('input');
+        reasonInput.type = 'hidden';
+        reasonInput.name = 'ban_reason';
+        reasonInput.value = reason.trim();
+        form.appendChild(reasonInput);
+
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', function() {

@@ -15,6 +15,10 @@ class EnsureAccountReady
             return $next($request);
         }
 
+        if ($user->isBanned()) {
+            abort(403, 'Account Suspended: ' . ($user->ban_reason ?: 'This account has been banned due to security compliance review.'));
+        }
+
         if (! $user->is_active) {
             abort(403, 'This account is disabled. Please contact your administrator.');
         }

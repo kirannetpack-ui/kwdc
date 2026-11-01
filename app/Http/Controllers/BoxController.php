@@ -117,27 +117,56 @@ public function store(Request $request)
 }    
 
     public function getQR($id)
-{
-    $box = $this->findAccessibleBox($id);
-    
-    return response()->json([
-        'qr_data' => $box->generateQRData(),
-        'batch_number' => $box->batch_number,
-        'box_number' => $box->box_number,
-        'total_boxes' => $box->total_boxes,
-        'invoice_number' => $box->invoice_number,
-        'shipper_name' => $box->shipper_name,
-        'warehouse_name' => $box->warehouse->name ?? 'N/A',
-        'entry_date' => $box->entry_date->format('Y-m-d'),
-        'status' => $box->status,
-    ]);
-}
+    {
+        $box = $this->findAccessibleBox($id);
+        
+        return response()->json([
+            'is_banned' => $box->isBanned(),
+            'ban_reason' => $box->ban_reason,
+            'banned_at' => $box->banned_at?->toIso8601String(),
+            'qr_data' => $box->isBanned() ? null : $box->generateQRData(),
+            'batch_number' => $box->batch_number,
+            'box_number' => $box->box_number,
+            'total_boxes' => $box->total_boxes,
+            'invoice_number' => $box->invoice_number,
+            'shipper_name' => $box->shipper_name,
+            'warehouse_name' => $box->warehouse->name ?? 'N/A',
+            'entry_date' => $box->entry_date->format('Y-m-d'),
+            'status' => $box->isBanned() ? 'banned' : $box->status,
+        ]);
+    }
     
     public function track($id)
-{
-    $box = $this->findAccessibleBox($id);
-    return view('client.boxes.track', compact('box'));
-}
+    {
+        $box = $this->findAccessibleBox($id);
+        return view('client.boxes.track', compact('box'));
+    }
+
+    public function banQR(Request $request, $id)
+    {
+        $user = auth()->user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), Response::HTTP_FORBIDDEN);
+
+        $request->validate([
+            'ban_reason' => 'required|string|max:500',
+        ]);
+
+        $box = Box::findOrFail($id);
+        $box->banQR($request->input('ban_reason'));
+
+        return redirect()->back()->with('success', "Box QR code for {$box->batch_number} has been revoked and banned.");
+    }
+
+    public function unbanQR($id)
+    {
+        $user = auth()->user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), Response::HTTP_FORBIDDEN);
+
+        $box = Box::findOrFail($id);
+        $box->unbanQR();
+
+        return redirect()->back()->with('success', "Box QR code for {$box->batch_number} has been restored and unbanned.");
+    }
 
     
 public function getDocuments($id)

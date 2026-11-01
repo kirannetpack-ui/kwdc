@@ -25,13 +25,18 @@ class Box extends Model
         'invoice_document',
         'packing_list_document',
         'insurance_document',
-        'other_documents'
+        'other_documents',
+        'is_banned',
+        'ban_reason',
+        'banned_at',
     ];
     
     protected $casts = [
         'entry_date' => 'date',
         'received_at' => 'datetime',
         'other_documents' => 'array',
+        'is_banned' => 'boolean',
+        'banned_at' => 'datetime',
     ];
     
     public function warehouse()
@@ -54,7 +59,35 @@ class Box extends Model
             'warehouse' => $this->warehouse->name ?? 'N/A',
             'shipper' => $this->shipper_name,
             'invoice' => $this->invoice_number,
-            'date' => $this->entry_date->format('Y-m-d')
+            'date' => $this->entry_date->format('Y-m-d'),
+            'is_banned' => $this->isBanned(),
         ]);
+    }
+
+    public function banQR(?string $reason = null): self
+    {
+        $this->update([
+            'is_banned' => true,
+            'ban_reason' => $reason,
+            'banned_at' => now(),
+        ]);
+
+        return $this;
+    }
+
+    public function unbanQR(): self
+    {
+        $this->update([
+            'is_banned' => false,
+            'ban_reason' => null,
+            'banned_at' => null,
+        ]);
+
+        return $this;
+    }
+
+    public function isBanned(): bool
+    {
+        return (bool) $this->is_banned;
     }
 }

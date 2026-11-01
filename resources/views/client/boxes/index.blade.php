@@ -41,9 +41,15 @@
                     <td class="px-6 py-4">Box {{ $box->box_number }}/{{ $box->total_boxes }}</td>
                     <td class="px-6 py-4">{{ $box->warehouse->name ?? 'N/A' }}</td>
                     <td class="px-6 py-4">
+                        @if($box->isBanned())
+                        <span class="status-badge" style="background: #fee2e2; color: #b91c1c; border: 1px solid #f87171; font-weight: bold;">
+                            <i class="fas fa-ban mr-1"></i> Banned QR
+                        </span>
+                        @else
                         <span class="status-badge status-{{ $box->status }}">
                             {{ ucfirst(str_replace('_', ' ', $box->status)) }}
                         </span>
+                        @endif
                     </td>
                     <td class="px-6 py-4">
                         @if($box->invoice_document || $box->packing_list_document || $box->insurance_document)
@@ -54,7 +60,7 @@
                         <span class="text-gray-400 text-sm">No documents</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 flex items-center gap-1">
                         <button onclick="viewQR({{ $box->id }})" class="text-blue-500 hover:text-blue-700 mr-2" title="View QR Code">
                             <i class="fas fa-qrcode"></i>
                         </button>
@@ -64,6 +70,21 @@
                         <a href="{{ route('boxes.track', $box->id) }}" class="text-orange-500 hover:text-orange-700" title="Track Box">
                             <i class="fas fa-map-marker-alt"></i>
                         </a>
+
+                        @if(auth()->user() && (auth()->user()->isAdmin() || (auth()->user()->is_admin ?? false) || auth()->user()->role === 'admin'))
+                            @if($box->isBanned())
+                            <form method="POST" action="{{ route('admin.boxes.unban-qr', $box->id) }}" class="inline ml-1">
+                                @csrf
+                                <button type="submit" class="text-xs px-2 py-0.5 bg-emerald-600 text-white rounded font-medium hover:bg-emerald-700 shadow-xs" title="Unban QR">
+                                    Restore QR
+                                </button>
+                            </form>
+                            @else
+                            <button type="button" onclick="promptBanBox({{ $box->id }}, '{{ $box->batch_number }}')" class="text-xs px-2 py-0.5 bg-red-600 text-white rounded font-medium hover:bg-red-700 shadow-xs ml-1" title="Revoke QR Code">
+                                Ban QR
+                            </button>
+                            @endif
+                        @endif
                     </td>
                 </tr>
                 @empty
@@ -132,11 +153,22 @@
             .then(data => {
                 currentBox = data;
                 document.getElementById('qrCodeImage').innerHTML = '';
-                new QRCode(document.getElementById('qrCodeImage'), {
-                    text: data.qr_data,
-                    width: 200,
-                    height: 200
-                });
+                if (data.is_banned) {
+                    document.getElementById('qrCodeImage').innerHTML = `
+                        <div class="p-4 rounded-xl bg-red-50 border-2 border-red-500 text-red-900 mb-2 text-center">
+                            <i class="fas fa-ban text-3xl text-red-600 mb-2"></i>
+                            <div class="font-extrabold text-sm tracking-wide">🚨 QR CODE BANNED & REVOKED</div>
+                            <div class="text-xs text-red-700 mt-1 font-mono">Reason: ${data.ban_reason || 'Compliance flag / cargo impound.'}</div>
+                            <div class="text-[11px] text-red-600 mt-2 font-medium">Gate release prohibited under Muluki Civil Code 2074.</div>
+                        </div>
+                    `;
+                } else {
+                    new QRCode(document.getElementById('qrCodeImage'), {
+                        text: data.qr_data,
+                        width: 200,
+                        height: 200
+                    });
+                }
                 document.getElementById('qrData').innerHTML = `
                     <p><strong>Batch:</strong> ${data.batch_number}</p>
                     <p><strong>Box:</strong> ${data.box_number}/${data.total_boxes}</p>
@@ -144,11 +176,35 @@
                     <p><strong>Shipper:</strong> ${data.shipper_name}</p>
                     <p><strong>Warehouse:</strong> ${data.warehouse_name}</p>
                     <p><strong>Entry Date:</strong> ${data.entry_date}</p>
-                    <p><strong>Status:</strong> ${data.status}</p>
+                    <p><strong>Status:</strong> ${data.is_banned ? '<span class="text-red-600 font-bold">BANNED / REVOKED</span>' : data.status}</p>
                 `;
                 document.getElementById('qrModal').classList.remove('hidden');
                 document.getElementById('qrModal').classList.add('flex');
             });
+    }
+
+    function promptBanBox(boxId, batchNumber) {
+        const reason = prompt(`Enter mandatory security / compliance reason for banning Box QR (${batchNumber}):`);
+        if (reason && reason.trim()) {
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/admin/boxes/${boxId}/ban-qr`;
+            
+            const csrf = document.createElement('input');
+            csrf.type = 'hidden';
+            csrf.name = '_token';
+            csrf.value = '{{ csrf_token() }}';
+            form.appendChild(csrf);
+
+            const reasonInput = document.createElement('input');
+            reasonInput.type = 'hidden';
+            reasonInput.name = 'ban_reason';
+            reasonInput.value = reason.trim();
+            form.appendChild(reasonInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
     }
     
     function closeQRModal() {

@@ -5,6 +5,28 @@
 
 @section('content')
 <div class="bg-white rounded-xl shadow-md p-6">
+    @if($box->isBanned())
+    <div class="mb-6 p-4 rounded-xl bg-red-50 border-2 border-red-500 shadow-sm">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center text-lg shrink-0">
+                <i class="fas fa-ban"></i>
+            </div>
+            <div>
+                <h4 class="text-red-900 font-bold text-base">🚨 CARGO QR CODE BANNED & REVOKED</h4>
+                <p class="text-red-800 text-sm mt-0.5">
+                    This box tracking QR has been flagged and suspended. Gate access, loading, and transit release are strictly prohibited under Muluki Civil Code 2074.
+                </p>
+                <div class="mt-2 text-xs bg-white text-red-900 px-3 py-1.5 rounded-lg border border-red-300 inline-block font-mono">
+                    <strong>Reason:</strong> {{ $box->ban_reason ?: 'Cargo security impound / documentation irregularity.' }}
+                    @if($box->banned_at)
+                    <span class="text-red-600 ml-2">({{ $box->banned_at->format('Y-m-d H:i') }})</span>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <h3 class="text-lg font-bold mb-4">Box Information</h3>
@@ -16,9 +38,15 @@
                 <p><strong>Warehouse:</strong> {{ $box->warehouse->name ?? 'N/A' }}</p>
                 <p><strong>Entry Date:</strong> {{ $box->entry_date->format('Y-m-d H:i') }}</p>
                 <p><strong>Status:</strong> 
-                    <span class="status-badge status-{{ $box->status }}">
-                        {{ ucfirst($box->status) }}
-                    </span>
+                    @if($box->isBanned())
+                        <span class="status-badge status-banned">
+                            <i class="fas fa-ban mr-1"></i> Banned / Revoked
+                        </span>
+                    @else
+                        <span class="status-badge status-{{ $box->status }}">
+                            {{ ucfirst($box->status) }}
+                        </span>
+                    @endif
                 </p>
                 @if($box->received_at)
                 <p><strong>Received At:</strong> {{ $box->received_at->format('Y-m-d H:i') }}</p>
@@ -102,5 +130,6 @@
     .status-in_transit { background: #dbeafe; color: #2563eb; }
     .status-delivered { background: #d1fae5; color: #059669; }
     .status-received { background: #d1fae5; color: #059669; }
+    .status-banned { background: #fee2e2; color: #b91c1c; font-weight: 700; border: 1px solid #f87171; }
 </style>
 @endsection

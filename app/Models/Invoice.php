@@ -13,7 +13,8 @@ class Invoice extends Model
         'amount', 'status', 'due_date',
         'subtotal', 'discount', 'tax_rate', 'tax_amount', 'grand_total',
         'payment_status', 'payment_method', 'payment_due_date', 'paid_at',
-        'billing_type', 'pan_number', 'billing_address', 'notes', 'items', 'qr_code'
+        'billing_type', 'pan_number', 'billing_address', 'notes', 'items', 'qr_code',
+        'is_banned', 'ban_reason', 'banned_at'
     ];
 
     protected $casts = [
@@ -25,7 +26,9 @@ class Invoice extends Model
         'subtotal' => 'decimal:2',
         'discount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
-        'grand_total' => 'decimal:2'
+        'grand_total' => 'decimal:2',
+        'is_banned' => 'boolean',
+        'banned_at' => 'datetime',
     ];
 
     public function client(): BelongsTo
@@ -88,11 +91,41 @@ class Invoice extends Model
     // Get status badge class
     public function getStatusBadgeClass(): string
     {
-        if ($this->payment_status == 'paid') {
+        if ($this->isBanned()) {
+            return 'badge-danger';
+        } elseif ($this->payment_status == 'paid') {
             return 'badge-success';
         } elseif ($this->isOverdue()) {
             return 'badge-danger';
         }
         return 'badge-warning';
     }
+
+    public function banQR(?string $reason = null): self
+    {
+        $this->update([
+            'is_banned' => true,
+            'ban_reason' => $reason,
+            'banned_at' => now(),
+        ]);
+
+        return $this;
+    }
+
+    public function unbanQR(): self
+    {
+        $this->update([
+            'is_banned' => false,
+            'ban_reason' => null,
+            'banned_at' => null,
+        ]);
+
+        return $this;
+    }
+
+    public function isBanned(): bool
+    {
+        return (bool) $this->is_banned;
+    }
 }
+

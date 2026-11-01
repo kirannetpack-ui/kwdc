@@ -39,6 +39,9 @@ class User extends Authenticatable
         'email_verified_at',
         'activation_code_hash',
         'activation_expires_at',
+        'is_banned',
+        'ban_reason',
+        'banned_at',
     ];
 
     /**
@@ -60,8 +63,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'activation_expires_at' => 'datetime',
+        'banned_at' => 'datetime',
         'password' => 'hashed',
         'is_active' => 'boolean',
+        'is_banned' => 'boolean',
         'is_admin' => 'boolean',
         'is_client' => 'boolean',
         'is_driver' => 'boolean',
@@ -69,6 +74,44 @@ class User extends Authenticatable
         'is_equipment_owner' => 'boolean',
         'avg_rating' => 'decimal:1',
     ];
+
+    /**
+     * Ban the user account
+     */
+    public function ban(?string $reason = null): self
+    {
+        $this->forceFill([
+            'is_banned' => true,
+            'is_active' => false,
+            'ban_reason' => $reason ?: 'Account suspended due to security compliance review.',
+            'banned_at' => now(),
+        ])->save();
+
+        return $this;
+    }
+
+    /**
+     * Unban the user account
+     */
+    public function unban(): self
+    {
+        $this->forceFill([
+            'is_banned' => false,
+            'is_active' => true,
+            'ban_reason' => null,
+            'banned_at' => null,
+        ])->save();
+
+        return $this;
+    }
+
+    /**
+     * Check if user is banned
+     */
+    public function isBanned(): bool
+    {
+        return (bool) $this->is_banned;
+    }
 
     // ============================================================
     // 🚀 ROLE HELPER METHODS (Fixes your dashboard error!)
