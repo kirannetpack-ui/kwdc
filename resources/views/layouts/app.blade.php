@@ -169,242 +169,242 @@
     <nav class="py-4">
         @auth
         <a href="{{ route('dashboard') }}" class="sidebar-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-            <i class="fas fa-th-large"></i> Dashboard
+            <i class="fas fa-th-large"></i> {{ __('Dashboard') }}
         </a>
 
         <!-- ADMIN -->
         @if(Auth::user()->role === 'admin')
-        <div class="section-header">Management</div>
+        <div class="section-header">{{ __('Management') }}</div>
         <a href="{{ route('admin.pending') }}" class="sidebar-link {{ request()->routeIs('admin.pending') ? 'active' : '' }}">
-            <i class="fas fa-clock"></i> Pending Approvals
+            <i class="fas fa-clock"></i> {{ __('Pending Approvals') }}
             @php $pendingCount = \App\Models\Warehouse::where('status', 'pending')->count(); @endphp
             @if($pendingCount > 0) <span class="badge">{{ $pendingCount }}</span> @endif
         </a>
         <a href="{{ route('admin.all-warehouses') }}" class="sidebar-link {{ request()->routeIs('admin.all-warehouses') ? 'active' : '' }}">
-            <i class="fas fa-warehouse"></i> All Warehouses
+            <i class="fas fa-warehouse"></i> {{ __('All Warehouses') }}
             @php $warehouseCount = \App\Models\Warehouse::count(); @endphp
             @if($warehouseCount > 0) <span class="badge">{{ $warehouseCount }}</span> @endif
         </a>
         <a href="{{ route('admin.requests') }}" class="sidebar-link {{ request()->routeIs('admin.requests') ? 'active' : '' }}">
-            <i class="fas fa-clipboard-list"></i> Warehouse Requests
+            <i class="fas fa-clipboard-list"></i> {{ __('Warehouse Requests') }}
         </a>
         <a href="{{ route('admin.security.agencies') }}" class="sidebar-link {{ request()->routeIs('admin.security.*') ? 'active' : '' }}">
-            <i class="fas fa-shield-alt"></i> Security Agencies
+            <i class="fas fa-shield-alt"></i> {{ __('Security Agencies') }}
         </a>
         <a href="{{ route('admin.analytics.predictive') }}" class="sidebar-link {{ request()->routeIs('admin.analytics.predictive') ? 'active' : '' }}">
-            <i class="fas fa-chart-line"></i> Predictive Analytics
+            <i class="fas fa-chart-line"></i> {{ __('Predictive Analytics') }}
         </a>
         <a href="{{ route('admin.analytics') }}" class="sidebar-link {{ request()->routeIs('admin.analytics') ? 'active' : '' }}">
-            <i class="fas fa-chart-pie"></i> Analytics Dashboard
+            <i class="fas fa-chart-pie"></i> {{ __('Analytics Dashboard') }}
         </a>
         <a href="{{ route('admin.vehicles') }}" class="sidebar-link {{ request()->routeIs('admin.vehicles') ? 'active' : '' }}">
-            <i class="fas fa-truck"></i> All Vehicles
+            <i class="fas fa-truck"></i> {{ __('All Vehicles') }}
         </a>
         <a href="{{ route('admin.vehicles.compliance') }}" class="sidebar-link {{ request()->routeIs('admin.vehicles.compliance') ? 'active' : '' }}">
-            <i class="fas fa-truck-shield"></i> Fleet Compliance
+            <i class="fas fa-truck-shield"></i> {{ __('Fleet Compliance') }}
         </a>
         <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
-            <i class="fas fa-map-marked-alt"></i> Live Tracking
+            <i class="fas fa-map-marked-alt"></i> {{ __('Live Tracking') }}
         </a>
         <a href="{{ route('admin.dispatch') }}" class="sidebar-link {{ request()->routeIs('admin.dispatch') ? 'active' : '' }}">
-            <i class="fas fa-truck-moving"></i> Dispatch Orders
+            <i class="fas fa-truck-moving"></i> {{ __('Dispatch Orders') }}
         </a>
         <a href="{{ route('admin.pickup') }}" class="sidebar-link {{ request()->routeIs('admin.pickup') ? 'active' : '' }}">
-            <i class="fas fa-box-open"></i> Pickup Requests
+            <i class="fas fa-box-open"></i> {{ __('Pickup Requests') }}
         </a>
         <a href="{{ route('admin.clients') }}" class="sidebar-link {{ request()->routeIs('admin.clients') ? 'active' : '' }}">
-            <i class="fas fa-users"></i> All Clients
+            <i class="fas fa-users"></i> {{ __('All Clients') }}
         </a>
         <a href="{{ route('admin.drivers') }}" class="sidebar-link {{ request()->routeIs('admin.drivers') ? 'active' : '' }}">
-            <i class="fas fa-id-card"></i> Drivers
+            <i class="fas fa-id-card"></i> {{ __('Drivers') }}
         </a>
         <a href="{{ route('admin.equipment-list') }}" class="sidebar-link {{ request()->routeIs('admin.equipment-list') ? 'active' : '' }}">
-            <i class="fas fa-tools"></i> Equipment List
+            <i class="fas fa-tools"></i> {{ __('Equipment List') }}
         </a>
         <a href="{{ route('admin.property-owners') }}" class="sidebar-link {{ request()->routeIs('admin.property-owners') ? 'active' : '' }}">
-            <i class="fas fa-building"></i> Property Owners
+            <i class="fas fa-building"></i> {{ __('Property Owners') }}
         </a>
         <a href="{{ route('admin.invoices') }}" class="sidebar-link {{ request()->routeIs('admin.invoices') ? 'active' : '' }}">
-            <i class="fas fa-file-invoice"></i> Invoices
+            <i class="fas fa-file-invoice"></i> {{ __('Invoices') }}
         </a>
         <a href="{{ route('admin.payments.bank-transfers') }}" class="sidebar-link {{ request()->routeIs('admin.payments.bank-transfers*') ? 'active' : '' }}">
-            <i class="fas fa-building-columns"></i> Bank &amp; QR Transfers
+            <i class="fas fa-building-columns"></i> {{ __('Bank & QR Transfers') }}
         </a>
         <a href="{{ route('admin.margins.index') }}" class="sidebar-link {{ request()->routeIs('admin.margins.*') ? 'active' : '' }}">
-            <i class="fas fa-percent"></i> Margins & Tiers
+            <i class="fas fa-percent"></i> {{ __('Margins & Tiers') }}
         </a>
         <a href="{{ route('admin.reports') }}" class="sidebar-link {{ request()->routeIs('admin.reports') ? 'active' : '' }}">
-            <i class="fas fa-chart-bar"></i> Reports
+            <i class="fas fa-chart-bar"></i> {{ __('Reports') }}
         </a>
         <a href="{{ route('admin.partner-earnings') }}" class="sidebar-link {{ request()->routeIs('admin.partner-earnings') ? 'active' : '' }}">
-            <i class="fas fa-hand-holding-usd"></i> Partner Earnings
+            <i class="fas fa-hand-holding-usd"></i> {{ __('Partner Earnings') }}
         </a>
         @endif
 
         <!-- CLIENT -->
         @if(Auth::user()->role === 'client')
-        <div class="section-header">Client Zone</div>
+        <div class="section-header">{{ __('Client Zone') }}</div>
         <a href="{{ route('my-requests.index') }}" class="sidebar-link {{ request()->routeIs('my-requests.*') ? 'active' : '' }}">
-            <i class="fas fa-clipboard-list"></i> My Requests
+            <i class="fas fa-clipboard-list"></i> {{ __('My Requests') }}
         </a>
         <a href="{{ route('my-requests.create') }}" class="sidebar-link {{ request()->routeIs('my-requests.create') ? 'active' : '' }}">
-            <i class="fas fa-plus-circle"></i> New Request
+            <i class="fas fa-plus-circle"></i> {{ __('Create New') }}
         </a>
         <a href="{{ route('dispatch.index') }}" class="sidebar-link {{ request()->routeIs('dispatch.*') ? 'active' : '' }}">
-            <i class="fas fa-truck"></i> Dispatch Orders
+            <i class="fas fa-truck"></i> {{ __('Dispatch Orders') }}
         </a>
         <a href="{{ route('pickup.index') }}" class="sidebar-link {{ request()->routeIs('pickup.*') ? 'active' : '' }}">
-            <i class="fas fa-box-open"></i> Pickup Requests
+            <i class="fas fa-box-open"></i> {{ __('Pickup Requests') }}
         </a>
         <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
-            <i class="fas fa-map-marked-alt"></i> Track My Shipments
+            <i class="fas fa-map-marked-alt"></i> {{ __('Track My Shipments') }}
         </a>
         <a href="{{ route('stock.index') }}" class="sidebar-link {{ request()->routeIs('stock.*') ? 'active' : '' }}">
-            <i class="fas fa-boxes"></i> My Stock
+            <i class="fas fa-boxes"></i> {{ __('My Stock') }}
         </a>
         <a href="{{ route('client.proposals.index') }}" class="sidebar-link {{ request()->routeIs('client.proposals.*') ? 'active' : '' }}">
-            <i class="fas fa-file-contract"></i> My Proposals
+            <i class="fas fa-file-contract"></i> {{ __('My Proposals') }}
         </a>
         <a href="{{ route('client.equipment.requests') }}" class="sidebar-link {{ request()->routeIs('client.equipment.*') ? 'active' : '' }}">
-            <i class="fas fa-tools"></i> Equipment Requests
+            <i class="fas fa-tools"></i> {{ __('Equipment Requests') }}
         </a>
         <a href="{{ route('invoices.client-index') }}" class="sidebar-link {{ request()->routeIs('invoices.client-index') ? 'active' : '' }}">
-            <i class="fas fa-file-invoice"></i> My Invoices
+            <i class="fas fa-file-invoice"></i> {{ __('My Invoices') }}
         </a>
         <a href="{{ route('profile.contacts') }}" class="sidebar-link {{ request()->routeIs('profile.contacts') ? 'active' : '' }}">
-            <i class="fas fa-address-book"></i> Manage Contacts
+            <i class="fas fa-address-book"></i> {{ __('Manage Contacts') }}
         </a>
         @endif
 
         <!-- DRIVER -->
         @if(Auth::user()->role === 'driver')
-        <div class="section-header">Driver Zone</div>
+        <div class="section-header">{{ __('Driver Zone') }}</div>
         <a href="{{ route('driver.dashboard') }}" class="sidebar-link {{ request()->routeIs('driver.dashboard') ? 'active' : '' }}">
-            <i class="fas fa-chart-pie"></i> Driver Dashboard
+            <i class="fas fa-chart-pie"></i> {{ __('Driver Dashboard') }}
         </a>
         <a href="{{ route('driver.jobs') }}" class="sidebar-link {{ request()->routeIs('driver.jobs') ? 'active' : '' }}">
-            <i class="fas fa-tasks"></i> My Jobs
+            <i class="fas fa-tasks"></i> {{ __('My Jobs') }}
         </a>
         <a href="{{ route('driver.available-jobs') }}" class="sidebar-link {{ request()->routeIs('driver.available-jobs') ? 'active' : '' }}">
-            <i class="fas fa-search"></i> Available Jobs
+            <i class="fas fa-search"></i> {{ __('Available Jobs') }}
         </a>
         <a href="{{ route('driver.pickups') }}" class="sidebar-link {{ request()->routeIs('driver.pickups') ? 'active' : '' }}">
-            <i class="fas fa-warehouse"></i> Pickup Jobs
+            <i class="fas fa-warehouse"></i> {{ __('Pickup Jobs') }}
         </a>
         <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
-            <i class="fas fa-map-marked-alt"></i> My Live Jobs
+            <i class="fas fa-map-marked-alt"></i> {{ __('My Live Jobs') }}
         </a>
         <a href="{{ route('driver.vehicles.index') }}" class="sidebar-link {{ request()->routeIs('driver.vehicles.*') ? 'active' : '' }}">
-            <i class="fas fa-truck"></i> My Vehicles
+            <i class="fas fa-truck"></i> {{ __('My Vehicles') }}
         </a>
         <a href="{{ route('driver.rates') }}" class="sidebar-link {{ request()->routeIs('driver.rates.*') ? 'active' : '' }}">
-            <i class="fas fa-tag"></i> My Rates
+            <i class="fas fa-tag"></i> {{ __('My Rates') }}
         </a>
         <a href="{{ route('driver.earnings') }}" class="sidebar-link {{ request()->routeIs('driver.earnings') ? 'active' : '' }}">
-            <i class="fas fa-chart-line"></i> My Earnings
+            <i class="fas fa-chart-line"></i> {{ __('My Earnings') }}
         </a>
         @endif
 
         <!-- EQUIPMENT OWNER -->
         @if(Auth::user()->role === 'equipment_owner')
-        <div class="section-header">Equipment Zone</div>
+        <div class="section-header">{{ __('Equipment Zone') }}</div>
         <a href="{{ route('equipment.dashboard') }}" class="sidebar-link {{ request()->routeIs('equipment.dashboard') ? 'active' : '' }}">
-            <i class="fas fa-chart-pie"></i> Equipment Dashboard
+            <i class="fas fa-chart-pie"></i> {{ __('Equipment Dashboard') }}
         </a>
         <a href="{{ route('equipment.register') }}" class="sidebar-link {{ request()->routeIs('equipment.register') ? 'active' : '' }}">
-            <i class="fas fa-plus-circle"></i> Register Equipment
+            <i class="fas fa-plus-circle"></i> {{ __('Register Equipment') }}
         </a>
         <a href="{{ route('equipment.list') }}" class="sidebar-link {{ request()->routeIs('equipment.list') ? 'active' : '' }}">
-            <i class="fas fa-tools"></i> My Equipment
+            <i class="fas fa-tools"></i> {{ __('My Equipment') }}
         </a>
         <a href="{{ route('equipment.jobs.index') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.*') ? 'active' : '' }}">
-            <i class="fas fa-briefcase"></i> All Jobs
+            <i class="fas fa-briefcase"></i> {{ __('All Jobs') }}
         </a>
         <a href="{{ route('equipment.jobs.requests') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.requests') ? 'active' : '' }}">
-            <i class="fas fa-clipboard-list"></i> Job Requests
+            <i class="fas fa-clipboard-list"></i> {{ __('Job Requests') }}
         </a>
         <a href="{{ route('equipment.jobs.active') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.active') ? 'active' : '' }}">
-            <i class="fas fa-play-circle"></i> Active Jobs
+            <i class="fas fa-play-circle"></i> {{ __('Active Jobs') }}
         </a>
         <a href="{{ route('equipment.jobs.history') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.history') ? 'active' : '' }}">
-            <i class="fas fa-history"></i> Job History
+            <i class="fas fa-history"></i> {{ __('Job History') }}
         </a>
         <a href="{{ route('equipment.jobs.earnings') }}" class="sidebar-link {{ request()->routeIs('equipment.jobs.earnings') ? 'active' : '' }}">
-            <i class="fas fa-wallet"></i> Earnings
+            <i class="fas fa-wallet"></i> {{ __('Earnings') }}
         </a>
         @endif
 
         <!-- PROPERTY OWNER -->
         @if(Auth::user()->role === 'property_owner')
-        <div class="section-header">Property Zone</div>
+        <div class="section-header">{{ __('Property Owner Zone') }}</div>
         <a href="{{ route('warehouses.index') }}" class="sidebar-link {{ request()->routeIs('warehouses.index') ? 'active' : '' }}">
-            <i class="fas fa-warehouse"></i> My Properties
+            <i class="fas fa-warehouse"></i> {{ __('My Warehouses') }}
         </a>
         <a href="{{ route('warehouses.create') }}" class="sidebar-link {{ request()->routeIs('warehouses.create') ? 'active' : '' }}">
-            <i class="fas fa-plus-circle"></i> Register Property
+            <i class="fas fa-plus-circle"></i> {{ __('Add New Warehouse') }}
         </a>
         <a href="{{ route('property.pending') }}" class="sidebar-link {{ request()->routeIs('property.pending') ? 'active' : '' }}">
-            <i class="fas fa-clock"></i> Pending
+            <i class="fas fa-clock"></i> {{ __('Pending') }}
         </a>
         <a href="{{ route('property.approved') }}" class="sidebar-link {{ request()->routeIs('property.approved') ? 'active' : '' }}">
-            <i class="fas fa-check-circle"></i> Approved
+            <i class="fas fa-check-circle"></i> {{ __('Approved') }}
         </a>
         <a href="{{ route('property.rejected') }}" class="sidebar-link {{ request()->routeIs('property.rejected') ? 'active' : '' }}">
-            <i class="fas fa-times-circle"></i> Rejected
+            <i class="fas fa-times-circle"></i> {{ __('Rejected') }}
         </a>
         <a href="{{ route('property.requests.index') }}" class="sidebar-link {{ request()->routeIs('property.requests.*') ? 'active' : '' }}">
-            <i class="fas fa-clipboard-list"></i> Requests
+            <i class="fas fa-clipboard-list"></i> {{ __('Lease Requests') }}
         </a>
         <a href="{{ route('property.analytics') }}" class="sidebar-link {{ request()->routeIs('property.analytics') ? 'active' : '' }}">
-            <i class="fas fa-chart-bar"></i> Analytics
+            <i class="fas fa-chart-bar"></i> {{ __('Analytics') }}
         </a>
         @endif
 
         <!-- SECURITY AGENCY -->
         @if(Auth::user()->role === 'security_agency')
-        <div class="section-header">Security Zone</div>
+        <div class="section-header">{{ __('Agency Zone') }}</div>
         <a href="{{ route('security.dashboard') }}" class="sidebar-link {{ request()->routeIs('security.dashboard') ? 'active' : '' }}">
-            <i class="fas fa-shield-alt"></i> Security Dashboard
+            <i class="fas fa-shield-alt"></i> {{ __('Agency Dashboard') }}
         </a>
         <a href="{{ route('security.personnel.index') }}" class="sidebar-link {{ request()->routeIs('security.personnel.*') ? 'active' : '' }}">
-            <i class="fas fa-user-plus"></i> Add Personnel
+            <i class="fas fa-user-plus"></i> {{ __('Guards & Personnel') }}
         </a>
         <a href="{{ route('security.goods.index') }}" class="sidebar-link {{ request()->routeIs('security.goods.*') ? 'active' : '' }}">
-            <i class="fas fa-boxes"></i> My Goods
+            <i class="fas fa-boxes"></i> {{ __('My Goods') }}
         </a>
         <a href="{{ route('security.assignments.index') }}" class="sidebar-link {{ request()->routeIs('security.assignments.*') ? 'active' : '' }}">
-            <i class="fas fa-calendar-check"></i> Assignments
+            <i class="fas fa-calendar-check"></i> {{ __('Active Deployments') }}
         </a>
         @endif
 
         <!-- ACCOUNT -->
-        <div class="section-header">Account</div>
+        <div class="section-header">{{ __('Profile') }}</div>
         @if(Auth::user()->role === 'security_agency')
             <a href="{{ route('security.profile') }}" class="sidebar-link {{ request()->routeIs('security.profile*') ? 'active' : '' }}">
-                <i class="fas fa-id-card"></i> Agency Profile
+                <i class="fas fa-id-card"></i> {{ __('Agency Profile') }}
             </a>
         @else
             <a href="{{ route('profile.edit') }}" class="sidebar-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
-                <i class="fas fa-user-circle"></i> My Profile
+                <i class="fas fa-user-circle"></i> {{ __('My Profile') }}
             </a>
         @endif
         <a href="{{ route('notifications.index') }}" class="sidebar-link {{ request()->routeIs('notifications.index') ? 'active' : '' }}">
-            <i class="fas fa-bell"></i> Notifications
+            <i class="fas fa-bell"></i> {{ __('Notifications') }}
             @php $unreadCount = auth()->user()->unreadNotifications->count(); @endphp
             @if($unreadCount > 0) <span class="badge">{{ $unreadCount }}</span> @endif
         </a>
         <a href="{{ route('reminders.index') }}" class="sidebar-link {{ request()->routeIs('reminders.*') ? 'active' : '' }}">
-            <i class="fas fa-calendar-alt"></i> Reminder Calendar
+            <i class="fas fa-calendar-alt"></i> {{ __('Reminder Calendar') }}
         </a>
         <form method="POST" action="{{ route('logout') }}" class="mt-2">
             @csrf
-            <button type="submit" class="sidebar-link w-full"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <button type="submit" class="sidebar-link w-full"><i class="fas fa-sign-out-alt"></i> {{ __('Logout') }}</button>
         </form>
         @else
         <div class="px-5 py-4 text-xs text-[#A39B92] space-y-3">
-            <p class="text-[#CBD5E1]">Access your logistics account</p>
+            <p class="text-[#CBD5E1]">{{ __('Access your logistics account') }}</p>
             <a href="{{ route('login') }}" class="sidebar-link !text-white !bg-[#D96B43] hover:!bg-[#C35832] text-center justify-center rounded-xl shadow-sm">
-                <i class="fas fa-sign-in-alt"></i> Sign In
+                <i class="fas fa-sign-in-alt"></i> {{ __('Sign In') }}
             </a>
         </div>
         @endauth
@@ -423,22 +423,22 @@
             </div>
             <div class="flex items-center gap-2.5">
                 <div class="flex items-center gap-1.5 text-xs font-semibold">
-                    <span class="text-[#8A8379] uppercase tracking-wider">Portal</span>
+                    <span class="text-[#8A8379] uppercase tracking-wider">{{ __('Portal') }}</span>
                     <i class="fas fa-chevron-right text-[9px] text-[#C4BCB3]"></i>
-                    <span class="text-[#24201D] font-serif font-bold tracking-tight text-sm" id="kwdc-topbar-header">@yield('header', 'Dashboard')</span>
+                    <span class="text-[#24201D] font-serif font-bold tracking-tight text-sm" id="kwdc-topbar-header">{{ __($__env->yieldContent('header', 'Dashboard')) }}</span>
                 </div>
                 <div class="hidden md:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#EFF6F1] text-[#3D7357] border border-[#D4E7DC]">
                     <span class="w-1.5 h-1.5 rounded-full bg-[#3D7357] animate-pulse"></span>
-                    <span>Live Hub</span>
+                    <span>{{ __('Live Hub') }}</span>
                 </div>
             </div>
         </div>
 
         <!-- CENTER: QUICK SEARCH / COMMAND PILL -->
         <div class="hidden lg:flex items-center">
-            <button type="button" onclick="event.stopPropagation(); if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" id="kwdcTopbarSearchBtn" class="kwdc-topbar-search" aria-label="Search or Ask AI">
+            <button type="button" onclick="event.stopPropagation(); if(window.openKwdcAssistant){window.openKwdcAssistant();}else{document.getElementById('voiceLaunchBtn')?.click();}" id="kwdcTopbarSearchBtn" class="kwdc-topbar-search" aria-label="{{ __('Search or Ask AI...') }}">
                 <i class="fas fa-wand-magic-sparkles text-[11px] text-[#D96B43] flex-shrink-0"></i>
-                <span class="truncate">Search or Ask AI...</span>
+                <span class="truncate">{{ __('Search or Ask AI...') }}</span>
                 <span class="kwdc-kbd">Ctrl+K</span>
             </button>
         </div>
@@ -446,7 +446,7 @@
         <!-- RIGHT: CALENDAR, NOTIFICATIONS & USER PROFILE MENU -->
         <div class="flex items-center gap-3">
             <!-- LANGUAGE SWITCHER (EN / नेपाली) -->
-            @php $currentLocale = session('locale', config('app.locale', 'en')); @endphp
+            @php $currentLocale = app()->getLocale(); @endphp
             <div class="inline-flex items-center rounded-full bg-[#FFFFFF] border border-[#E8E2D8] p-0.5 shadow-2xs">
                 <a href="{{ route('locale.switch', 'en') }}" class="px-2.5 py-0.5 rounded-full text-xs font-bold transition text-decoration-none {{ $currentLocale === 'en' ? 'bg-[#D96B43] text-white shadow-xs' : 'text-[#57524C] hover:text-[#24201D]' }}" title="Switch to English">
                     EN

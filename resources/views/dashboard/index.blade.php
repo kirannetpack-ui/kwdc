@@ -371,20 +371,20 @@
                 <div class="flex items-center justify-between gap-3 mb-2">
                     <div class="flex items-center gap-2">
                         <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FBF2ED] text-[#D96B43] border border-[#F3D5C7]">
-                            <i class="fas fa-layer-group"></i> {{ $roleTitle }}
+                            <i class="fas fa-layer-group"></i> {{ __($roleTitle) }}
                         </span>
-                        <span class="text-[11px] font-semibold text-[#8A8379] uppercase tracking-wider">Executive Overview</span>
+                        <span class="text-[11px] font-semibold text-[#8A8379] uppercase tracking-wider">{{ __('Executive Overview') }}</span>
                     </div>
                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-[#EFF6F1] text-[#3D7357] border border-[#D4E7DC]">
                         <span class="w-2 h-2 rounded-full bg-[#3D7357] animate-pulse"></span>
-                        <span>Active Session</span>
+                        <span>{{ __('Active Session') }}</span>
                     </span>
                 </div>
                 <h1 class="text-2xl sm:text-3xl font-serif text-[#24201D] tracking-tight leading-tight">
-                    Namaste, {{ $user->name }}
+                    {{ __('Namaste') }}, {{ $user->name }}
                 </h1>
                 <p class="text-xs text-[#8A8379] font-medium mt-1">
-                    {{ now()->format('l, F j, Y') }} &bull; {{ now()->format('h:i A') }} &bull; Everything is humming along nicely
+                    {{ now()->format('l, F j, Y') }} &bull; {{ now()->format('h:i A') }}
                 </p>
             </div>
 
@@ -400,18 +400,18 @@
                         </svg>
                         <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
                             <span class="text-xs font-serif font-bold text-[#24201D] leading-none">{{ $stats['occupancyRate'] ?? 70 }}%</span>
-                            <span class="text-[7px] font-bold text-[#8A8379] uppercase tracking-tighter mt-0.5">Used</span>
+                            <span class="text-[7px] font-bold text-[#8A8379] uppercase tracking-tighter mt-0.5">{{ __('Occupancy') }}</span>
                         </div>
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center justify-between gap-2">
-                            <span class="text-xs font-bold text-[#24201D] truncate">Hub Storage Occupancy</span>
+                            <span class="text-xs font-bold text-[#24201D] truncate">{{ __('Hub Storage Occupancy') }}</span>
                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-[#EFF6F1] text-[#3D7357] border border-[#D4E7DC] flex-shrink-0">
                                 +3.2% ↑
                             </span>
                         </div>
                         <p class="text-[11px] text-[#57524C] mt-0.5 leading-snug">
-                            {{ $stats['approved_warehouses'] ?? 4 }} primary facility hubs active across Kathmandu corridors.
+                            {{ $stats['approved_warehouses'] ?? 4 }} {{ __('All Warehouses') }}
                         </p>
                     </div>
                 </div>
@@ -420,24 +420,24 @@
             <!-- Live Telemetry Row: 3 High-Density Tiles -->
             <div class="grid grid-cols-3 gap-2.5 pt-1">
                 <div class="bg-white border border-[#E8E2D8] rounded-xl p-2.5 shadow-2xs hover:border-[#D6CCC0] transition text-left">
-                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">Dispatches</span>
+                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">{{ __('Dispatches') }}</span>
                     <div class="flex items-baseline gap-1 mt-1">
                         <span class="text-base font-serif font-bold text-[#24201D] kwdc-kpi-val">{{ $stats['total_dispatches'] ?? 18 }}</span>
-                        <span class="text-[10px] font-bold text-[#D96B43] truncate">{{ $stats['pending_dispatches'] ?? 6 }} queue</span>
+                        <span class="text-[10px] font-bold text-[#D96B43] truncate">{{ $stats['pending_dispatches'] ?? 6 }} {{ __('queue') }}</span>
                     </div>
                 </div>
                 <div class="bg-white border border-[#E8E2D8] rounded-xl p-2.5 shadow-2xs hover:border-[#D6CCC0] transition text-left">
-                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">Fleet Units</span>
+                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">{{ __('Fleet Units') }}</span>
                     <div class="flex items-baseline gap-1 mt-1">
                         <span class="text-base font-serif font-bold text-[#24201D] kwdc-kpi-val">{{ $stats['active_drivers'] ?? ($stats['drivers'] ?? 6) }}</span>
                         <span class="text-[10px] font-bold text-[#8A8379] truncate">/ {{ $stats['vehicles'] ?? 10 }}</span>
                     </div>
                 </div>
                 <div class="bg-white border border-[#E8E2D8] rounded-xl p-2.5 shadow-2xs hover:border-[#D6CCC0] transition text-left">
-                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">Network</span>
+                    <span class="text-[10px] font-bold text-[#8A8379] uppercase tracking-wider block truncate">{{ __('Network') }}</span>
                     <div class="flex items-center gap-1.5 mt-1">
                         <span class="w-2 h-2 rounded-full bg-[#3D7357] animate-pulse"></span>
-                        <span class="text-xs font-bold text-[#24201D]">Optimal</span>
+                        <span class="text-xs font-bold text-[#24201D]">{{ __('Optimal') }}</span>
                     </div>
                 </div>
             </div>
@@ -452,19 +452,19 @@
                             <i class="fas fa-wand-magic-sparkles"></i>
                         </div>
                         <div>
-                            <h2 class="text-sm font-serif font-bold text-[#24201D] tracking-tight mb-0">AI Logistics Brief</h2>
-                            <span class="text-[11px] text-[#8A8379] font-medium">Powered by Gemini &bull; Real-time Operations</span>
+                            <h2 class="text-sm font-serif font-bold text-[#24201D] tracking-tight mb-0">{{ __('AI Logistics Brief') }}</h2>
+                            <span class="text-[11px] text-[#8A8379] font-medium">{{ __('Powered by Gemini • Real-time Operations') }}</span>
                         </div>
                     </div>
                     <button type="button" id="btnRefreshAiBrief" onclick="refreshDashboardAiBrief(true)" class="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg bg-[#FAF8F5] hover:bg-[#F3EFEA] text-[#57524C] font-semibold transition border border-[#E8E2D8] shadow-2xs">
                         <i class="fas fa-rotate text-[10px] text-[#D96B43]" id="aiBriefRefreshIcon"></i>
-                        <span>Refresh</span>
+                        <span>{{ __('Refresh') }}</span>
                     </button>
                 </div>
 
                 <div id="aiBriefLoading" class="hidden text-center py-6 text-xs text-slate-500">
                     <div class="spinner-border spinner-border-sm text-orange-500 mb-2" role="status"></div>
-                    <p class="font-medium">Synthesizing logistics intelligence...</p>
+                    <p class="font-medium">{{ __('Synthesizing logistics intelligence...') }}</p>
                 </div>
 
                 <div id="aiBriefContent" class="pt-3 space-y-2.5">
@@ -502,12 +502,12 @@
                             <i class="fas fa-bolt"></i>
                         </span>
                         <div class="text-xs text-amber-900 leading-relaxed min-w-0">
-                            <strong class="font-extrabold uppercase tracking-wider text-[10px] text-amber-900 block mb-0.5">Priority Directive:</strong>
+                            <strong class="font-extrabold uppercase tracking-wider text-[10px] text-amber-900 block mb-0.5">{{ __('Priority Directive:') }}</strong>
                             <span id="aiBriefAction">Immediately allocate available driver and vehicle resources to clear the 6 pending dispatches and review the 2 pending warehouse applications.</span>
                         </div>
                     </div>
                     <a href="{{ $role === 'admin' ? route('admin.dispatch') : ($role === 'driver' ? route('driver.jobs') : route('dispatch.direct-create')) }}" class="px-3.5 py-1.5 rounded-full bg-[#D96B43] hover:bg-[#C35832] text-white text-xs font-semibold transition flex items-center gap-1.5 flex-shrink-0 shadow-2xs self-end sm:self-auto">
-                        <span>Take Action</span>
+                        <span>{{ __('Take Action') }}</span>
                         <i class="fas fa-arrow-right text-[10px]"></i>
                     </a>
                 </div>
@@ -522,12 +522,12 @@
             @if($action['primary'])
             <a href="{{ $action['route'] }}" class="kwdc-action-btn primary">
                 <i class="fas fa-{{ $action['icon'] }}"></i>
-                <span>{{ $action['label'] }}</span>
+                <span>{{ __($action['label']) }}</span>
             </a>
             @else
             <a href="{{ $action['route'] }}" class="kwdc-action-btn">
                 <i class="fas fa-{{ $action['icon'] }}" style="color: #D96B43;"></i>
-                <span>{{ $action['label'] }}</span>
+                <span>{{ __($action['label']) }}</span>
                 @if(!empty($action['badge']) && $action['badge'] > 0)
                     <span class="kwdc-action-badge">
                         {{ $action['badge'] }}
@@ -545,7 +545,7 @@
         <div class="kwdc-glass-card p-5 sm:p-6 flex flex-col justify-between space-y-4">
             <div class="flex items-start justify-between gap-3">
                 <div class="space-y-1">
-                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{{ $kpi['label'] }}</p>
+                    <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{{ __($kpi['label']) }}</p>
                     <p class="text-2xl sm:text-3xl font-extrabold text-slate-900 kwdc-kpi-val">{{ $kpi['val'] }}</p>
                 </div>
                 <div class="w-10 h-10 rounded-xl flex items-center justify-center text-base flex-shrink-0 {{ $kpi['icon_bg'] }}">
@@ -559,20 +559,20 @@
                     <div class="h-full rounded-full bg-orange-500" style="width: {{ $kpi['meter'] }}%;"></div>
                 </div>
                 <div class="flex items-center justify-between text-[11px] text-slate-500 font-medium">
-                    <span>{{ $kpi['sub'] }}</span>
+                    <span>{{ __($kpi['sub']) }}</span>
                     <span class="font-bold text-slate-700">{{ $kpi['meter'] }}%</span>
                 </div>
             </div>
             @else
             <div class="pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span class="text-slate-500 font-medium truncate">{{ $kpi['sub'] }}</span>
+                <span class="text-slate-500 font-medium truncate">{{ __($kpi['sub']) }}</span>
                 @if($kpi['pill_type'] === 'success')
                 <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    {{ $kpi['pill'] }}
+                    {{ __($kpi['pill']) }}
                 </span>
                 @elseif($kpi['pill_type'] === 'warning')
                 <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                    {{ $kpi['pill'] }}
+                    {{ __($kpi['pill']) }}
                 </span>
                 @endif
             </div>
@@ -587,8 +587,8 @@
         <div class="lg:col-span-2 kwdc-glass-card p-5 sm:p-6 space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-sm font-bold text-slate-900">Revenue</h2>
-                    <p class="text-[11px] text-slate-400" id="primaryChartSubtitle">Last 7 days</p>
+                    <h2 class="text-sm font-bold text-slate-900">{{ __('Revenue') }}</h2>
+                    <p class="text-[11px] text-slate-400" id="primaryChartSubtitle">{{ __('Last 7 days') }}</p>
                 </div>
                 <div class="flex items-center gap-1">
                     <button type="button" onclick="setChartRange('7d')" id="chartBtn7d" class="px-2.5 py-1 rounded-lg bg-slate-900 text-white text-xs font-bold transition shadow-2xs">7D</button>
@@ -605,8 +605,8 @@
         <div class="kwdc-glass-card p-5 sm:p-6 space-y-4">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-sm font-bold text-slate-900">Occupancy</h2>
-                    <p class="text-[11px] text-slate-400">Capacity breakdown</p>
+                    <h2 class="text-sm font-bold text-slate-900">{{ __('Occupancy') }}</h2>
+                    <p class="text-[11px] text-slate-400">{{ __('Capacity breakdown') }}</p>
                 </div>
                 <div class="w-7 h-7 rounded-lg bg-slate-50 flex items-center justify-center text-slate-400">
                     <i class="fas fa-chart-pie text-xs"></i>
@@ -626,9 +626,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-warehouse text-orange-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Warehouses</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Warehouses') }}</h2>
                 </div>
-                <a href="{{ route('warehouses.create') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Add</a>
+                <a href="{{ route('warehouses.create') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ {{ __('Add') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($myWarehouses ?? [] as $wh)
@@ -648,7 +648,7 @@
                     </div>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No warehouses listed.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No warehouses listed.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -658,9 +658,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-clipboard-list text-blue-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Requests</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Requests') }}</h2>
                 </div>
-                <a href="{{ route('property.requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('property.requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($recentRequests ?? [] as $req)
@@ -677,7 +677,7 @@
                     </div>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No requests.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No requests.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -689,9 +689,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-warehouse text-orange-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Warehouses</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Warehouses') }}</h2>
                 </div>
-                <a href="{{ route('warehouses.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('warehouses.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($recentWarehouses ?? [] as $wh)
@@ -706,7 +706,7 @@
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No warehouses.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No warehouses listed.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -716,9 +716,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-truck text-emerald-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Dispatches</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Dispatches') }}</h2>
                 </div>
-                <a href="{{ route('dispatch.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('dispatch.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($recentDispatches ?? [] as $disp)
@@ -732,7 +732,7 @@
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No dispatches.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No dispatches.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -744,9 +744,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-truck text-orange-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Shipments</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Shipments') }}</h2>
                 </div>
-                <a href="{{ route('dispatch.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('dispatch.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($recentDispatches ?? [] as $disp)
@@ -760,7 +760,7 @@
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No shipments.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No shipments.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -770,9 +770,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-warehouse text-blue-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Storage</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Storage') }}</h2>
                 </div>
-                <a href="{{ route('my-requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('my-requests.index') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($recentRequests ?? [] as $req)
@@ -787,7 +787,7 @@
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No storage requests.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No storage requests.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -799,9 +799,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-route text-orange-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Assigned Jobs</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Assigned Jobs') }}</h2>
                 </div>
-                <a href="{{ route('driver.jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('driver.jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($myJobs ?? [] as $job)
@@ -813,7 +813,7 @@
                     <span class="text-xs font-bold text-emerald-600">NPR {{ number_format((float) ($job->driver_earning ?? 0)) }}</span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No active jobs.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No active jobs.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -823,9 +823,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-hand-holding-dollar text-emerald-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Marketplace</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Marketplace') }}</h2>
                 </div>
-                <a href="{{ route('driver.available-jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">Browse</a>
+                <a href="{{ route('driver.available-jobs') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('Browse') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($availableJobs ?? [] as $job)
@@ -837,7 +837,7 @@
                     <span class="text-xs font-bold text-emerald-600">NPR {{ number_format((float) ($job->driver_earning ?? $job->base_price ?? 0)) }}</span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No jobs available.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No jobs available.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -848,9 +848,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-gear text-orange-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Fleet</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Fleet') }}</h2>
                 </div>
-                <a href="{{ route('equipment.register') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ Add</a>
+                <a href="{{ route('equipment.register') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">+ {{ __('Add') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($myEquipment ?? [] as $eq)
@@ -865,7 +865,7 @@
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No equipment.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No equipment.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -873,9 +873,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-clipboard-check text-blue-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Requests</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Requests') }}</h2>
                 </div>
-                <a href="{{ route('equipment.jobs.requests') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('equipment.jobs.requests') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($recentRequests ?? [] as $req)
@@ -889,7 +889,7 @@
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No requests.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No requests.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -900,9 +900,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-user-shield text-blue-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Guards</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Guards') }}</h2>
                 </div>
-                <a href="{{ route('security.dashboard') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">Manage</a>
+                <a href="{{ route('security.dashboard') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('Manage') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($securityPersonnel ?? [] as $guard)
@@ -912,11 +912,11 @@
                         <p class="text-[11px] text-slate-500 mt-0.5">{{ $guard->badge_number ?? 'Officer' }}</p>
                     </div>
                     <span class="inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        On Duty
+                        {{ __('On Duty') }}
                     </span>
                 </div>
                 @empty
-                <p class="text-xs text-slate-400 py-4 text-center">No personnel.</p>
+                <p class="text-xs text-slate-400 py-4 text-center">{{ __('No personnel.') }}</p>
                 @endforelse
             </div>
         </div>
@@ -924,9 +924,9 @@
             <div class="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div class="flex items-center gap-2">
                     <i class="fas fa-shield-halved text-emerald-500 text-sm"></i>
-                    <h2 class="font-bold text-slate-900 text-sm">Cargo</h2>
+                    <h2 class="font-bold text-slate-900 text-sm">{{ __('Cargo') }}</h2>
                 </div>
-                <a href="{{ route('security.dashboard') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">All</a>
+                <a href="{{ route('security.dashboard') }}" class="text-xs font-bold text-orange-600 hover:text-orange-700">{{ __('All') }}</a>
             </div>
             <div class="space-y-2">
                 @forelse($guardGoods ?? [] as $item)

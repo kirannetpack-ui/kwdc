@@ -76,9 +76,29 @@ class EnterpriseReadinessTest extends TestCase
         $response->assertRedirect();
         $this->assertEquals('ne', session('locale'));
 
+        // Verify SetLocale middleware translates public welcome page to Nepali
+        $welcomeNe = $this->withSession(['locale' => 'ne'])->get('/');
+        $welcomeNe->assertStatus(200);
+        $welcomeNe->assertSee('सुरु गर्नुहोस्');
+
         $responseEn = $this->get(route('locale.switch', 'en'));
         $responseEn->assertRedirect();
         $this->assertEquals('en', session('locale'));
+
+        $welcomeEn = $this->withSession(['locale' => 'en'])->get('/');
+        $welcomeEn->assertStatus(200);
+        $welcomeEn->assertSee('Get started');
+
+        // Verify authenticated dashboard translates sidebar & header to Nepali and English
+        $dashboardNe = $this->actingAs($this->admin)->withSession(['locale' => 'ne'])->get('/dashboard');
+        $dashboardNe->assertStatus(200);
+        $dashboardNe->assertSee('कार्यकारी सिंहावलोकन');
+        $dashboardNe->assertSee('प्रतिक्षारत स्वीकृतिहरू');
+
+        $dashboardEn = $this->actingAs($this->admin)->withSession(['locale' => 'en'])->get('/dashboard');
+        $dashboardEn->assertStatus(200);
+        $dashboardEn->assertSee('Executive Overview');
+        $dashboardEn->assertSee('Pending Approvals');
     }
 
     /**

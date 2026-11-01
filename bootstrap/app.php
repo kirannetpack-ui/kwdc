@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append([
             \App\Http\Middleware\ForceHttps::class,
             \App\Http\Middleware\SecurityHeaders::class,
+        ]);
+
+        $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
         ]);
 

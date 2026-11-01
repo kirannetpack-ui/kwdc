@@ -72,14 +72,19 @@
         <nav class="public-nav shell" aria-label="Main navigation">
             <a class="wordmark" href="{{ route('landing') }}"><i class="fas fa-warehouse text-orange-500" aria-hidden="true"></i> KTM-WDC</a>
             <div class="nav-sections">
-                <a href="#services">Services</a>
-                <a href="#partners">Network Roles</a>
-                <a href="{{ route('compliance') }}">Compliance</a>
-                <a href="{{ route('privacy-policy') }}">Legal</a>
+                <a href="#services">{{ __('Services') }}</a>
+                <a href="#partners">{{ __('Network Roles') }}</a>
+                <a href="{{ route('compliance') }}">{{ __('Compliance') }}</a>
+                <a href="{{ route('privacy-policy') }}">{{ __('Legal') }}</a>
             </div>
             <div class="nav-actions">
-                <a href="{{ route('login') }}">Log in</a>
-                <a class="button button-dark" href="{{ route('register') }}">Get started <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                @php $currentLocale = app()->getLocale(); @endphp
+                <div style="display: inline-flex; align-items: center; border: 1px solid #e2e8f0; border-radius: 9999px; padding: 2px; background: #fff; margin-right: 8px;">
+                    <a href="{{ route('locale.switch', 'en') }}" style="padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-decoration: none; {{ $currentLocale === 'en' ? 'background: #ea580c; color: #fff;' : 'color: #64748b;' }}">EN</a>
+                    <a href="{{ route('locale.switch', 'ne') }}" style="padding: 3px 8px; border-radius: 9999px; font-size: 11px; font-weight: 700; text-decoration: none; {{ $currentLocale === 'ne' ? 'background: #ea580c; color: #fff;' : 'color: #64748b;' }}">नेपाली</a>
+                </div>
+                <a href="{{ route('login') }}">{{ __('Log in') }}</a>
+                <a class="button button-dark" href="{{ route('register') }}">{{ __('Get started') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
             </div>
         </nav>
     </header>
@@ -91,11 +96,11 @@
                 <div class="hero-content">
                     <span class="eyebrow"><i class="fas fa-wand-magic-sparkles text-xs" style="color: #D96B43;"></i> Warehouse &amp; Distribution Connect</span>
                     <h1>KTM-WDC</h1>
-                    <p class="hero-title">Space to grow.<br>Room to move.</p>
-                    <p class="hero-copy">Commercial warehousing, live freight dispatch and trusted fleet operations across Nepal.</p>
+                    <p class="hero-title">{{ __('Space to grow. Room to move.') }}</p>
+                    <p class="hero-copy">{{ __('Commercial warehousing, live freight dispatch and trusted fleet operations across Nepal.') }}</p>
                     <div class="hero-actions">
-                        <a class="button button-dark" href="{{ route('register') }}">Find your workspace <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                        <a class="button button-outline" href="{{ route('login') }}">Partner Portal <i class="fas fa-sign-in-alt" aria-hidden="true"></i></a>
+                        <a class="button button-dark" href="{{ route('register') }}">{{ __('Find your workspace') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                        <a class="button button-outline" href="{{ route('login') }}">{{ __('Partner Portal') }} <i class="fas fa-sign-in-alt" aria-hidden="true"></i></a>
                     </div>
                 </div>
             </div>
