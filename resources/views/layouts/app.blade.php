@@ -74,8 +74,21 @@
         .sidebar-link .badge { background: #ef4444; color: white; font-size: 10px; padding: 2px 8px; border-radius: 999px; margin-left: auto; flex-shrink: 0; }
         .section-header { font-size: 10px; font-weight: 800; color: #78869d; text-transform: uppercase; letter-spacing: 1px; padding: 16px 18px 5px; display: block !important; }
 
-        .main-content { margin-left: 286px; min-height: 100vh; }
-        .top-bar { padding: 18px 26px; position: sticky; top: 0; z-index: 40; display: flex; justify-content: space-between; align-items: center; gap: 18px; }
+        .main-content { margin-left: 286px; min-height: 100vh; background-color: #f8fafc; }
+        .top-bar {
+            padding: 16px 26px;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 18px;
+            background: rgba(255, 255, 255, 0.82) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+        }
         .page-content { padding: 28px; max-width: 1460px; margin: 0 auto; }
         .menu-toggle { display: none; position: fixed; top: 16px; left: 16px; z-index: 60; background: #f59e0b; color: #111827; padding: 10px 13px; border-radius: 8px; cursor: pointer; border: none; font-size: 18px; box-shadow: 0 14px 28px rgba(15, 23, 42, .18); }
 

@@ -205,6 +205,9 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
         Route::post('/esewa/init', [PaymentController::class, 'esewaInit'])->name('esewa.init')->middleware('throttle:10,1');
         Route::get('/esewa/success', [PaymentController::class, 'esewaSuccess'])->name('esewa.success')->middleware('throttle:20,1');
         Route::get('/esewa/failure', [PaymentController::class, 'esewaFailure'])->name('esewa.failure')->middleware('throttle:20,1');
+        Route::post('/stripe/init', [PaymentController::class, 'stripeInit'])->name('stripe.init')->middleware('throttle:10,1');
+        Route::get('/stripe/success', [PaymentController::class, 'stripeSuccess'])->name('stripe.success')->middleware('throttle:20,1');
+        Route::get('/stripe/cancel', [PaymentController::class, 'stripeCancel'])->name('stripe.cancel');
         Route::get('/success', [PaymentController::class, 'success'])->name('success');
         Route::get('/failure', [PaymentController::class, 'failure'])->name('failure');
         Route::get('/history', [PaymentController::class, 'history'])->name('history');

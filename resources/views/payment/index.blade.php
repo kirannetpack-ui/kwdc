@@ -99,6 +99,18 @@
                                 </button>
                             </form>
 
+                            <!-- Stripe (Card / International) Button -->
+                            <form action="{{ route('payment.stripe.init') }}" method="POST" class="inline">
+                                @csrf
+                                <input type="hidden" name="invoice_id" value="{{ $invoice->id }}">
+                                <input type="hidden" name="amount" value="{{ $invAmount }}">
+                                <button type="submit" 
+                                        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold shadow-sm transition bg-slate-900 hover:bg-slate-800 text-white border border-slate-700/60">
+                                    <i class="fas fa-credit-card text-xs text-indigo-400"></i>
+                                    <span>Card (Stripe)</span>
+                                </button>
+                            </form>
+
                             <!-- View Details -->
                             <a href="{{ route('invoices.show', $invoice->id) }}" 
                                class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-[#645D56] hover:text-[#24201D] bg-[#FFFDF9] border border-[#E8E2D8] hover:bg-[#FAF8F5] transition">

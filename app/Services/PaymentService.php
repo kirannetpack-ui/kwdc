@@ -219,6 +219,131 @@ class PaymentService
         }
     }
 
+    /**
+     * Stripe Checkout Session Initiation
+     */
+    public function initiateStripePayment(float $amount, string $invoiceNumber, int $userId, int $invoiceId): array
+    {
+        if (blank(config('payment.stripe.secret'))) {
+            Log::warning('Stripe payment initiation blocked because STRIPE_SECRET is not configured.');
+
+            return [
+                'success' => false,
+                'message' => 'Payment provider is not configured. Please contact support.',
+            ];
+        }
+
+        try {
+            $currency = strtolower(config('payment.stripe.currency', 'npr'));
+            $unitAmount = (int) round($amount * 100);
+
+            $payload = [
+                'payment_method_types' => ['card'],
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => $currency,
+                            'product_data' => [
+                                'name' => 'KTM-WDC Invoice #' . $invoiceNumber,
+                                'description' => 'Logistics & Warehousing Settlement',
+                            ],
+                            'unit_amount' => $unitAmount,
+                        ],
+                        'quantity' => 1,
+                    ],
+                ],
+                'mode' => 'payment',
+                'success_url' => route('payment.stripe.success') . '?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url' => route('payment.stripe.cancel'),
+                'client_reference_id' => (string) $invoiceId,
+                'metadata' => [
+                    'invoice_id' => (string) $invoiceId,
+                    'invoice_number' => $invoiceNumber,
+                    'user_id' => (string) $userId,
+                ],
+            ];
+
+            $response = $this->providerHttp()
+                ->withToken(config('payment.stripe.secret'))
+                ->asForm()
+                ->post('https://api.stripe.com/v1/checkout/sessions', $payload);
+
+            if ($response->successful()) {
+                $session = $response->json();
+
+                return [
+                    'success' => true,
+                    'session_id' => $session['id'],
+                    'payment_url' => $session['url'],
+                    'data' => $session,
+                ];
+            }
+
+            Log::error('Stripe session creation failed: ' . $response->body());
+
+            return [
+                'success' => false,
+                'message' => 'Stripe session creation failed.',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Stripe initiation exception: ' . $e->getMessage());
+
+            return [
+                'success' => false,
+                'message' => 'Payment initiation failed. Please try again.',
+            ];
+        }
+    }
+
+    /**
+     * Verify Stripe Checkout Session
+     */
+    public function verifyStripePayment(string $sessionId): array
+    {
+        if (blank(config('payment.stripe.secret'))) {
+            return [
+                'success' => false,
+                'message' => 'Payment provider is not configured.',
+            ];
+        }
+
+        try {
+            $response = $this->providerHttp()
+                ->withToken(config('payment.stripe.secret'))
+                ->get('https://api.stripe.com/v1/checkout/sessions/' . urlencode($sessionId));
+
+            if ($response->successful()) {
+                $session = $response->json();
+
+                if (($session['payment_status'] ?? '') === 'paid') {
+                    return [
+                        'success' => true,
+                        'status' => 'Completed',
+                        'data' => $session,
+                    ];
+                }
+
+                return [
+                    'success' => false,
+                    'status' => $session['payment_status'] ?? 'unpaid',
+                    'message' => 'Payment has not been completed.',
+                ];
+            }
+
+            return [
+                'success' => false,
+                'message' => 'Stripe session verification failed.',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Stripe verification exception: ' . $e->getMessage());
+
+            return [
+                'success' => false,
+                'message' => 'Verification error occurred.',
+            ];
+        }
+    }
+
     private function providerHttp()
     {
         return Http::timeout(config('payment.http.timeout'))

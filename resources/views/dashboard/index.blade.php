@@ -11,15 +11,20 @@
         letter-spacing: -0.025em;
     }
     .kwdc-glass-card {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.7);
+        outline: 1px solid rgba(15, 23, 42, 0.06);
         border-radius: 20px;
-        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.03);
-        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 10px 32px 0 rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .kwdc-glass-card:hover {
-        border-color: #cbd5e1;
-        box-shadow: 0 8px 25px -4px rgba(15, 23, 42, 0.06);
+        background: rgba(255, 255, 255, 0.94);
+        outline-color: rgba(234, 88, 12, 0.22);
+        box-shadow: 0 16px 40px -4px rgba(15, 23, 42, 0.08), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
+        transform: translateY(-2px);
     }
     .kwdc-item-row {
         transition: all 0.15s ease;

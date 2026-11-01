@@ -1,34 +1,42 @@
 /* ==========================================================================
-   KTM-WDC Public Landing - Claude-Inspired Editorial & Tactile Aesthetic
+   KTM-WDC Public Landing - Apple Cupertino Glossy & Tactile Aesthetic
    ========================================================================== */
 
 :root {
     color-scheme: light;
-    --claude-bg: #FAF8F5;
-    --claude-bg-subtle: #F4EFEB;
+    --claude-bg: #FAF9F6;
+    --claude-bg-subtle: #F5F2ED;
     --claude-surface: #FFFFFF;
     --claude-surface-warm: #FFFDF9;
     --claude-border: #E8E2D8;
     --claude-border-subtle: #F0EAE1;
     --claude-border-strong: #D6CCC0;
 
-    --claude-text-primary: #24201D;
-    --claude-text-body: #57524C;
-    --claude-text-muted: #8A8379;
+    --apple-glass-surface: rgba(255, 255, 255, 0.78);
+    --apple-glass-surface-hover: rgba(255, 255, 255, 0.92);
+    --apple-glass-border: rgba(255, 255, 255, 0.6);
+    --apple-glass-stroke: rgba(15, 23, 42, 0.08);
+    --apple-glass-blur: blur(20px);
+    --apple-shadow-ambient: 0 10px 32px 0 rgba(15, 23, 42, 0.05), inset 0 1px 0 0 rgba(255, 255, 255, 0.85);
+    --apple-shadow-hover: 0 18px 44px -4px rgba(15, 23, 42, 0.1), 0 3px 8px 0 rgba(15, 23, 42, 0.04), inset 0 1px 0 0 rgba(255, 255, 255, 0.95);
 
-    --claude-terracotta: #D96B43;
-    --claude-terracotta-hover: #C35832;
-    --claude-terracotta-soft: #FBF2ED;
+    --claude-text-primary: #1E293B;
+    --claude-text-body: #475569;
+    --claude-text-muted: #94A3B8;
 
-    --claude-sage: #3D7357;
-    --claude-sage-soft: #EFF6F1;
-    --claude-honey: #B8732A;
-    --claude-honey-soft: #FDF5EB;
-    --claude-iris: #4F6B94;
-    --claude-iris-soft: #F0F4FA;
+    --claude-terracotta: #EA580C;
+    --claude-terracotta-hover: #C2410C;
+    --claude-terracotta-soft: #FFF7ED;
 
-    --font-serif: 'Newsreader', Garamond, Georgia, serif;
-    --font-sans: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --claude-sage: #059669;
+    --claude-sage-soft: #ECFDF5;
+    --claude-honey: #D97706;
+    --claude-honey-soft: #FFFBEB;
+    --claude-iris: #4F46E5;
+    --claude-iris-soft: #EEF2FF;
+
+    --font-serif: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", sans-serif;
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
 }
 
 * {
@@ -338,17 +346,20 @@ h2 {
 
 .service-grid article {
     padding: 32px 28px;
-    border: 1px solid var(--claude-border);
-    border-radius: 20px;
-    background: #FFFFFF;
-    box-shadow: 0 4px 20px -2px rgba(60, 45, 30, 0.04);
-    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+    border: 1px solid var(--apple-glass-stroke);
+    border-radius: 22px;
+    background: var(--apple-glass-surface);
+    backdrop-filter: var(--apple-glass-blur);
+    -webkit-backdrop-filter: var(--apple-glass-blur);
+    box-shadow: var(--apple-shadow-ambient);
+    transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.24s ease, border-color 0.24s ease, background 0.24s ease;
 }
 
 .service-grid article:hover {
-    transform: translateY(-3px);
-    border-color: var(--claude-border-strong);
-    box-shadow: 0 12px 30px -4px rgba(60, 45, 30, 0.08);
+    transform: translateY(-4px);
+    background: var(--apple-glass-surface-hover);
+    border-color: rgba(234, 88, 12, 0.25);
+    box-shadow: var(--apple-shadow-hover);
 }
 
 .service-icon {
@@ -428,11 +439,13 @@ h3 {
 }
 
 .partner-list {
-    background: #FFFFFF;
-    border: 1px solid var(--claude-border);
-    border-radius: 20px;
+    background: var(--apple-glass-surface);
+    backdrop-filter: var(--apple-glass-blur);
+    -webkit-backdrop-filter: var(--apple-glass-blur);
+    border: 1px solid var(--apple-glass-stroke);
+    border-radius: 22px;
     padding: 8px 24px;
-    box-shadow: 0 4px 20px -2px rgba(60, 45, 30, 0.04);
+    box-shadow: var(--apple-shadow-ambient);
 }
 
 .partner-list a {

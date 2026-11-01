@@ -319,6 +319,92 @@ class PaymentSecurityTest extends TestCase
         Http::assertNothingSent();
     }
 
+    public function test_stripe_payment_initialization_creates_pending_transaction(): void
+    {
+        $user = User::factory()->create(['role' => 'client']);
+        $invoice = $this->invoiceFor($user, 2500);
+
+        $this->mock(PaymentService::class, function ($mock) use ($invoice, $user) {
+            $mock->shouldReceive('initiateStripePayment')
+                ->once()
+                ->with(2500.0, $invoice->invoice_number, $user->id, $invoice->id)
+                ->andReturn([
+                    'success' => true,
+                    'session_id' => 'cs_test_session_123',
+                    'payment_url' => 'https://checkout.stripe.com/c/pay/cs_test_session_123',
+                    'data' => ['id' => 'cs_test_session_123'],
+                ]);
+        });
+
+        $response = $this->actingAs($user)
+            ->postJson(route('payment.stripe.init'), [
+                'invoice_id' => $invoice->id,
+                'amount' => 2500,
+            ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => true,
+                'session_id' => 'cs_test_session_123',
+                'payment_url' => 'https://checkout.stripe.com/c/pay/cs_test_session_123',
+            ]);
+
+        $this->assertDatabaseHas('transactions', [
+            'invoice_id' => $invoice->id,
+            'user_id' => $user->id,
+            'payment_method' => 'stripe',
+            'transaction_id' => 'cs_test_session_123',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_stripe_success_callback_verifies_session_and_marks_invoice_paid(): void
+    {
+        Mail::fake();
+
+        $user = User::factory()->create(['role' => 'client']);
+        $invoice = $this->invoiceFor($user, 2500);
+
+        $transaction = Transaction::create([
+            'invoice_id' => $invoice->id,
+            'user_id' => $user->id,
+            'amount' => 2500,
+            'payment_method' => 'stripe',
+            'transaction_id' => 'cs_test_session_456',
+            'status' => 'pending',
+        ]);
+
+        $this->mock(PaymentService::class, function ($mock) {
+            $mock->shouldReceive('verifyStripePayment')
+                ->once()
+                ->with('cs_test_session_456')
+                ->andReturn([
+                    'success' => true,
+                    'status' => 'Completed',
+                    'data' => [
+                        'id' => 'cs_test_session_456',
+                        'payment_status' => 'paid',
+                    ],
+                ]);
+        });
+
+        $this->actingAs($user)
+            ->get(route('payment.stripe.success', ['session_id' => 'cs_test_session_456']))
+            ->assertRedirect(route('payment.success', absolute: false));
+
+        $this->assertSame('paid', $invoice->fresh()->payment_status);
+        $this->assertSame('completed', $transaction->fresh()->status);
+    }
+
+    public function test_stripe_cancel_redirects_to_failure(): void
+    {
+        $user = User::factory()->create(['role' => 'client']);
+
+        $this->actingAs($user)
+            ->get(route('payment.stripe.cancel'))
+            ->assertRedirect(route('payment.failure', absolute: false));
+    }
+
     private function invoiceFor(User $user, float $amount): Invoice
     {
         $warehouse = Warehouse::factory()->create([

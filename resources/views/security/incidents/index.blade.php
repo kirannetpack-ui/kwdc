@@ -16,6 +16,9 @@
     <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5">
             <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Security Incidents</h2>
+            @if(isset($agency) && $agency->agency_name)
+                <span class="text-xs font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200">{{ $agency->agency_name }}</span>
+            @endif
             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200/80">
                 <i class="fas fa-triangle-exclamation text-[9px]"></i>
                 {{ $totalCount }} Incidents

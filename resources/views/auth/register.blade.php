@@ -463,6 +463,13 @@
                     </div>
                 </div>
 
+                <div class="terms-group" style="margin: 18px 0 22px; display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; color: #475569; line-height: 1.5;">
+                    <input type="checkbox" name="terms" id="terms" required style="margin-top: 3px; accent-color: #ea580c; width: 16px; height: 16px; border-radius: 4px; cursor: pointer;">
+                    <label for="terms" style="cursor: pointer;">
+                        I agree to the legally binding <a href="{{ route('terms-of-service') }}" target="_blank" style="color: #ea580c; text-decoration: underline; font-weight: 600;">Terms of Service</a> (including statutory Carrier Liability limits capped at NPR 250/kg under Muluki Civil Code 2074 & Transport Act 2049) and <a href="{{ route('privacy-policy') }}" target="_blank" style="color: #ea580c; text-decoration: underline; font-weight: 600;">Privacy Policy</a>.
+                    </label>
+                </div>
+
                 <button type="submit" class="btn-register">
                     <i class="fas fa-user-plus"></i> Create Account
                 </button>

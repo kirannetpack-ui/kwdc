@@ -18,12 +18,13 @@ class SecurityHeaders
             "default-src 'self'",
             "base-uri 'self'",
             "frame-ancestors 'none'",
-            "form-action 'self' https://*.khalti.com https://*.esewa.com.np https://esewa.com.np",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://code.jquery.com https://js.pusher.com",
+            "form-action 'self' https://*.khalti.com https://*.esewa.com.np https://esewa.com.np https://*.stripe.com https://checkout.stripe.com",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com https://code.jquery.com https://js.pusher.com https://js.stripe.com",
             "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://cdnjs.cloudflare.com https://fonts.googleapis.com",
-            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://flagcdn.com https://*.googleapis.com https://*.gstatic.com",
+            "img-src 'self' data: blob: https://*.tile.openstreetmap.org https://flagcdn.com https://*.googleapis.com https://*.gstatic.com https://*.stripe.com",
             "font-src 'self' data: https://cdnjs.cloudflare.com https://fonts.gstatic.com",
-            "connect-src 'self' ws: wss: https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.googleapis.com https://a.khalti.com https://*.khalti.com",
+            "connect-src 'self' ws: wss: https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.googleapis.com https://a.khalti.com https://*.khalti.com https://api.stripe.com",
+            "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://checkout.stripe.com",
             "object-src 'none'",
         ];
 

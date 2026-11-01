@@ -466,6 +466,15 @@
 
                 <!-- Submit Button -->
                 <div class="bg-[#FFFDF9] border border-[#E8E2D8] rounded-2xl shadow-2xs p-6 space-y-3">
+                    <div class="p-3 bg-amber-50/80 border border-amber-200/80 rounded-xl text-xs text-amber-950 space-y-1.5">
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" id="dispatch_liability_consent" name="terms_consent" required class="mt-0.5 accent-orange-600 rounded">
+                            <label for="dispatch_liability_consent" class="cursor-pointer text-[11px] leading-relaxed">
+                                <strong>Statutory Liability Limit:</strong> I acknowledge carriage liability is capped at NPR 250/kg under Muluki Civil Code 2074 & Transport Act 2049. No hazardous materials, unmanifested currency, or contraband permitted.
+                            </label>
+                        </div>
+                    </div>
+
                     <button type="submit" id="submitBtn" class="w-full bg-[#D96B43] hover:bg-[#C35832] text-white font-bold py-3.5 px-4 rounded-xl shadow-xs transition flex items-center justify-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
                         <i class="fas fa-paper-plane text-xs"></i>
                         <span>Confirm & Dispatch Order</span>

@@ -20,4 +20,10 @@ return [
         'success_url' => env('APP_URL') . '/payment/esewa/success',
         'failure_url' => env('APP_URL') . '/payment/esewa/failure',
     ],
+    'stripe' => [
+        'key' => env('STRIPE_KEY', ''),
+        'secret' => env('STRIPE_SECRET', ''),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET', ''),
+        'currency' => env('STRIPE_CURRENCY', 'npr'),
+    ],
 ];

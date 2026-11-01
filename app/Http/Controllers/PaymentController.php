@@ -307,6 +307,129 @@ class PaymentController extends Controller
     }
 
     /**
+     * Stripe Payment Initiation
+     */
+    public function stripeInit(Request $request)
+    {
+        $request->validate([
+            'invoice_id' => 'required|exists:invoices,id',
+            'amount' => 'nullable|numeric|min:1',
+        ]);
+
+        $invoice = $this->payableInvoice((int) $request->invoice_id);
+        $amount = $this->invoicePayableAmount($invoice);
+
+        if ($request->filled('amount') && round((float) $request->amount, 2) !== $amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment amount does not match the invoice total.',
+            ], 422);
+        }
+
+        $result = $this->paymentService->initiateStripePayment(
+            $amount,
+            $invoice->invoice_number,
+            auth()->id(),
+            $invoice->id
+        );
+
+        if ($result['success']) {
+            $this->retirePendingTransactions($invoice, 'stripe');
+
+            Transaction::create([
+                'invoice_id' => $invoice->id,
+                'user_id' => auth()->id(),
+                'amount' => $amount,
+                'payment_method' => 'stripe',
+                'transaction_id' => $result['session_id'],
+                'status' => 'pending',
+                'payment_details' => $result['data'],
+            ]);
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'payment_url' => $result['payment_url'],
+                    'session_id' => $result['session_id'],
+                ]);
+            }
+
+            return redirect($result['payment_url']);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message'] ?? 'Stripe payment initiation failed.',
+            ], 500);
+        }
+
+        return redirect()->back()->with('error', $result['message'] ?? 'Stripe payment initiation failed.');
+    }
+
+    /**
+     * Stripe Success Callback
+     */
+    public function stripeSuccess(Request $request)
+    {
+        $sessionId = trim((string) $request->input('session_id'));
+
+        if (!$sessionId) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Invalid payment session.');
+        }
+
+        $transaction = Transaction::where('transaction_id', $sessionId)
+            ->where('user_id', auth()->id())
+            ->where('payment_method', 'stripe')
+            ->first();
+
+        if (!$transaction) {
+            return redirect()->route('payment.failure')
+                ->with('error', 'Payment transaction was not found.');
+        }
+
+        if ($transaction->isCompleted()) {
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment already completed.');
+        }
+
+        $verification = $this->paymentService->verifyStripePayment($sessionId);
+
+        if ($verification['success'] ?? false) {
+            $invoice = Invoice::where('id', $transaction->invoice_id)
+                ->where('payment_status', 'unpaid')
+                ->first();
+
+            if (!$invoice) {
+                $transaction->markAsFailed('Invoice is missing or no longer payable.');
+
+                return redirect()->route('payment.failure')
+                    ->with('error', 'Payment invoice is no longer payable.');
+            }
+
+            $this->completeVerifiedTransaction($transaction, $invoice, 'stripe', $verification['data'] ?? []);
+
+            return redirect()->route('payment.success')
+                ->with('success', 'Payment via Card (Stripe) completed successfully!');
+        }
+
+        $transaction->markAsFailed($verification['message'] ?? 'Stripe verification failed.');
+
+        return redirect()->route('payment.failure')
+            ->with('error', 'Payment verification failed. Please contact support.');
+    }
+
+    /**
+     * Stripe Cancel Callback
+     */
+    public function stripeCancel(Request $request)
+    {
+        return redirect()->route('payment.failure')
+            ->with('error', 'Card payment was cancelled.');
+    }
+
+    /**
      * Success Page
      */
     public function success()
