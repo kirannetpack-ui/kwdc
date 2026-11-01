@@ -209,4 +209,78 @@ class InvoiceController extends Controller
         return redirect()->route('invoices.show', $invoice->id)
             ->with('success', 'Invoice created successfully');
     }
+
+    /**
+     * Export Statutory IRD Nepal VAT Sales Book (अनुसूची १३ / Schedule 13)
+     */
+    public function exportSchedule13(Request $request)
+    {
+        $user = Auth::user();
+        abort_unless($user && ($user->isAdmin() || ($user->is_admin ?? false) || $user->role === 'admin'), 403);
+
+        $query = Invoice::with(['client'])->orderBy('created_at', 'asc');
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        $invoices = $query->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="IRD_Nepal_Schedule_13_Sales_Book_' . now()->format('Ymd_His') . '.csv"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($invoices) {
+            $handle = fopen('php://output', 'w');
+            // Write UTF-8 BOM so Excel opens Nepali characters cleanly
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // IRD Official Header Row
+            fputcsv($handle, [
+                'क्र.सं. (S.N.)',
+                'मिति (Date)',
+                'बिजक नं (Invoice No)',
+                'खरिदकर्ताको नाम (Buyer Name)',
+                'खरिदकर्ताको स्थायी लेखा नं (Buyer PAN)',
+                'जम्मा बिक्री रकम (Total Amount NPR)',
+                'कर छुट हुने बिक्री रकम (Exempt Amount NPR)',
+                'करयोग्य बिक्री रकम (Taxable Amount NPR)',
+                'मूल्य अभिवृद्धि कर १३% (13% VAT NPR)',
+                'भुक्तानी स्थिति (Status)',
+            ]);
+
+            $sn = 1;
+            foreach ($invoices as $inv) {
+                $total = (float) ($inv->grand_total ?: $inv->amount ?: 0);
+                $vat = (float) ($inv->vat_amount ?: ($total * 0.13 / 1.13));
+                $taxable = $total - $vat;
+                $buyerPan = $inv->client->pan_number ?? ($inv->client->company_pan ?? 'N/A');
+                $buyerName = $inv->client->name ?? 'Walk-in Commercial Client';
+
+                fputcsv($handle, [
+                    $sn++,
+                    $inv->created_at ? $inv->created_at->format('Y-m-d') : now()->format('Y-m-d'),
+                    $inv->invoice_number,
+                    $buyerName,
+                    $buyerPan,
+                    number_format($total, 2, '.', ''),
+                    '0.00',
+                    number_format($taxable, 2, '.', ''),
+                    number_format($vat, 2, '.', ''),
+                    strtoupper($inv->payment_status ?: $inv->status),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

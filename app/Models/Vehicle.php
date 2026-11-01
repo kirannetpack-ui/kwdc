@@ -92,4 +92,47 @@ class Vehicle extends Model
 
         return "VEH-{$year}-{$newNumber}";
     }
+
+    /**
+     * Check if vehicle has all required regulatory documents valid.
+     */
+    public function isCompliant(): bool
+    {
+        $now = now()->startOfDay();
+
+        if ($this->insurance_valid_until && $this->insurance_valid_until < $now) return false;
+        if ($this->fitness_valid_until && $this->fitness_valid_until < $now) return false;
+        if ($this->pollution_valid_until && $this->pollution_valid_until < $now) return false;
+        if ($this->permit_valid_until && $this->permit_valid_until < $now) return false;
+
+        return true;
+    }
+
+    /**
+     * Get list of compliance issues or upcoming document expirations.
+     */
+    public function getComplianceIssues(): array
+    {
+        $issues = [];
+        $now = now()->startOfDay();
+
+        $docs = [
+            'Insurance Policy' => $this->insurance_valid_until,
+            'Fitness / Blue Book' => $this->fitness_valid_until,
+            'Pollution Sticker' => $this->pollution_valid_until,
+            'Route Permit' => $this->permit_valid_until,
+        ];
+
+        foreach ($docs as $name => $date) {
+            if (!$date) continue;
+            if ($date < $now) {
+                $issues[] = ['doc' => $name, 'status' => 'expired', 'date' => $date->format('Y-m-d')];
+            } elseif ($date <= $now->copy()->addDays(15)) {
+                $days = (int) $now->diffInDays($date);
+                $issues[] = ['doc' => $name, 'status' => 'expiring', 'days' => $days, 'date' => $date->format('Y-m-d')];
+            }
+        }
+
+        return $issues;
+    }
 }

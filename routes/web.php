@@ -47,6 +47,23 @@ Route::get('/privacy-policy', fn() => view('legal.privacy'))->name('privacy-poli
 Route::get('/terms-of-service', fn() => view('legal.terms'))->name('terms-of-service');
 Route::get('/compliance', fn() => view('legal.compliance'))->name('compliance');
 
+// Language Switcher
+Route::get('/locale/{lang}', function ($lang) {
+    if (in_array($lang, ['en', 'ne'])) {
+        session(['locale' => $lang]);
+    }
+    return redirect()->back();
+})->name('locale.switch');
+
+// PWA Static Endpoints
+Route::get('/manifest.json', function () {
+    return response(file_get_contents(public_path('manifest.json')), 200, ['Content-Type' => 'application/json']);
+})->name('pwa.manifest');
+
+Route::get('/offline.html', function () {
+    return response(file_get_contents(public_path('offline.html')), 200, ['Content-Type' => 'text/html']);
+})->name('pwa.offline');
+
 // ================================================================
 // 2. AUTHENTICATION ROUTES
 // ================================================================
@@ -104,7 +121,12 @@ Route::middleware(['auth', 'account.ready'])->group(function () {
         Route::get('/contacts', [ProfileController::class, 'contacts'])->name('contacts');
         Route::post('/contacts', [ProfileController::class, 'addContact'])->name('contacts.store');
         Route::delete('/contacts/{id}', [ProfileController::class, 'destroyContact'])->name('contacts.destroy');
+        Route::post('/two-factor/toggle', [\App\Http\Controllers\TwoFactorController::class, 'toggle'])->name('two-factor.toggle');
     });
+
+    // ==================== TWO FACTOR VERIFICATION ====================
+    Route::get('/two-factor/challenge', [\App\Http\Controllers\TwoFactorController::class, 'challenge'])->name('two-factor.challenge');
+    Route::post('/two-factor/verify', [\App\Http\Controllers\TwoFactorController::class, 'verify'])->name('two-factor.verify');
 
     // ==================== NOTIFICATIONS ====================
     Route::prefix('notifications')->name('notifications.')->group(function () {

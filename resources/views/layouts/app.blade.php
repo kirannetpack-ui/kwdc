@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="user-id" content="{{ auth()->check() ? auth()->id() : '' }}">
+    <meta name="theme-color" content="#f97316">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
     <script src="{{ asset('js/kwdc-maps.js') }}" defer></script>
     <title>KTM-WDC - @yield('title', 'Warehouse & Distribution Connect')</title>
     
@@ -195,6 +199,9 @@
         </a>
         <a href="{{ route('admin.vehicles') }}" class="sidebar-link {{ request()->routeIs('admin.vehicles') ? 'active' : '' }}">
             <i class="fas fa-truck"></i> All Vehicles
+        </a>
+        <a href="{{ route('admin.vehicles.compliance') }}" class="sidebar-link {{ request()->routeIs('admin.vehicles.compliance') ? 'active' : '' }}">
+            <i class="fas fa-truck-shield"></i> Fleet Compliance
         </a>
         <a href="{{ route('tracking.index') }}" class="sidebar-link {{ request()->routeIs('tracking.index') ? 'active' : '' }}">
             <i class="fas fa-map-marked-alt"></i> Live Tracking
@@ -438,6 +445,17 @@
 
         <!-- RIGHT: CALENDAR, NOTIFICATIONS & USER PROFILE MENU -->
         <div class="flex items-center gap-3">
+            <!-- LANGUAGE SWITCHER (EN / नेपाली) -->
+            @php $currentLocale = session('locale', config('app.locale', 'en')); @endphp
+            <div class="inline-flex items-center rounded-full bg-[#FFFFFF] border border-[#E8E2D8] p-0.5 shadow-2xs">
+                <a href="{{ route('locale.switch', 'en') }}" class="px-2.5 py-0.5 rounded-full text-xs font-bold transition text-decoration-none {{ $currentLocale === 'en' ? 'bg-[#D96B43] text-white shadow-xs' : 'text-[#57524C] hover:text-[#24201D]' }}" title="Switch to English">
+                    EN
+                </a>
+                <a href="{{ route('locale.switch', 'ne') }}" class="px-2.5 py-0.5 rounded-full text-xs font-bold transition text-decoration-none {{ $currentLocale === 'ne' ? 'bg-[#D96B43] text-white shadow-xs' : 'text-[#57524C] hover:text-[#24201D]' }}" title="नेपाली भाषामा हेर्नुहोस्">
+                    नेपाली
+                </a>
+            </div>
+
             <!-- CALENDAR DATE PILL -->
             <div class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FFFFFF] border border-[#E8E2D8] text-xs font-semibold text-[#57524C] shadow-2xs">
                 <i class="far fa-calendar-alt text-[#D96B43]"></i>
@@ -1329,6 +1347,13 @@
 </div>
 
 <script src="{{ asset('js/voice-assistant.js') }}"></script>
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW registration error:', err));
+        });
+    }
+</script>
 @stack('scripts')
 </body>
 </html>

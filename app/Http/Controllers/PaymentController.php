@@ -603,6 +603,18 @@ class PaymentController extends Controller
 
         $this->completeVerifiedTransaction($transaction, $invoice, $transaction->payment_method, $transaction->payment_details ?? []);
 
+        if ($invoice->client && !empty($invoice->client->phone)) {
+            try {
+                app(\App\Services\SmsService::class)->notifyPaymentCleared(
+                    $invoice->client->phone,
+                    $invoice->invoice_number,
+                    (float) $transaction->amount
+                );
+            } catch (\Throwable $e) {
+                \Log::warning('Payment cleared SMS notification failed: ' . $e->getMessage());
+            }
+        }
+
         return redirect()->back()->with('success', "Transaction {$transaction->transaction_id} approved. Invoice #{$invoice->invoice_number} is now Paid!");
     }
 

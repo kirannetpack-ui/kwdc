@@ -42,6 +42,9 @@ class User extends Authenticatable
         'is_banned',
         'ban_reason',
         'banned_at',
+        'two_factor_enabled',
+        'two_factor_code',
+        'two_factor_expires_at',
     ];
 
     /**
@@ -53,6 +56,7 @@ class User extends Authenticatable
         'password',
         'remember_token',
         'activation_code_hash',
+        'two_factor_code',
     ];
 
     /**
@@ -64,6 +68,8 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'activation_expires_at' => 'datetime',
         'banned_at' => 'datetime',
+        'two_factor_expires_at' => 'datetime',
+        'two_factor_enabled' => 'boolean',
         'password' => 'hashed',
         'is_active' => 'boolean',
         'is_banned' => 'boolean',
@@ -111,6 +117,67 @@ class User extends Authenticatable
     public function isBanned(): bool
     {
         return (bool) $this->is_banned;
+    }
+
+    /**
+     * Generate and persist a 6-digit 2FA code valid for 10 minutes.
+     */
+    public function generateTwoFactorCode(): string
+    {
+        $code = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+
+        $this->forceFill([
+            'two_factor_code' => $code,
+            'two_factor_expires_at' => now()->addMinutes(10),
+        ])->save();
+
+        return $code;
+    }
+
+    /**
+     * Verify submitted 2FA code.
+     */
+    public function verifyTwoFactorCode(?string $code): bool
+    {
+        if (!$code || !$this->two_factor_code || !$this->two_factor_expires_at) {
+            return false;
+        }
+
+        if ($this->two_factor_expires_at < now()) {
+            return false;
+        }
+
+        if ($this->two_factor_code === trim($code)) {
+            $this->forceFill([
+                'two_factor_code' => null,
+                'two_factor_expires_at' => null,
+            ])->save();
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Enable Two-Factor Authentication.
+     */
+    public function enableTwoFactor(): self
+    {
+        $this->forceFill(['two_factor_enabled' => true])->save();
+        return $this;
+    }
+
+    /**
+     * Disable Two-Factor Authentication.
+     */
+    public function disableTwoFactor(): self
+    {
+        $this->forceFill([
+            'two_factor_enabled' => false,
+            'two_factor_code' => null,
+            'two_factor_expires_at' => null,
+        ])->save();
+        return $this;
     }
 
     // ============================================================

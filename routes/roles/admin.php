@@ -52,6 +52,7 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
 
     // Vehicles
     Route::get('/vehicles', [AdminController::class, 'vehicles'])->name('vehicles');
+    Route::get('/vehicles/compliance', [AdminController::class, 'vehicleCompliance'])->name('vehicles.compliance');
     Route::post('/vehicles', [AdminController::class, 'storeVehicle'])->name('vehicles.store');
     Route::delete('/vehicles/{id}', [AdminController::class, 'deleteVehicle'])->name('vehicles.delete');
     Route::get('/vehicles/list', [AdminController::class, 'vehicles'])->name('vehicles.list');
@@ -89,6 +90,7 @@ Route::prefix('admin')->middleware(['admin'])->name('admin.')->group(function ()
     Route::get('/invoices', [AdminController::class, 'invoices'])->name('invoices');
     Route::get('/invoices/list', [AdminController::class, 'invoices'])->name('invoices.list');
     Route::get('/invoices/admin', [InvoiceController::class, 'adminIndex'])->name('invoices.admin');
+    Route::get('/invoices/export/schedule-13', [InvoiceController::class, 'exportSchedule13'])->name('invoices.export-schedule-13');
     Route::post('/invoices/{invoice}/mark-paid', [InvoiceController::class, 'markAsPaid'])->name('invoices.mark-paid');
     Route::post('/invoices/{invoice}/resend-email', [InvoiceController::class, 'resendEmail'])->name('invoices.resend-email');
     Route::post('/invoices/{invoice}/ban-qr', [InvoiceController::class, 'banQR'])->name('invoices.ban-qr');

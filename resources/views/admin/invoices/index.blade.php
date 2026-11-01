@@ -21,6 +21,14 @@
                 {{ $totalCount }} Invoices
             </span>
         </div>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('admin.invoices.export-schedule-13') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition shadow-2xs">
+                <i class="fas fa-file-excel text-emerald-600"></i> IRD अनुसूची १३ (Sales Book)
+            </a>
+            <a href="{{ route('admin.payments.bank-transfers') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition shadow-2xs">
+                <i class="fas fa-building-columns"></i> Bank & QR Review
+            </a>
+        </div>
     </div>
 
     @if(session('success'))

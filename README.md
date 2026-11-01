@@ -2,11 +2,11 @@
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.2%2B-blue.svg)](https://php.net)
 [![Laravel Framework](https://img.shields.io/badge/Laravel-12.x-red.svg)](https://laravel.com)
-[![Tests Passing](https://img.shields.io/badge/Tests-215%20Passed%20(100%25)-brightgreen.svg)]()
+[![Tests Passing](https://img.shields.io/badge/Tests-221%20Passed%20(100%25)-brightgreen.svg)]()
 [![License](https://img.shields.io/badge/License-Proprietary%20%2F%20Commercial-amber.svg)]()
 
 > **Production-Ready Enterprise Logistics & Commercial Warehousing Platform for Nepal.**  
-> Built with modern Apple Cupertino minimalist aesthetics, multi-currency payment infrastructure (Stripe, eSewa, Khalti), real-time driver dispatch tracking, heavy machinery leasing, licensed security post management, and statutory legal insulation under the laws of Nepal.
+> Built with modern Apple Cupertino minimalist aesthetics, multi-currency payment infrastructure (Stripe, eSewa, Khalti, Direct Banking, NepalPay QR), real-time driver dispatch tracking, heavy machinery leasing, licensed security post management, statutory legal insulation under the laws of Nepal, Sparrow/Aakash SMS gateways, bilingual English/Nepali i18n, PWA offline driver app, and IRD Schedule 13 VAT reporting.
 
 ---
 
@@ -16,8 +16,9 @@
 3. [Pre-Seeded Demo Credentials](#pre-seeded-demo-credentials)
 4. [Role Capabilities & Feature Matrix](#role-capabilities--feature-matrix)
 5. [Payment Suite & Financial Workflows](#payment-suite--financial-workflows)
-6. [Legal & Statutory Liability Framework](#legal--statutory-liability-framework)
-7. [Automated Testing Suite](#automated-testing-suite)
+6. [Enterprise Operations & Nepal Localization](#enterprise-operations--nepal-localization)
+7. [Legal & Statutory Liability Framework](#legal--statutory-liability-framework)
+8. [Automated Testing Suite](#automated-testing-suite)
 8. [Directory Structure & Architecture Map](#directory-structure--architecture-map)
 9. [Production Deployment Guide](#production-deployment-guide)
 
@@ -164,6 +165,47 @@ The portal supports international cards, local digital wallets, direct commercia
 
 ---
 
+## Enterprise Operations & Nepal Localization
+
+To deliver complete production readiness for commercial freight, logistics, and warehousing operations across Nepal, KTM-WDC integrates the following enterprise infrastructure:
+
+### 1. Nepal Telecom & SMS Dispatch Alert Gateway (`App\Services\SmsService`)
+- Integrates both **Sparrow SMS** and **Aakash SMS** gateway APIs with automatic fallback to logging in testing environments.
+- Normalizes all Nepal telephone prefixes (`+977`, `977`, or `98XXXXXXXX` / `97XXXXXXXX`) to standard 10-digit mobile numbers.
+- Automated triggers:
+  - Driver job dispatch alerts with pickup/destination and payout rate.
+  - Consignee Proof-of-Delivery (POD) clearance OTP.
+  - Instant SMS receipt confirmation upon bank clearance.
+
+### 2. Bilingual English & Nepali (नेपाली) Interface
+- Top-navigation language switch pill (EN / नेपाली) with immediate session preservation via `SetLocale` middleware.
+- Full localization strings in `lang/en.json` and `lang/ne.json` covering navigation, metric counters, consignment statuses, and tax receipts.
+
+### 3. Progressive Web App (PWA) & Offline Dead-Zone Mode
+- Native mobile home-screen installability via `public/manifest.json`.
+- Offline cache service worker (`public/sw.js`) and Apple Cupertino offline card (`public/offline.html`).
+- Prevents data loss during cellular dropouts on mountain transit routes (Prithvi Highway, BP Highway, Narayanghat-Mugling corridor).
+
+### 4. Statutory IRD Nepal Tax Book (अनुसूची १३ / Schedule 13 Sales Book)
+- One-click official export at `GET /admin/invoices/export/schedule-13`.
+- Exports CSV/Excel format strictly compliant with the **Inland Revenue Department (आन्तरिक राजस्व विभाग)**:
+  - क्र.सं. (S.N.), मिति (Date), बिजक नं (Invoice No), खरिदकर्ताको नाम (Buyer Name), खरिदकर्ताको स्थायी लेखा नं (Buyer PAN), जम्मा बिक्री (Total), कर छुट बिक्री (Exempt), करयोग्य बिक्री (Taxable), १३% मूल्य अभिवृद्धि कर (13% VAT), and स्थिति (Status).
+
+### 5. Fleet Compliance & Vehicle Blue Book (बिलबुक) Expiry Monitor
+- Real-time regulatory monitor at `/admin/vehicles/compliance`.
+- Tracks Blue Book validity, Route Permit (रुट परमिट), Green Pollution Sticker, and Comprehensive Commercial Insurance.
+- Categorizes fleet units into **Fully Compliant**, **Expiring (<15 Days)**, and **Grounded/Barred**.
+
+### 6. Cloud Object Storage Ready (AWS S3 / Cloudflare R2 / DigitalOcean Spaces)
+- Dual-driver support in `config/filesystems.php` for `r2` (zero egress cost) and `spaces` (Bangalore `blr1` regional low latency).
+
+### 7. Two-Factor Authentication (2FA) & High-Value Approvals
+- Built-in 2FA toggle on User Profile (`/profile`).
+- 6-digit cryptographic OTP generation with 10-minute expiry delivered via SMS and email.
+- Challenge gate at `/two-factor/challenge` protects admin tools and high-value cargo operations.
+
+---
+
 ## Legal & Statutory Liability Framework
 
 The application is structured to provide full legal immunity and compliance under the laws of Nepal:
@@ -216,6 +258,7 @@ The repository includes a comprehensive 215-test feature and unit test harness:
 php vendor/bin/phpunit
 
 # Run specific functional suites
+php vendor/bin/phpunit tests/Feature/EnterpriseReadinessTest.php
 php vendor/bin/phpunit tests/Feature/BankingPaymentTest.php
 php vendor/bin/phpunit tests/Feature/AccountAndQrBanTest.php
 php vendor/bin/phpunit tests/Feature/PaymentSecurityTest.php
@@ -224,7 +267,7 @@ php vendor/bin/phpunit tests/Feature/SecurityAgencyManagementTest.php
 php vendor/bin/phpunit tests/Feature/ProductionHardeningTest.php
 ```
 
-**Status**: 215 tests, 975 assertions, 0 failures (100% pass rate).
+**Status**: 221 tests, 1009 assertions, 0 failures (100% pass rate).
 
 ---
 

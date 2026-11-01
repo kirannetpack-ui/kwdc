@@ -137,6 +137,37 @@
             </button>
         </div>
     </form>
+
+    <!-- Two-Factor Authentication (2FA) Security Card -->
+    <div class="kwdc-glass-card p-6 sm:p-8 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-orange-50 border border-orange-200 text-orange-600 flex items-center justify-center text-sm shadow-xs">
+                    <i class="fas fa-shield-halved"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-extrabold text-slate-900 tracking-tight">Two-Factor Authentication (2FA)</h2>
+                    <p class="text-[11px] text-slate-500">Require an instant Nepal SMS & OTP verification code for login and high-value cargo clearances.</p>
+                </div>
+            </div>
+            <form method="POST" action="{{ route('profile.two-factor.toggle') }}">
+                @csrf
+                <button type="submit" class="px-4 py-2 rounded-xl text-xs font-bold transition {{ $user->two_factor_enabled ? 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100' }}">
+                    @if($user->two_factor_enabled)
+                        <i class="fas fa-toggle-on text-emerald-600 mr-1"></i> Enabled (Disable)
+                    @else
+                        <i class="fas fa-toggle-off text-slate-400 mr-1"></i> Disabled (Enable 2FA)
+                    @endif
+                </button>
+            </form>
+        </div>
+        @if($user->two_factor_enabled)
+        <div class="p-3 bg-emerald-50/70 border border-emerald-200/80 rounded-xl text-[11px] text-emerald-800 flex items-center gap-2">
+            <i class="fas fa-lock text-emerald-600"></i>
+            <span>Your account is actively protected. 6-digit OTP codes are delivered to {{ $user->phone ?: $user->email }}.</span>
+        </div>
+        @endif
+    </div>
 </div>
 
 <script>

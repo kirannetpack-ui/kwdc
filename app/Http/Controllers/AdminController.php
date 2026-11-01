@@ -952,4 +952,36 @@ class AdminController extends Controller
             'months', 'revenues', 'dispatchCounts', 'statusCounts', 'statusColors', 'topDrivers'
         ));
     }
+
+    /**
+     * Show vehicle fleet compliance, Blue Book renewal, and route permit statuses.
+     */
+    public function vehicleCompliance()
+    {
+        $vehicles = Vehicle::with('driver')->orderBy('created_at', 'desc')->paginate(20);
+
+        $now = now()->startOfDay();
+        $totalVehicles = Vehicle::count();
+        $compliantCount = 0;
+        $expiringCount = 0;
+        $expiredCount = 0;
+
+        foreach ($vehicles as $v) {
+            $issues = $v->getComplianceIssues();
+            $hasExpired = collect($issues)->contains('status', 'expired');
+            $hasExpiring = collect($issues)->contains('status', 'expiring');
+
+            if ($hasExpired) {
+                $expiredCount++;
+            } elseif ($hasExpiring) {
+                $expiringCount++;
+            } else {
+                $compliantCount++;
+            }
+        }
+
+        return view('admin.vehicles.compliance', compact(
+            'vehicles', 'totalVehicles', 'compliantCount', 'expiringCount', 'expiredCount'
+        ));
+    }
 }
