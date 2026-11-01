@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="KTM-WDC connects commercial warehouse space, freight deliveries, heavy equipment, and trusted teams across Nepal.">
+    <meta property="og:title" content="KTM-WDC | Nepal's Commercial Logistics & Warehousing Portal">
+    <meta property="og:description" content="Enterprise commercial warehousing, GPS freight dispatch, heavy machinery rentals, and licensed security post management across Nepal.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url('/') }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#f97316">
+    <link rel="manifest" href="/manifest.json">
     <title>KTM-WDC | Warehouse & Distribution Connect</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
